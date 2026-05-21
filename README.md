@@ -1,5 +1,55 @@
-# Vue 3 + Vite
+# CryptoDash
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Vue 3 cryptocurrency dashboard — COS30043 Stage 1 foundation (Swinburne University).
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Tech stack
+
+- Vue 3 + Vite
+- Vue Router
+- Bootstrap 5
+- JavaScript (no TypeScript)
+
+## Getting started
+
+```bash
+npm install
+npm run dev
+```
+
+Open the URL shown in the terminal (usually `http://localhost:5173`).
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## Project structure
+
+```
+src/
+├── assets/
+├── components/     # Navbar, Footer, CoinCard, CoinTable, etc.
+├── views/          # Home, Markets, News, About, Login, Register
+├── router/
+├── data/           # Local fake coins + news.json
+├── services/       # api.js placeholder for Stage 2
+├── App.vue
+└── main.js
+```
+
+## Routes
+
+| Path | Page |
+|------|------|
+| `/` | Home |
+| `/markets` | Markets |
+| `/news` | News |
+| `/about` | About |
+| `/login` | Login |
+| `/register` | Register |
+
+## Stage 1 scope
+
+This build includes routing, Bootstrap dark UI, reusable components, local placeholder data, search, and pagination. It does **not** include WebSockets, AI chatbot, real APIs, or backend authentication.

@@ -2,9 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      (function () {
+        var theme = localStorage.getItem('cryptodash-theme');
+        if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      })();
+    </script>
+    <link rel="icon" href="/site-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>cryptocurrencies</title>
+    <title>CryptoDash | Cryptocurrency Dashboard</title>
   </head>
   <body>
     <div id="app"></div>
