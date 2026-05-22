@@ -1,34 +1,58 @@
 <script>
-import { coins } from '../data/coins.js'
+import { api } from '../services/api.js'
+import { livePrices } from '../services/livePrices.js'
 import CoinTable from '../components/CoinTable.vue'
 import SearchBar from '../components/SearchBar.vue'
 import Pagination from '../components/Pagination.vue'
+import SortSelect from '../components/SortSelect.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import EmptyState from '../components/EmptyState.vue'
+import LiveBadge from '../components/LiveBadge.vue'
 
-const ITEMS_PER_PAGE = 6
+const ITEMS_PER_PAGE = 8
 
 export default {
   components: {
     CoinTable,
     SearchBar,
     Pagination,
+    SortSelect,
+    LoadingSpinner,
+    EmptyState,
+    LiveBadge,
   },
   data() {
     return {
-      allCoins: coins,
+      allCoins: [],
       searchQuery: '',
+      sortBy: 'default',
       currentPage: 1,
       itemsPerPage: ITEMS_PER_PAGE,
+      loading: true,
+      error: null,
+      livePricesMap: {},
+      isLive: false,
     }
   },
   computed: {
     filteredCoins() {
       const q = this.searchQuery.trim().toLowerCase()
-      if (!q) return this.allCoins
-      return this.allCoins.filter(
-        (coin) =>
-          coin.name.toLowerCase().includes(q) ||
-          coin.symbol.toLowerCase().includes(q)
-      )
+      let list = [...this.allCoins]
+      if (q) {
+        list = list.filter(
+          (c) =>
+            c.name.toLowerCase().includes(q) ||
+            c.symbol.toLowerCase().includes(q)
+        )
+      }
+      if (this.sortBy === 'price') {
+        list.sort((a, b) => b.price - a.price)
+      } else if (this.sortBy === 'gainers') {
+        list.sort((a, b) => b.change24h - a.change24h)
+      } else if (this.sortBy === 'losers') {
+        list.sort((a, b) => a.change24h - b.change24h)
+      }
+      return list.map((c) => this.mergeLive(c))
     },
     totalPages() {
       return Math.max(1, Math.ceil(this.filteredCoins.length / this.itemsPerPage))
@@ -42,13 +66,55 @@ export default {
     searchQuery() {
       this.currentPage = 1
     },
+    sortBy() {
+      this.currentPage = 1
+    },
     filteredCoins() {
       if (this.currentPage > this.totalPages) {
         this.currentPage = this.totalPages
       }
     },
   },
+  async mounted() {
+    await this.loadCoins()
+    if (this.allCoins.length) this.startLive()
+  },
+  beforeUnmount() {
+    if (this._unsub) this._unsub()
+    livePrices.stop()
+  },
   methods: {
+    async loadCoins() {
+      this.loading = true
+      this.error = null
+      try {
+        this.allCoins = await api.getTopCoins(50)
+      } catch (e) {
+        this.error = e.message
+      } finally {
+        this.loading = false
+      }
+    },
+    startLive() {
+      this._unsub = livePrices.subscribe((data) => {
+        this.livePricesMap = data
+        this.isLive = true
+      })
+      const ids = this.allCoins.map((c) => c.coingeckoId || c.id)
+      livePrices.start(ids)
+    },
+    mergeLive(coin) {
+      const id = coin.coingeckoId || coin.id
+      const live = this.livePricesMap[id]
+      if (!live) return coin
+      const change = live.usd_24h_change ?? coin.change24h
+      return {
+        ...coin,
+        price: live.usd ?? coin.price,
+        change24h: change,
+        _flash: change >= (coin.change24h ?? 0) ? 'up' : 'down',
+      }
+    },
     onPageChange(page) {
       this.currentPage = page
     },
@@ -59,35 +125,62 @@ export default {
 <template>
   <section class="page-section">
     <div class="container">
-      <h1 class="page-title">Markets</h1>
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+        <h1 class="page-title mb-0">Markets</h1>
+        <LiveBadge v-if="isLive && !loading" />
+      </div>
       <p class="page-subtitle">
-        Overview of cryptocurrency prices, market cap, and 24h change — local fake data.
+        Live prices via CoinGecko when online — falls back to local data if the API is unavailable.
       </p>
 
-      <div class="row mb-4">
-        <div class="col-12 col-md-6 col-lg-4">
+      <div v-if="error && !loading" class="alert alert-theme small mb-3" role="alert">
+        {{ error }} — showing cached/local data.
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-5 col-lg-4">
           <SearchBar
             v-model="searchQuery"
             label="Search coins"
             placeholder="Search by name or symbol..."
           />
         </div>
-        <div class="col-12 col-md-6 col-lg-8 d-flex align-items-end justify-content-md-end">
+        <div class="col-12 col-md-4 col-lg-3">
+          <SortSelect v-model="sortBy" />
+        </div>
+        <div class="col-12 col-md-3 col-lg-5 d-flex align-items-end justify-content-md-end">
           <p class="text-secondary small mb-0">
-            Showing {{ paginatedCoins.length }} of {{ filteredCoins.length }} coins
+            <template v-if="!loading">
+              {{ paginatedCoins.length }} of {{ filteredCoins.length }} coins
+            </template>
           </p>
         </div>
       </div>
 
-      <CoinTable :coins="paginatedCoins" />
+      <LoadingSpinner v-if="loading" message="Loading markets..." />
 
-      <div class="mt-4">
-        <Pagination
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          @page-change="onPageChange"
+      <template v-else>
+        <EmptyState
+          v-if="filteredCoins.length === 0"
+          title="No matches"
+          message="Try a different search term or clear the filter."
+          icon="⌕"
         />
-      </div>
+
+        <template v-else>
+          <CoinTable
+            :coins="paginatedCoins"
+            :start-rank="(currentPage - 1) * itemsPerPage + 1"
+          />
+          <div class="mt-4">
+            <Pagination
+              :current-page="currentPage"
+              :total-pages="totalPages"
+              @page-change="onPageChange"
+            />
+          </div>
+        </template>
+      </template>
     </div>
   </section>
 </template>

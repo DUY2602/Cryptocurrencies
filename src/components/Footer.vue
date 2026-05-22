@@ -4,16 +4,13 @@
       <div class="row align-items-center gy-3">
         <div class="col-md-6 text-center text-md-start">
           <p class="mb-0 footer-brand">
-            <span class="brand-icon-sm">₿</span> CryptoDash
+            <img src="/site-logo.png" alt="" width="20" height="20" class="me-1 align-text-bottom" />
+            CryptoDash
           </p>
-          <small class="text-secondary">
-            COS30043 – Interface Design and Development · Swinburne University
-          </small>
+          <small class="text-secondary">COS30043 · Swinburne University</small>
         </div>
         <div class="col-md-6 text-center text-md-end">
-          <small class="text-secondary">
-            &copy; {{ currentYear }} CryptoDash. Stage 1 foundation build.
-          </small>
+          <small class="text-secondary">&copy; {{ currentYear }} CryptoDash</small>
         </div>
       </div>
     </div>
@@ -29,20 +26,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.crypto-footer {
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
-}
-
-.footer-brand {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.brand-icon-sm {
-  color: var(--accent);
-  margin-right: 0.25rem;
-}
-</style>

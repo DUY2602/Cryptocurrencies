@@ -1,6 +1,7 @@
 <script setup>
 import Navbar from './components/Navbar.vue'
 import Footer from './components/Footer.vue'
+import AiAssistant from './components/AiAssistant.vue'
 </script>
 
 <template>
@@ -10,5 +11,6 @@ import Footer from './components/Footer.vue'
       <RouterView />
     </main>
     <Footer />
+    <AiAssistant />
   </div>
 </template>

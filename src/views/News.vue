@@ -2,6 +2,7 @@
 import newsData from '../data/news.json'
 import SearchBar from '../components/SearchBar.vue'
 import Pagination from '../components/Pagination.vue'
+import NewsLikeButton from '../components/NewsLikeButton.vue'
 
 const ITEMS_PER_PAGE = 4
 
@@ -9,6 +10,7 @@ export default {
   components: {
     SearchBar,
     Pagination,
+    NewsLikeButton,
   },
   data() {
     return {
@@ -100,7 +102,8 @@ export default {
                 <small class="text-secondary">{{ formatDate(article.date) }}</small>
               </div>
               <h5 class="card-title news-title">{{ article.title }}</h5>
-              <p class="card-text text-secondary small mb-0">{{ article.content }}</p>
+              <p class="card-text text-secondary small mb-2">{{ article.content }}</p>
+              <NewsLikeButton :article-id="article.id" />
             </div>
           </article>
         </div>
@@ -122,7 +125,10 @@ export default {
               <td class="text-secondary text-nowrap">{{ formatDate(article.date) }}</td>
               <td class="fw-semibold">{{ article.title }}</td>
               <td><span class="badge badge-category">{{ article.category }}</span></td>
-              <td class="text-secondary small">{{ article.content }}</td>
+              <td class="text-secondary small">
+                <p class="mb-2">{{ article.content }}</p>
+                <NewsLikeButton :article-id="article.id" />
+              </td>
             </tr>
           </tbody>
         </table>
@@ -137,14 +143,3 @@ export default {
   </section>
 </template>
 
-<style scoped>
-.news-card .card-body {
-  padding: 1.25rem;
-}
-
-.news-title {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.4;
-}
-</style>

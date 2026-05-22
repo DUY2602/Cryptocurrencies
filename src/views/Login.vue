@@ -1,5 +1,11 @@
 <script>
+import { useAuth } from '../composables/useAuth.js'
+
 export default {
+  setup() {
+    const { login } = useAuth()
+    return { login }
+  },
   data() {
     return {
       email: '',
@@ -25,7 +31,9 @@ export default {
       event.preventDefault()
       this.submitted = true
       if (this.formValid) {
-        alert('Login UI only — backend authentication will be added in a later stage.')
+        this.login(this.email, this.password)
+        const redirect = this.$route.query.redirect || '/'
+        this.$router.push(redirect)
       }
     },
   },
@@ -39,7 +47,7 @@ export default {
         <div class="col-12 col-md-8 col-lg-5">
           <div class="card card-crypto p-4 p-md-5">
             <h1 class="page-title text-center mb-1">Login</h1>
-            <p class="text-secondary text-center mb-4 small">Frontend form only — no backend yet</p>
+            <p class="text-secondary text-center mb-4 small">Demo login — saved in localStorage only</p>
 
             <form novalidate @submit="onSubmit">
               <div class="mb-3">
@@ -93,13 +101,3 @@ export default {
     </div>
   </section>
 </template>
-
-<style scoped>
-.is-valid {
-  border-color: var(--positive) !important;
-}
-
-.is-invalid {
-  border-color: var(--negative) !important;
-}
-</style>
