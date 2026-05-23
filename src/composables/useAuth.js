@@ -1,137 +1,194 @@
-import { ref, computed } from "vue";
-import otpService from "../services/otp.js";
-import emailService from "../services/email.js";
-
-const STORAGE_KEY = "cryptodash-auth";
-const USERS_KEY = "cryptodash-users";
+import { ref, computed, onMounted } from "vue";
+import { supabase } from "../supabase.js";
 
 const user = ref(null);
 
-function loadUser() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    user.value = raw ? JSON.parse(raw) : null;
-  } catch {
-    user.value = null;
+async function loadUser() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (session?.user) {
+    user.value = {
+      email: session.user.email,
+      name:
+        session.user.user_metadata?.name ||
+        session.user.email?.split("@")[0] ||
+        "User",
+      id: session.user.id,
+    };
   }
 }
-
-loadUser();
 
 export function useAuth() {
   const isLoggedIn = computed(() => !!user.value);
 
-  function login(email, password) {
-    // Check if user exists in users storage
-    const users = getUsers();
-    const existingUser = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase(),
-    );
+  // Initialize auth state
+  onMounted(() => {
+    loadUser();
 
-    if (existingUser) {
-      // Verify password
-      if (existingUser.password !== password) {
-        return { success: false, message: "Invalid password" };
+    // Listen for auth changes
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        user.value = {
+          email: session.user.email,
+          name:
+            session.user.user_metadata?.name ||
+            session.user.email?.split("@")[0] ||
+            "User",
+          id: session.user.id,
+        };
+      } else if (event === "SIGNED_OUT") {
+        user.value = null;
       }
+    });
+  });
 
-      const account = {
-        email: existingUser.email,
-        name: existingUser.name,
+  async function login(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    if (data.user) {
+      user.value = {
+        email: data.user.email,
+        name:
+          data.user.user_metadata?.name ||
+          data.user.email?.split("@")[0] ||
+          "User",
+        id: data.user.id,
       };
-      user.value = account;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(account));
       return { success: true, message: "Login successful" };
     }
 
-    // For demo purposes, allow login without existing user
-    const account = {
-      email: email.trim(),
-      name: email.split("@")[0] || "User",
-    };
-    user.value = account;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(account));
-    return { success: true, message: "Login successful" };
+    return { success: false, message: "Login failed" };
   }
 
-  function logout() {
-    user.value = null;
-    localStorage.removeItem(STORAGE_KEY);
-  }
-
-  function getUsers() {
-    try {
-      const raw = localStorage.getItem(USERS_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
+  async function logout() {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      user.value = null;
+      return { success: true, message: "Logged out successfully" };
     }
+    return { success: false, message: error.message };
   }
 
-  function saveUsers(users) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  }
+  // Step 1: Request registration with email only (temp password)
+  async function requestRegistration(email, name) {
+    const tempPassword =
+      Math.random().toString(36).slice(-10) +
+      Math.random().toString(36).slice(-10);
 
-  // Step 1: Request OTP for email
-  async function requestOtp(email) {
-    const users = getUsers();
-    const existingUser = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase(),
-    );
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: tempPassword,
+      options: {
+        data: {
+          name: name || email.split("@")[0] || "User",
+          tempPassword: tempPassword,
+        },
+        emailRedirectTo: `${window.location.origin}/set-password`,
+      },
+    });
 
-    if (existingUser) {
-      return { success: false, message: "Email already registered" };
+    console.log("Supabase signUp response:", { data, error });
+
+    if (error) {
+      return { success: false, message: error.message };
     }
 
-    const otp = otpService.generateOtp(email);
-
-    // Send OTP via email service
-    await emailService.sendOtp(email, otp);
-
-    return { success: true, message: "OTP sent to your email" };
-  }
-
-  // Step 2: Verify OTP
-  function verifyOtp(email, code) {
-    const result = otpService.verifyOtp(email, code);
-    return result;
-  }
-
-  // Step 3: Complete registration with password
-  function register(email, password, name) {
-    if (!otpService.isVerified(email)) {
-      return { success: false, message: "Email not verified" };
+    // If email confirmation is enabled, user won't be signed in immediately
+    if (data.user && !data.session) {
+      return {
+        success: true,
+        message:
+          "Registration successful. Please check your email to verify your account.",
+      };
     }
 
-    const users = getUsers();
-    const newUser = {
-      email: email.toLowerCase(),
+    if (data.user) {
+      user.value = {
+        email: data.user.email,
+        name:
+          data.user.user_metadata?.name ||
+          data.user.email?.split("@")[0] ||
+          "User",
+        id: data.user.id,
+      };
+      return { success: true, message: "Registration successful" };
+    }
+
+    return { success: false, message: "Registration failed" };
+  }
+
+  // Step 2: Set password after email verification
+  async function setPassword(password) {
+    const { data, error } = await supabase.auth.updateUser({
       password: password,
-      name: name || email.split("@")[0] || "User",
-      createdAt: new Date().toISOString(),
-    };
+    });
 
-    users.push(newUser);
-    saveUsers(users);
+    if (error) {
+      return { success: false, message: error.message };
+    }
 
-    // Clear OTP after successful registration
-    otpService.clearOtp(email);
+    if (data.user) {
+      user.value = {
+        email: data.user.email,
+        name:
+          data.user.user_metadata?.name ||
+          data.user.email?.split("@")[0] ||
+          "User",
+        id: data.user.id,
+      };
+      return { success: true, message: "Password set successfully" };
+    }
 
-    // Auto login
-    const account = {
-      email: newUser.email,
-      name: newUser.name,
-    };
-    user.value = account;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(account));
-
-    return { success: true, message: "Registration successful" };
+    return { success: false, message: "Failed to set password" };
   }
 
-  // Resend OTP
-  async function resendOtp(email) {
-    const otp = otpService.resendOtp(email);
-    await emailService.sendOtp(email, otp);
-    return { success: true, message: "New OTP sent to your email" };
+  // Direct registration with email verification (legacy)
+  async function signUp(email, password, name) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name || email.split("@")[0] || "User",
+        },
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    // If email confirmation is enabled, user won't be signed in immediately
+    if (data.user && !data.session) {
+      return {
+        success: true,
+        message:
+          "Registration successful. Please check your email to verify your account.",
+      };
+    }
+
+    if (data.user) {
+      user.value = {
+        email: data.user.email,
+        name:
+          data.user.user_metadata?.name ||
+          data.user.email?.split("@")[0] ||
+          "User",
+        id: data.user.id,
+      };
+      return { success: true, message: "Registration successful" };
+    }
+
+    return { success: false, message: "Registration failed" };
   }
 
   return {
@@ -139,9 +196,8 @@ export function useAuth() {
     isLoggedIn,
     login,
     logout,
-    register,
-    requestOtp,
-    verifyOtp,
-    resendOtp,
+    signUp,
+    requestRegistration,
+    setPassword,
   };
 }
