@@ -73,7 +73,7 @@ function onLogout() {
           <li class="nav-item d-flex align-items-center my-2 my-lg-0">
             <ThemeToggle />
           </li>
-          
+
           <template v-if="isLoggedIn">
             <li class="nav-item">
               <RouterLink class="nav-link" to="/profile" active-class="active"
