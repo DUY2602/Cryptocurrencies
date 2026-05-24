@@ -22,6 +22,8 @@ export default {
       itemsPerPage: ITEMS_PER_PAGE,
       loading: true,
       loadError: null,
+      selectedArticle: null,
+      showModal: false,
     };
   },
   computed: {
@@ -84,6 +86,14 @@ export default {
         day: "numeric",
       });
     },
+    openArticle(article) {
+      this.selectedArticle = article;
+      this.showModal = true;
+    },
+    closeModal() {
+      this.showModal = false;
+      this.selectedArticle = null;
+    },
   },
 };
 </script>
@@ -120,78 +130,27 @@ export default {
           No articles match your search.
         </div>
 
-        <div class="d-lg-none row g-3 mb-4">
+        <div class="row g-4 mb-4">
           <div
             v-for="article in paginatedArticles"
             :key="article.id"
-            class="col-12 col-sm-6"
+            class="col-12 col-md-6 col-lg-4"
           >
-            <article class="card card-crypto h-100">
-              <img
-                v-if="article.image_url"
-                :src="article.image_url"
-                :alt="article.title"
-                class="card-img-top"
-                style="max-height: 140px; object-fit: cover"
-              />
-              <div class="card-body">
-                <div
-                  class="d-flex justify-content-between align-items-start mb-2"
-                >
-                  <span class="badge badge-category">{{
-                    article.category
-                  }}</span>
-                  <small class="text-secondary">{{
-                    formatDate(article.date)
-                  }}</small>
-                </div>
-                <h5 class="card-title news-title">{{ article.title }}</h5>
-                <p v-if="article.source_name" class="small text-secondary mb-1">
-                  {{ article.source_name }}
-                </p>
-                <div
-                  class="card-text text-secondary small mb-2"
-                  v-html="article.content"
-                ></div>
-                <NewsLikeButton :article-id="article.id" />
+            <article class="blog-card h-100" @click="openArticle(article)">
+              <div class="blog-card-header">
+                <span class="blog-category">{{ article.category }}</span>
+                <span class="blog-date">{{ formatDate(article.date) }}</span>
+              </div>
+              <h3 class="blog-title">{{ article.title }}</h3>
+              <p class="blog-meta" v-if="article.source_name">
+                {{ article.source_name }}
+              </p>
+              <p class="blog-excerpt" v-html="article.content"></p>
+              <div class="blog-footer">
+                <NewsLikeButton :article-id="article.id" @click.stop />
               </div>
             </article>
           </div>
-        </div>
-
-        <div
-          class="d-none d-lg-block table-responsive rounded-3 border border-secondary border-opacity-25 mb-4"
-        >
-          <table class="table table-hover table-dark-custom mb-0">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Content</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="article in paginatedArticles"
-                :key="'table-' + article.id"
-              >
-                <td class="text-secondary text-nowrap">
-                  {{ formatDate(article.date) }}
-                </td>
-                <td class="fw-semibold">{{ article.title }}</td>
-                <td>
-                  <span class="badge badge-category">{{
-                    article.category
-                  }}</span>
-                </td>
-                <td class="text-secondary small">
-                  <div class="mb-2" v-html="article.content"></div>
-                  <NewsLikeButton :article-id="article.id" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
 
         <Pagination
@@ -201,5 +160,238 @@ export default {
         />
       </template>
     </div>
+
+    <!-- Article Modal -->
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <button class="modal-close" @click="closeModal">&times;</button>
+        <div v-if="selectedArticle" class="article-detail">
+          <div class="article-header">
+            <span class="article-category">{{ selectedArticle.category }}</span>
+            <span class="article-date">{{
+              formatDate(selectedArticle.date)
+            }}</span>
+          </div>
+          <h2 class="article-title">{{ selectedArticle.title }}</h2>
+          <p v-if="selectedArticle.source_name" class="article-source">
+            {{ selectedArticle.source_name }}
+          </p>
+          <div class="article-body" v-html="selectedArticle.content"></div>
+          <div class="article-footer">
+            <NewsLikeButton :article-id="selectedArticle.id" />
+            <a
+              v-if="selectedArticle.source_url"
+              :href="selectedArticle.source_url"
+              target="_blank"
+              class="btn btn-outline-light btn-sm"
+            >
+              Read More
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
+
+<style scoped>
+.blog-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.blog-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.blog-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.blog-category {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.blog-date {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+}
+
+.blog-title {
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+.blog-card:hover .blog-title {
+  color: #667eea;
+}
+
+.blog-meta {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.blog-excerpt {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.blog-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.95),
+    rgba(20, 20, 30, 0.95)
+  );
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 32px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+.article-detail {
+  padding: 40px;
+}
+
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.article-category {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.article-date {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.article-title {
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.article-source {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+.article-body {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  line-height: 1.8;
+  margin-bottom: 32px;
+}
+
+.article-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+</style>
