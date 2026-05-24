@@ -25,23 +25,35 @@ jobs:
           echo "Fetching news from Google News RSS..."
           curl -s "https://news.google.com/rss/search?q=cryptocurrency" > news_raw.xml
 
+          # Check raw XML
+          echo "Raw XML (first 500 chars):"
+          head -c 500 news_raw.xml
+          echo ""
+          echo "Total XML size:"
+          wc -c news_raw.xml
+
           # Parse XML and format news
           node -e "
           const fs = require('fs');
           const xml = fs.readFileSync('news_raw.xml', 'utf8');
 
-          // Parse XML using regex
-          const items = [];
-          const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+          console.log('XML length:', xml.length);
+          console.log('Contains <item>:', xml.includes('<item>'));
+          console.log('Contains <title>:', xml.includes('<title>'));
+
+          // Try different regex patterns
+          const itemRegex = /<item>([\\s\\S]*?)<\\/item>/g;
           let match;
+          let itemCount = 0;
 
           while ((match = itemRegex.exec(xml)) !== null) {
+            itemCount++;
             const itemContent = match[1];
-            const titleMatch = itemContent.match(/<title>(.*?)<\/title>/);
-            const linkMatch = itemContent.match(/<link>(.*?)<\/link>/);
-            const pubDateMatch = itemContent.match(/<pubDate>(.*?)<\/pubDate>/);
-            const descMatch = itemContent.match(/<description>(.*?)<\/description>/);
-            const sourceMatch = itemContent.match(/<source.*?>(.*?)<\/source>/);
+            const titleMatch = itemContent.match(/<title>(.*?)<\\/title>/);
+            const linkMatch = itemContent.match(/<link>(.*?)<\\/link>/);
+            const pubDateMatch = itemContent.match(/<pubDate>(.*?)<\\/pubDate>/);
+            const descMatch = itemContent.match(/<description>(.*?)<\\/description>/);
+            const sourceMatch = itemContent.match(/<source.*?>(.*?)<\\/source>/);
 
             const title = titleMatch ? titleMatch[1] : '';
             const description = descMatch ? descMatch[1] : '';
@@ -65,6 +77,9 @@ jobs:
               });
             }
           }
+
+          console.log('Found', itemCount, 'items with regex');
+          console.log('Parsed', items.length, 'valid articles');
 
           fs.writeFileSync('src/data/news.json', JSON.stringify(items, null, 2));
           console.log('Updated news.json with', items.length, 'articles');
