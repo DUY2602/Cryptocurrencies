@@ -1,0 +1,64 @@
+name: Update Crypto News
+
+on:
+  schedule:
+    # Run every hour
+    - cron: "0 * * * *"
+  workflow_dispatch: # Allow manual trigger
+  push:
+    branches:
+      - main
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch news from CoinGecko
+        id: fetch-news
+        run: |
+          echo "Fetching news from CoinGecko..."
+          curl -s https://api.coingecko.com/api/v3/news > news_raw.json
+
+          # Parse and format news
+          node -e "
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('news_raw.json', 'utf8'));
+
+          const articles = data.data.slice(0, 20).map((item, index) => ({
+            id: index + 1,
+            title: item.title,
+            content: (item.description || item.title).substring(0, 300) + '...',
+            category: 'Crypto',
+            date: item.published_at || new Date().toISOString(),
+            image_url: item.thumb_large || item.thumb || null,
+            source_url: item.url || null,
+            source_name: item.author || item.source || 'CoinGecko'
+          }));
+
+          fs.writeFileSync('src/data/news.json', JSON.stringify(articles, null, 2));
+          console.log('Updated news.json with', articles.length, 'articles');
+          "
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet src/data/news.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.check-changes.outputs.changed == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add src/data/news.json
+          git commit -m "Update crypto news [skip ci]"
+          git push

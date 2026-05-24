@@ -1,45 +1,115 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from "vue";
+import { supabase } from "../../supabase/supabase.js";
+import { user } from "./useAuth.js";
 
-const STORAGE_KEY = 'cryptodash-watchlist'
+const STORAGE_KEY = "cryptodash-watchlist";
+const ids = ref([]);
+let authWatcherStarted = false;
 
-const ids = ref([])
-
-function load() {
+function loadFromLocalStorage() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    ids.value = raw ? JSON.parse(raw) : []
+    const raw = localStorage.getItem(STORAGE_KEY);
+    ids.value = raw ? JSON.parse(raw) : [];
   } catch {
-    ids.value = []
+    ids.value = [];
   }
 }
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids.value))
+function saveToLocalStorage() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids.value));
 }
 
-load()
+async function loadFromSupabase(userId) {
+  const { data, error } = await supabase
+    .from("watchlist")
+    .select("coin_id")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.warn("[watchlist] Supabase load failed:", error.message);
+    loadFromLocalStorage();
+    return;
+  }
+
+  ids.value = (data || []).map((row) => String(row.coin_id));
+}
+
+async function syncForUser(authUser) {
+  if (authUser?.id) {
+    await loadFromSupabase(authUser.id);
+  } else {
+    loadFromLocalStorage();
+  }
+}
+
+function startAuthWatcher() {
+  if (authWatcherStarted) return;
+  authWatcherStarted = true;
+  watch(user, (u) => syncForUser(u), { immediate: true });
+}
 
 export function useWatchlist() {
-  const watchlistIds = computed(() => ids.value)
+  startAuthWatcher();
+
+  const watchlistIds = computed(() => ids.value);
 
   function isFavorite(coinId) {
-    return ids.value.includes(String(coinId))
+    return ids.value.includes(String(coinId));
   }
 
-  function toggleFavorite(coinId) {
-    const id = String(coinId)
-    const idx = ids.value.indexOf(id)
-    if (idx >= 0) {
-      ids.value = ids.value.filter((x) => x !== id)
-    } else {
-      ids.value = [...ids.value, id]
+  async function toggleFavorite(coinId) {
+    const id = String(coinId);
+
+    if (user.value?.id) {
+      if (isFavorite(id)) {
+        const { error } = await supabase
+          .from("watchlist")
+          .delete()
+          .eq("user_id", user.value.id)
+          .eq("coin_id", id);
+
+        if (error) {
+          console.warn("[watchlist] delete failed:", error.message);
+          return;
+        }
+        ids.value = ids.value.filter((x) => x !== id);
+      } else {
+        const { error } = await supabase.from("watchlist").insert({
+          user_id: user.value.id,
+          coin_id: id,
+        });
+
+        if (error) {
+          console.warn("[watchlist] insert failed:", error.message);
+          return;
+        }
+        ids.value = [...ids.value, id];
+      }
+      return;
     }
-    save()
+
+    const idx = ids.value.indexOf(id);
+    if (idx >= 0) {
+      ids.value = ids.value.filter((x) => x !== id);
+    } else {
+      ids.value = [...ids.value, id];
+    }
+    saveToLocalStorage();
   }
 
-  function removeFavorite(coinId) {
-    ids.value = ids.value.filter((x) => x !== String(coinId))
-    save()
+  async function removeFavorite(coinId) {
+    const id = String(coinId);
+
+    if (user.value?.id) {
+      await supabase
+        .from("watchlist")
+        .delete()
+        .eq("user_id", user.value.id)
+        .eq("coin_id", id);
+    }
+
+    ids.value = ids.value.filter((x) => x !== id);
+    if (!user.value?.id) saveToLocalStorage();
   }
 
   return {
@@ -47,5 +117,5 @@ export function useWatchlist() {
     isFavorite,
     toggleFavorite,
     removeFavorite,
-  }
+  };
 }

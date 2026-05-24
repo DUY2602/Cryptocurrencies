@@ -25,6 +25,12 @@ npm run build
 npm run preview
 ```
 
+## Supabase
+
+- Client: `supabase/supabase.js` (env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
+- Schema reference: `supabase/create_news_table.sql`
+- Edge Function `fetch-news` is deployed on Supabase only (not in this repo). The app calls it via `supabase.functions.invoke('fetch-news')` when the `news` table is empty.
+
 ## Project structure
 
 ```

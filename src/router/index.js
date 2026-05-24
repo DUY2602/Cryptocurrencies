@@ -9,7 +9,7 @@ import CoinDetail from "../views/CoinDetail.vue";
 import Watchlist from "../views/Watchlist.vue";
 import Profile from "../views/Profile.vue";
 import SetPassword from "../views/SetPassword.vue";
-import { supabase } from "../supabase.js";
+import { supabase } from "../../supabase/supabase.js";
 
 const routes = [
   { path: "/", name: "Home", component: Home },

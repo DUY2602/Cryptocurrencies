@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useWatchlist } from '../composables/useWatchlist.js'
 
 const props = defineProps({
@@ -8,13 +8,20 @@ const props = defineProps({
 })
 
 const { isFavorite, toggleFavorite } = useWatchlist()
+const busy = ref(false)
 
 const active = computed(() => isFavorite(props.coinId))
 
-function onClick(e) {
+async function onClick(e) {
   e.preventDefault()
   e.stopPropagation()
-  toggleFavorite(props.coinId)
+  if (busy.value) return
+  busy.value = true
+  try {
+    await toggleFavorite(props.coinId)
+  } finally {
+    busy.value = false
+  }
 }
 </script>
 
@@ -23,6 +30,7 @@ function onClick(e) {
     type="button"
     class="btn btn-outline-accent"
     :class="size === 'sm' ? 'btn-sm' : ''"
+    :disabled="busy"
     :aria-label="active ? 'Remove from watchlist' : 'Add to watchlist'"
     :title="active ? 'Remove from watchlist' : 'Add to watchlist'"
     @click="onClick"
