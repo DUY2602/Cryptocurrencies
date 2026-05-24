@@ -1,32 +1,45 @@
 <script>
 import { api } from '../services/api.js'
+import { livePrices, priceFlashDirection, getLiveQuote } from '../services/livePrices.js'
 import StatCard from '../components/StatCard.vue'
+import PriceWithArrow from '../components/PriceWithArrow.vue'
 import ChartPlaceholder from '../components/ChartPlaceholder.vue'
 import FavoriteButton from '../components/FavoriteButton.vue'
 import VoteButtons from '../components/VoteButtons.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import EmptyState from '../components/EmptyState.vue'
+import LiveBadge from '../components/LiveBadge.vue'
 import { formatPrice, formatMarketCap, formatVolume, formatChange, changeClass } from '../utils/format.js'
 
 export default {
   components: {
     StatCard,
+    PriceWithArrow,
     ChartPlaceholder,
     FavoriteButton,
     VoteButtons,
     LoadingSpinner,
     EmptyState,
+    LiveBadge,
   },
   data() {
     return {
       coin: null,
       loading: true,
       error: null,
+      livePricesMap: {},
+      liveFlashes: {},
+      liveTick: 0,
+      isLive: false,
     }
   },
   computed: {
+    displayCoin() {
+      if (!this.coin) return null
+      return this.mergeLive(this.coin)
+    },
     changeCls() {
-      return this.coin ? changeClass(this.coin.change24h) : ''
+      return this.displayCoin ? changeClass(this.displayCoin.change24h) : ''
     },
   },
   watch: {
@@ -37,6 +50,10 @@ export default {
       },
     },
   },
+  beforeUnmount() {
+    if (this._unsub) this._unsub()
+    livePrices.stop()
+  },
   methods: {
     formatPrice,
     formatMarketCap,
@@ -45,13 +62,43 @@ export default {
     async loadCoin() {
       this.loading = true
       this.error = null
+      if (this._unsub) {
+        this._unsub()
+        this._unsub = null
+      }
+      livePrices.stop()
+
       try {
         this.coin = await api.getCoinById(this.$route.params.id)
+        this.startLive()
       } catch (e) {
         this.error = e.message || 'Failed to load coin'
         this.coin = null
       } finally {
         this.loading = false
+      }
+    },
+    startLive() {
+      if (!this.coin) return
+      if (this._unsub) this._unsub()
+      livePrices.start([this.coin])
+      this._unsub = livePrices.subscribe((data) => {
+        this.liveFlashes = priceFlashDirection(this.livePricesMap, data)
+        this.livePricesMap = { ...data }
+        this.liveTick += 1
+        this.isLive = Object.keys(data).length > 0
+      })
+    },
+    mergeLive(coin) {
+      void this.liveTick
+      const id = String(coin.coingeckoId || coin.id)
+      const live = getLiveQuote(this.livePricesMap, coin)
+      if (live?.usd == null) return coin
+      return {
+        ...coin,
+        price: live.usd,
+        change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        _flash: this.liveFlashes[id] ?? coin._flash,
       }
     },
   },
@@ -64,7 +111,7 @@ export default {
       <LoadingSpinner v-if="loading" message="Loading coin..." />
 
       <EmptyState
-        v-else-if="error || !coin"
+        v-else-if="error || !displayCoin"
         title="Coin not found"
         :message="error || 'This coin does not exist.'"
         icon="?"
@@ -75,50 +122,71 @@ export default {
       <template v-else>
         <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
           <div class="d-flex align-items-center gap-3">
-            <img v-if="coin.image" :src="coin.image" :alt="coin.name" width="48" height="48" class="rounded-circle" />
+            <img
+              v-if="displayCoin.image"
+              :src="displayCoin.image"
+              :alt="displayCoin.name"
+              width="48"
+              height="48"
+              class="rounded-circle"
+            />
             <div>
-              <h1 class="page-title mb-0">{{ coin.name }}</h1>
-              <span class="text-secondary">{{ coin.symbol }}</span>
+              <h1 class="page-title mb-0">{{ displayCoin.name }}</h1>
+              <span class="text-secondary">{{ displayCoin.symbol }}</span>
             </div>
           </div>
-          <div class="d-flex gap-2 align-items-center">
-            <FavoriteButton :coin-id="coin.id" />
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <LiveBadge v-if="isLive" label="Live" />
+            <FavoriteButton :coin-id="displayCoin.id" />
             <RouterLink to="/markets" class="btn btn-sm btn-outline-accent">← Markets</RouterLink>
           </div>
         </div>
 
         <div class="row g-4 mb-4">
           <div class="col-lg-8">
-            <ChartPlaceholder :label="`${coin.symbol} price chart placeholder`" />
+            <ChartPlaceholder :label="`${displayCoin.symbol} price chart placeholder`" />
           </div>
           <div class="col-lg-4">
-            <div class="card card-crypto p-4 h-100">
+            <div
+              class="card card-crypto p-4 h-100"
+              :class="displayCoin._flash === 'up' ? 'price-flash-up' : displayCoin._flash === 'down' ? 'price-flash-down' : ''"
+            >
               <p class="stat-card-label mb-1">Current price</p>
-              <p class="display-6 fw-bold text-emphasis mb-2">{{ formatPrice(coin.price) }}</p>
-              <p class="fw-semibold mb-3" :class="changeCls">{{ formatChange(coin.change24h) }} (24h)</p>
-              <VoteButtons :coin-id="coin.id" />
+              <p class="mb-2">
+                <PriceWithArrow
+                  :price="displayCoin.price"
+                  :flash="displayCoin._flash"
+                  :change24h="displayCoin.change24h"
+                  size="lg"
+                  :inline="false"
+                />
+              </p>
+              <p class="fw-semibold mb-3" :class="changeCls">
+                {{ formatChange(displayCoin.change24h) }} (24h)
+              </p>
+              <VoteButtons :coin-id="displayCoin.id" />
             </div>
           </div>
         </div>
 
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-3">
-            <StatCard label="Market cap" :value="formatMarketCap(coin.marketCap)" />
+            <StatCard label="Market cap" :value="formatMarketCap(displayCoin.marketCap)" />
           </div>
           <div class="col-6 col-md-3">
-            <StatCard label="24h volume" :value="formatVolume(coin.volume24h)" />
+            <StatCard label="24h volume" :value="formatVolume(displayCoin.volume24h)" />
           </div>
           <div class="col-6 col-md-3">
-            <StatCard label="24h high" :value="formatPrice(coin.high24h)" />
+            <StatCard label="24h high" :value="formatPrice(displayCoin.high24h)" />
           </div>
           <div class="col-6 col-md-3">
-            <StatCard label="24h low" :value="formatPrice(coin.low24h)" />
+            <StatCard label="24h low" :value="formatPrice(displayCoin.low24h)" />
           </div>
         </div>
 
-        <div v-if="coin.description" class="card card-crypto p-4">
-          <h2 class="h5 text-emphasis mb-2">About {{ coin.name }}</h2>
-          <p class="text-secondary small mb-0">{{ coin.description }}</p>
+        <div v-if="displayCoin.description" class="card card-crypto p-4">
+          <h2 class="h5 text-emphasis mb-2">About {{ displayCoin.name }}</h2>
+          <p class="text-secondary small mb-0">{{ displayCoin.description }}</p>
         </div>
       </template>
     </div>

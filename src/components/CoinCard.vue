@@ -1,12 +1,13 @@
 <script>
-import { formatPrice, formatChange, changeClass } from '../utils/format.js'
+import PriceWithArrow from './PriceWithArrow.vue'
+import { formatChange, changeClass } from '../utils/format.js'
 
 export default {
+  components: { PriceWithArrow },
   props: {
     coin: { type: Object, required: true },
   },
   methods: {
-    formatPrice,
     formatChange,
     changeClass,
   },
@@ -35,7 +36,14 @@ export default {
           <small class="text-secondary">{{ coin.symbol }}</small>
         </div>
       </div>
-      <p class="coin-price mb-1">{{ formatPrice(coin.price) }}</p>
+      <p class="coin-price mb-1">
+        <PriceWithArrow
+          :price="coin.price"
+          :flash="coin._flash"
+          :change24h="coin.change24h"
+          :inline="false"
+        />
+      </p>
       <span class="fw-semibold" :class="changeCls">{{ formatChange(coin.change24h) }}</span>
     </div>
   </div>

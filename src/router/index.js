@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
 import Markets from "../views/Markets.vue";
 import News from "../views/News.vue";
+import NewsDetail from "../views/NewsDetail.vue";
 import About from "../views/About.vue";
 import Login from "../views/Login.vue";
 import Register from "../views/Register.vue";
@@ -17,6 +18,7 @@ const routes = [
   { path: "/coin/:id", name: "CoinDetail", component: CoinDetail },
   { path: "/watchlist", name: "Watchlist", component: Watchlist },
   { path: "/news", name: "News", component: News },
+  { path: "/news/:id", name: "NewsDetail", component: NewsDetail },
   { path: "/about", name: "About", component: About },
   {
     path: "/login",
@@ -47,21 +49,18 @@ const router = createRouter({
   },
 });
 
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
   const user = session?.user || null;
 
   if (to.meta.requiresAuth && !user) {
-    next({ name: "Login", query: { redirect: to.fullPath } });
-    return;
+    return { name: "Login", query: { redirect: to.fullPath } };
   }
   if (to.meta.guestOnly && user) {
-    next({ name: "Home" });
-    return;
+    return { name: "Home" };
   }
-  next();
 });
 
 export default router;

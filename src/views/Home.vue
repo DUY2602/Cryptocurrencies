@@ -6,6 +6,7 @@ import MarketOverviewCards from '../components/MarketOverviewCards.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import LiveBadge from '../components/LiveBadge.vue'
 import { api } from '../services/api.js'
+import { livePrices, priceFlashDirection, getLiveQuote } from '../services/livePrices.js'
 import { coins as localCoins } from '../data/coins.js'
 
 export default {
@@ -22,29 +23,39 @@ export default {
       trending: [],
       allCoins: [],
       loading: true,
+      livePricesMap: {},
+      liveFlashes: {},
+      liveTick: 0,
+      isLive: false,
     }
   },
   computed: {
+    liveAllCoins() {
+      return this.allCoins.map((c) => this.mergeLive(c))
+    },
+    liveTrending() {
+      return this.trending.map((c) => this.mergeLive(c))
+    },
     topGainers() {
-      return [...this.allCoins].sort((a, b) => b.change24h - a.change24h).slice(0, 6)
+      return [...this.liveAllCoins].sort((a, b) => b.change24h - a.change24h).slice(0, 6)
     },
     topLosers() {
-      return [...this.allCoins].sort((a, b) => a.change24h - b.change24h).slice(0, 6)
+      return [...this.liveAllCoins].sort((a, b) => a.change24h - b.change24h).slice(0, 6)
     },
     marketStats() {
-      const totalCap = this.allCoins.reduce((s, c) => s + (c.marketCap || 0), 0)
+      const totalCap = this.liveAllCoins.reduce((s, c) => s + (c.marketCap || 0), 0)
       const avgChange =
-        this.allCoins.length > 0
-          ? this.allCoins.reduce((s, c) => s + c.change24h, 0) / this.allCoins.length
+        this.liveAllCoins.length > 0
+          ? this.liveAllCoins.reduce((s, c) => s + c.change24h, 0) / this.liveAllCoins.length
           : 0
-      return { totalCap, avgChange, count: this.allCoins.length }
+      return { totalCap, avgChange, count: this.liveAllCoins.length }
     },
   },
   async mounted() {
     try {
       const [trending, top] = await Promise.all([
         api.getTrendingCoins(),
-        api.getTopCoins(20),
+        api.getTopCoins(50),
       ])
       this.trending = trending
       this.allCoins = top
@@ -53,7 +64,36 @@ export default {
       this.allCoins = localCoins
     } finally {
       this.loading = false
+      this.startLive()
     }
+  },
+  beforeUnmount() {
+    if (this._unsub) this._unsub()
+    livePrices.stop()
+  },
+  methods: {
+    startLive() {
+      if (this._unsub) this._unsub()
+      livePrices.start([...this.trending, ...this.allCoins])
+      this._unsub = livePrices.subscribe((data) => {
+        this.liveFlashes = priceFlashDirection(this.livePricesMap, data)
+        this.livePricesMap = { ...data }
+        this.liveTick += 1
+        this.isLive = Object.keys(data).length > 0
+      })
+    },
+    mergeLive(coin) {
+      void this.liveTick
+      const id = String(coin.coingeckoId || coin.id)
+      const live = getLiveQuote(this.livePricesMap, coin)
+      if (live?.usd == null) return coin
+      return {
+        ...coin,
+        price: live.usd,
+        change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        _flash: this.liveFlashes[id] ?? coin._flash,
+      }
+    },
   },
 }
 </script>
@@ -66,7 +106,7 @@ export default {
       <div class="container">
         <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
           <h2 class="section-heading mb-0">Market overview</h2>
-          <LiveBadge v-if="!loading" label="API" />
+          <LiveBadge v-if="isLive && !loading" label="Live" />
         </div>
 
         <div v-if="!loading" class="row g-3 mb-5">
@@ -101,7 +141,7 @@ export default {
           <h2 class="section-heading mb-3">Trending</h2>
           <div class="row g-4 mb-5">
             <div
-              v-for="coin in trending"
+              v-for="coin in liveTrending"
               :key="coin.id"
               class="col-6 col-md-4 col-lg-2"
             >

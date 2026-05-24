@@ -1,17 +1,17 @@
 <script>
 import { RouterLink } from 'vue-router'
 import FavoriteButton from './FavoriteButton.vue'
-import { formatPrice, formatMarketCap, formatChange, changeClass } from '../utils/format.js'
+import PriceWithArrow from './PriceWithArrow.vue'
+import { formatMarketCap, formatChange, changeClass } from '../utils/format.js'
 
 export default {
-  components: { RouterLink, FavoriteButton },
+  components: { RouterLink, FavoriteButton, PriceWithArrow },
   props: {
     coins: { type: Array, required: true },
     showRank: { type: Boolean, default: true },
     startRank: { type: Number, default: 1 },
   },
   methods: {
-    formatPrice,
     formatMarketCap,
     formatChange,
     changeClass,
@@ -68,11 +68,24 @@ export default {
                   {{ coin.name }}
                 </RouterLink>
                 <small class="text-secondary ms-1">{{ coin.symbol }}</small>
-                <div class="d-md-none small text-secondary">{{ formatPrice(coin.price) }}</div>
+                <div class="d-md-none small text-secondary">
+                  <PriceWithArrow
+                    :price="coin.price"
+                    :flash="coin._flash"
+                    :change24h="coin.change24h"
+                    size="sm"
+                  />
+                </div>
               </div>
             </div>
           </td>
-          <td class="text-end d-none d-md-table-cell">{{ formatPrice(coin.price) }}</td>
+          <td class="text-end d-none d-md-table-cell">
+            <PriceWithArrow
+              :price="coin.price"
+              :flash="coin._flash"
+              :change24h="coin.change24h"
+            />
+          </td>
           <td class="text-end d-none d-lg-table-cell text-secondary">{{ formatMarketCap(coin.marketCap) }}</td>
           <td class="text-end fw-semibold" :class="changeClass(coin.change24h)">
             {{ formatChange(coin.change24h) }}

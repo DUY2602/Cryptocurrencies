@@ -1,12 +1,14 @@
 <script>
 import { api } from '../services/api.js'
+import { livePrices, priceFlashDirection, getLiveQuote } from '../services/livePrices.js'
 import { useWatchlist } from '../composables/useWatchlist.js'
 import CoinTable from '../components/CoinTable.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import EmptyState from '../components/EmptyState.vue'
+import LiveBadge from '../components/LiveBadge.vue'
 
 export default {
-  components: { CoinTable, LoadingSpinner, EmptyState },
+  components: { CoinTable, LoadingSpinner, EmptyState, LiveBadge },
   setup() {
     return useWatchlist()
   },
@@ -14,12 +16,18 @@ export default {
     return {
       allCoins: [],
       loading: true,
+      livePricesMap: {},
+      liveFlashes: {},
+      liveTick: 0,
+      isLive: false,
     }
   },
   computed: {
     watchlistCoins() {
       const ids = this.watchlistIds
-      return this.allCoins.filter((c) => ids.includes(String(c.id)))
+      return this.allCoins
+        .filter((c) => ids.includes(String(c.id)))
+        .map((c) => this.mergeLive(c))
     },
   },
   async mounted() {
@@ -27,7 +35,40 @@ export default {
       this.allCoins = await api.getTopCoins(50)
     } finally {
       this.loading = false
+      this.startLive()
     }
+  },
+  beforeUnmount() {
+    if (this._unsub) this._unsub()
+    livePrices.stop()
+  },
+  methods: {
+    startLive() {
+      const tracked = this.watchlistIds.length
+        ? this.allCoins.filter((c) => this.watchlistIds.includes(String(c.id)))
+        : this.allCoins
+
+      if (this._unsub) this._unsub()
+      livePrices.start(tracked)
+      this._unsub = livePrices.subscribe((data) => {
+        this.liveFlashes = priceFlashDirection(this.livePricesMap, data)
+        this.livePricesMap = { ...data }
+        this.liveTick += 1
+        this.isLive = Object.keys(data).length > 0
+      })
+    },
+    mergeLive(coin) {
+      void this.liveTick
+      const id = String(coin.coingeckoId || coin.id)
+      const live = getLiveQuote(this.livePricesMap, coin)
+      if (live?.usd == null) return coin
+      return {
+        ...coin,
+        price: live.usd,
+        change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        _flash: this.liveFlashes[id] ?? coin._flash,
+      }
+    },
   },
 }
 </script>
@@ -35,8 +76,11 @@ export default {
 <template>
   <section class="page-section">
     <div class="container">
-      <h1 class="page-title">Watchlist</h1>
-      <p class="page-subtitle">Coins you saved — stored in your browser.</p>
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <h1 class="page-title mb-0">Watchlist</h1>
+        <LiveBadge v-if="isLive && !loading" label="Live" />
+      </div>
+      <p class="page-subtitle">Coins you saved — live prices via WebSocket.</p>
 
       <LoadingSpinner v-if="loading" />
 
