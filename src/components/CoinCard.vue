@@ -40,7 +40,7 @@ export default {
         <PriceWithArrow
           :price="coin.price"
           :flash="coin._flash"
-          :change24h="coin.change24h"
+          :pulse="!!coin._flashTick"
           :inline="false"
         />
       </p>

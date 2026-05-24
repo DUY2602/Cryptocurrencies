@@ -1,6 +1,6 @@
 <script>
 import { api } from '../services/api.js'
-import { livePrices, priceFlashDirection, getLiveQuote } from '../services/livePrices.js'
+import { livePrices, applyLiveFlashes, getLiveQuote } from '../services/livePrices.js'
 import StatCard from '../components/StatCard.vue'
 import PriceWithArrow from '../components/PriceWithArrow.vue'
 import ChartPlaceholder from '../components/ChartPlaceholder.vue'
@@ -29,6 +29,7 @@ export default {
       error: null,
       livePricesMap: {},
       liveFlashes: {},
+      liveFlashTick: {},
       liveTick: 0,
       isLive: false,
     }
@@ -83,7 +84,13 @@ export default {
       if (this._unsub) this._unsub()
       livePrices.start([this.coin])
       this._unsub = livePrices.subscribe((data) => {
-        this.liveFlashes = priceFlashDirection(this.livePricesMap, data)
+        const { directions, tick } = applyLiveFlashes(
+          this.liveFlashes,
+          this.livePricesMap,
+          data,
+        )
+        this.liveFlashes = directions
+        this.liveFlashTick = tick
         this.livePricesMap = { ...data }
         this.liveTick += 1
         this.isLive = Object.keys(data).length > 0
@@ -98,7 +105,8 @@ export default {
         ...coin,
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
-        _flash: this.liveFlashes[id] ?? coin._flash,
+        _flash: this.liveFlashes[id],
+        _flashTick: !!this.liveFlashTick[id],
       }
     },
   },
@@ -147,16 +155,13 @@ export default {
             <ChartPlaceholder :label="`${displayCoin.symbol} price chart placeholder`" />
           </div>
           <div class="col-lg-4">
-            <div
-              class="card card-crypto p-4 h-100"
-              :class="displayCoin._flash === 'up' ? 'price-flash-up' : displayCoin._flash === 'down' ? 'price-flash-down' : ''"
-            >
+            <div class="card card-crypto p-4 h-100">
               <p class="stat-card-label mb-1">Current price</p>
               <p class="mb-2">
                 <PriceWithArrow
                   :price="displayCoin.price"
                   :flash="displayCoin._flash"
-                  :change24h="displayCoin.change24h"
+                  :pulse="!!displayCoin._flashTick"
                   size="lg"
                   :inline="false"
                 />

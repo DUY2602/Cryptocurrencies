@@ -16,6 +16,7 @@ export default {
     formatChange,
     changeClass,
     rowClass(coin) {
+      if (!coin._flashTick) return ''
       if (coin._flash === 'up') return 'price-flash-up'
       if (coin._flash === 'down') return 'price-flash-down'
       return ''
@@ -72,7 +73,7 @@ export default {
                   <PriceWithArrow
                     :price="coin.price"
                     :flash="coin._flash"
-                    :change24h="coin.change24h"
+                    :pulse="!!coin._flashTick"
                     size="sm"
                   />
                 </div>
@@ -83,7 +84,7 @@ export default {
             <PriceWithArrow
               :price="coin.price"
               :flash="coin._flash"
-              :change24h="coin.change24h"
+              :pulse="!!coin._flashTick"
             />
           </td>
           <td class="text-end d-none d-lg-table-cell text-secondary">{{ formatMarketCap(coin.marketCap) }}</td>

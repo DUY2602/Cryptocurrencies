@@ -1,6 +1,6 @@
 <script>
 import { api } from "../services/api.js";
-import { livePrices, priceFlashDirection, getLiveQuote } from "../services/livePrices.js";
+import { livePrices, applyLiveFlashes, getLiveQuote } from "../services/livePrices.js";
 import CoinTable from "../components/CoinTable.vue";
 import SearchBar from "../components/SearchBar.vue";
 import Pagination from "../components/Pagination.vue";
@@ -32,6 +32,7 @@ export default {
       error: null,
       livePricesMap: {},
       liveFlashes: {},
+      liveFlashTick: {},
       liveTick: 0,
       isLive: false,
     };
@@ -104,7 +105,13 @@ export default {
       if (this._unsub) this._unsub()
       livePrices.start(this.allCoins)
       this._unsub = livePrices.subscribe((data) => {
-        this.liveFlashes = priceFlashDirection(this.livePricesMap, data)
+        const { directions, tick } = applyLiveFlashes(
+          this.liveFlashes,
+          this.livePricesMap,
+          data,
+        )
+        this.liveFlashes = directions
+        this.liveFlashTick = tick
         this.livePricesMap = { ...data }
         this.liveTick += 1
         this.isLive = Object.keys(data).length > 0
@@ -119,7 +126,8 @@ export default {
         ...coin,
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
-        _flash: this.liveFlashes[id] ?? coin._flash,
+        _flash: this.liveFlashes[id],
+        _flashTick: !!this.liveFlashTick[id],
       }
     },
     onPageChange(page) {

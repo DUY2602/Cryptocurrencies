@@ -4,8 +4,10 @@ import { formatPrice } from '../utils/format.js'
 export default {
   props: {
     price: { type: Number, required: true },
+    /** Last live tick direction: 'up' | 'down' (not 24h %) */
     flash: { type: String, default: null },
-    change24h: { type: Number, default: null },
+    /** True only on the frame when price just changed (background pulse) */
+    pulse: { type: Boolean, default: false },
     size: {
       type: String,
       default: 'md',
@@ -16,8 +18,7 @@ export default {
   computed: {
     direction() {
       if (this.flash === 'up' || this.flash === 'down') return this.flash
-      if (this.change24h == null || Number.isNaN(this.change24h)) return null
-      return this.change24h >= 0 ? 'up' : 'down'
+      return null
     },
     arrowClass() {
       if (this.direction === 'up') return 'text-positive'
@@ -25,8 +26,9 @@ export default {
       return ''
     },
     flashClass() {
-      if (this.flash === 'up') return 'price-flash-up'
-      if (this.flash === 'down') return 'price-flash-down'
+      if (!this.pulse) return ''
+      if (this.direction === 'up') return 'price-flash-up'
+      if (this.direction === 'down') return 'price-flash-down'
       return ''
     },
     sizeClass() {
