@@ -23,7 +23,14 @@ jobs:
         id: fetch-news
         run: |
           echo "Fetching news from Google News RSS..."
-          curl -s "https://news.google.com/rss/search?q=cryptocurrency" > news_raw.xml
+          curl -v "https://news.google.com/rss/search?q=cryptocurrency" > news_raw.xml 2>&1
+
+          # Check if fetch succeeded
+          if [ ! -s news_raw.xml ]; then
+            echo "ERROR: Failed to fetch RSS or file is empty"
+            cat news_raw.xml
+            exit 1
+          fi
 
           # Check raw XML
           echo "Raw XML (first 500 chars):"
@@ -41,7 +48,7 @@ jobs:
           console.log('Contains <item>:', xml.includes('<item>'));
           console.log('Contains <title>:', xml.includes('<title>'));
 
-          // Try different regex patterns
+          const items = [];
           const itemRegex = /<item>([\\s\\S]*?)<\\/item>/g;
           let match;
           let itemCount = 0;
