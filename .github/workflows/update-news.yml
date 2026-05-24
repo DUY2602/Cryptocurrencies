@@ -19,50 +19,55 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Fetch news from CoinGecko
+      - name: Fetch news from Google News RSS
         id: fetch-news
         run: |
-          echo "Fetching news from CoinGecko..."
-          curl -s https://api.coingecko.com/api/v3/news > news_raw.json
+          echo "Fetching news from Google News RSS..."
+          curl -s "https://news.google.com/rss/search?q=cryptocurrency" > news_raw.xml
 
-          # Check API response
-          echo "API Response:"
-          cat news_raw.json | head -20
-
-          # Parse and format news with error handling
+          # Parse XML and format news
           node -e "
           const fs = require('fs');
-          const rawData = fs.readFileSync('news_raw.json', 'utf8');
+          const xml = fs.readFileSync('news_raw.xml', 'utf8');
 
-          let data;
-          try {
-            data = JSON.parse(rawData);
-          } catch (e) {
-            console.error('Failed to parse JSON:', e.message);
-            process.exit(1);
+          // Parse XML using regex
+          const items = [];
+          const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+          let match;
+
+          while ((match = itemRegex.exec(xml)) !== null) {
+            const itemContent = match[1];
+            const titleMatch = itemContent.match(/<title>(.*?)<\/title>/);
+            const linkMatch = itemContent.match(/<link>(.*?)<\/link>/);
+            const pubDateMatch = itemContent.match(/<pubDate>(.*?)<\/pubDate>/);
+            const descMatch = itemContent.match(/<description>(.*?)<\/description>/);
+            const sourceMatch = itemContent.match(/<source.*?>(.*?)<\/source>/);
+
+            const title = titleMatch ? titleMatch[1] : '';
+            const description = descMatch ? descMatch[1] : '';
+            const link = linkMatch ? linkMatch[1] : '';
+            const pubDate = pubDateMatch ? pubDateMatch[1] : new Date().toISOString();
+            const source = sourceMatch ? sourceMatch[1] : 'Google News';
+
+            // Remove HTML tags from description
+            const plainText = description.replace(/<[^>]*>/g, '').substring(0, 300) + '...';
+
+            if (title) {
+              items.push({
+                id: items.length + 1,
+                title: title,
+                content: plainText,
+                category: 'Crypto',
+                date: pubDate,
+                image_url: null,
+                source_url: link,
+                source_name: source
+              });
+            }
           }
 
-          console.log('Data keys:', Object.keys(data));
-          console.log('Has data.data?', !!data.data);
-
-          if (!data.data || !Array.isArray(data.data)) {
-            console.error('Invalid data structure: data.data is missing or not an array');
-            process.exit(1);
-          }
-
-          const articles = data.data.slice(0, 20).map((item, index) => ({
-            id: index + 1,
-            title: item.title || 'No title',
-            content: (item.description || item.title || 'No content').substring(0, 300) + '...',
-            category: 'Crypto',
-            date: item.published_at || new Date().toISOString(),
-            image_url: item.thumb_large || item.thumb || null,
-            source_url: item.url || null,
-            source_name: item.author || item.source || 'CoinGecko'
-          }));
-
-          fs.writeFileSync('src/data/news.json', JSON.stringify(articles, null, 2));
-          console.log('Updated news.json with', articles.length, 'articles');
+          fs.writeFileSync('src/data/news.json', JSON.stringify(items, null, 2));
+          console.log('Updated news.json with', items.length, 'articles');
           "
 
       - name: Check for changes
