@@ -25,15 +25,35 @@ jobs:
           echo "Fetching news from CoinGecko..."
           curl -s https://api.coingecko.com/api/v3/news > news_raw.json
 
-          # Parse and format news
+          # Check API response
+          echo "API Response:"
+          cat news_raw.json | head -20
+
+          # Parse and format news with error handling
           node -e "
           const fs = require('fs');
-          const data = JSON.parse(fs.readFileSync('news_raw.json', 'utf8'));
+          const rawData = fs.readFileSync('news_raw.json', 'utf8');
+
+          let data;
+          try {
+            data = JSON.parse(rawData);
+          } catch (e) {
+            console.error('Failed to parse JSON:', e.message);
+            process.exit(1);
+          }
+
+          console.log('Data keys:', Object.keys(data));
+          console.log('Has data.data?', !!data.data);
+
+          if (!data.data || !Array.isArray(data.data)) {
+            console.error('Invalid data structure: data.data is missing or not an array');
+            process.exit(1);
+          }
 
           const articles = data.data.slice(0, 20).map((item, index) => ({
             id: index + 1,
-            title: item.title,
-            content: (item.description || item.title).substring(0, 300) + '...',
+            title: item.title || 'No title',
+            content: (item.description || item.title || 'No content').substring(0, 300) + '...',
             category: 'Crypto',
             date: item.published_at || new Date().toISOString(),
             image_url: item.thumb_large || item.thumb || null,
