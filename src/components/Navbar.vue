@@ -14,7 +14,7 @@ function onLogout() {
 
 <template>
   <nav
-    class="navbar navbar-expand-lg crypto-navbar sticky-top"
+    class="navbar navbar-expand-lg crypto-navbar sticky-top shadow-sm"
     :class="isDark ? 'navbar-dark' : 'navbar-light'"
   >
     <div class="container">
@@ -23,8 +23,8 @@ function onLogout() {
           src="/site-logo.png"
           alt="CryptoDash"
           class="site-logo"
-          width="36"
-          height="36"
+          width="32"
+          height="32"
         />
         <span class="brand-text">CryptoDash</span>
       </RouterLink>
@@ -43,7 +43,7 @@ function onLogout() {
 
       <div class="collapse navbar-collapse" id="mainNavbar">
         <ul
-          class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-1"
+          class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-2"
         >
           <li class="nav-item">
             <RouterLink class="nav-link" to="/" active-class="active"
@@ -83,7 +83,7 @@ function onLogout() {
             <li class="nav-item ms-lg-1">
               <button
                 type="button"
-                class="btn btn-sm btn-outline-accent px-3"
+                class="btn btn-sm btn-outline-accent px-4"
                 @click="onLogout"
               >
                 Logout
@@ -91,7 +91,7 @@ function onLogout() {
             </li>
           </template>
           <li v-else class="nav-item ms-lg-2">
-            <RouterLink class="btn btn-sm btn-accent px-3" to="/login"
+            <RouterLink class="btn btn-sm btn-accent px-4" to="/login"
               >Login</RouterLink
             >
           </li>

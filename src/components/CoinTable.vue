@@ -21,6 +21,12 @@ export default {
       if (coin._flash === 'down') return 'price-flash-down'
       return ''
     },
+    handleImageError(e) {
+      e.target.style.display = 'none'
+      if (e.target.nextElementSibling) {
+        e.target.nextElementSibling.style.display = 'flex'
+      }
+    }
   },
 }
 </script>
@@ -60,7 +66,14 @@ export default {
                 width="28"
                 height="28"
                 class="rounded-circle"
+                @error="handleImageError"
               />
+              <div 
+                class="coin-icon-placeholder rounded-circle" 
+                style="width:28px; height:28px; display:none; align-items:center; justify-content:center; background: var(--bg-secondary); color: var(--accent); font-weight:700; font-size:12px;"
+              >
+                {{ coin.symbol?.charAt(0)?.toUpperCase() }}
+              </div>
               <div>
                 <RouterLink
                   :to="{ name: 'CoinDetail', params: { id: coin.id } }"

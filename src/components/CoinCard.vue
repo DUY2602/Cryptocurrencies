@@ -1,6 +1,6 @@
 <script>
-import PriceWithArrow from './PriceWithArrow.vue'
-import { formatChange, changeClass } from '../utils/format.js'
+import PriceWithArrow from "./PriceWithArrow.vue";
+import { formatChange, changeClass } from "../utils/format.js";
 
 export default {
   components: { PriceWithArrow },
@@ -10,13 +10,19 @@ export default {
   methods: {
     formatChange,
     changeClass,
+    handleImageError(e) {
+      e.target.style.display = "none";
+      if (e.target.nextElementSibling) {
+        e.target.nextElementSibling.style.display = "flex";
+      }
+    },
   },
   computed: {
     changeCls() {
-      return changeClass(this.coin.change24h)
+      return changeClass(this.coin.change24h);
     },
   },
-}
+};
 </script>
 
 <template>
@@ -30,7 +36,24 @@ export default {
           class="coin-icon rounded-circle"
           width="40"
           height="40"
+          @error="handleImageError"
         />
+        <div
+          class="coin-icon-placeholder rounded-circle"
+          style="
+            width: 40px;
+            height: 40px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 14px;
+          "
+        >
+          {{ coin.symbol?.charAt(0)?.toUpperCase() }}
+        </div>
         <div>
           <h6 class="mb-0 coin-name">{{ coin.name }}</h6>
           <small class="text-secondary">{{ coin.symbol }}</small>
@@ -44,7 +67,9 @@ export default {
           :inline="false"
         />
       </p>
-      <span class="fw-semibold" :class="changeCls">{{ formatChange(coin.change24h) }}</span>
+      <span class="fw-semibold" :class="changeCls">{{
+        formatChange(coin.change24h)
+      }}</span>
     </div>
   </div>
 </template>

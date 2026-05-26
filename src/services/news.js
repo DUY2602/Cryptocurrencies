@@ -31,6 +31,11 @@ export function normalizeArticle(row) {
     image_url: row.image_url || DEFAULT_IMAGE,
     source_url: row.source_url ?? null,
     source_name: row.source_name ?? null,
+    author: row.author ?? null,
+    tags: row.tags ?? [],
+    featured: row.featured ?? false,
+    trending: row.trending ?? false,
+    read_time: row.read_time ?? null,
   };
 }
 
