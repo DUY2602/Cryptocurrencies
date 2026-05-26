@@ -1,0 +1,5442 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.env.example
+.gitignore
+index.html
+package.json
+public/favicon.svg
+public/hero.jpg
+public/icons.svg
+public/site-logo.png
+README.md
+src/App.vue
+src/assets/global.css
+src/assets/hero.png
+src/assets/vite.svg
+src/assets/vue.svg
+src/components/AiAssistant.vue
+src/components/ChartPlaceholder.vue
+src/components/CoinCard.vue
+src/components/CoinTable.vue
+src/components/EmptyState.vue
+src/components/FavoriteButton.vue
+src/components/Footer.vue
+src/components/HeroSection.vue
+src/components/LiveBadge.vue
+src/components/LoadingSpinner.vue
+src/components/MarketOverviewCards.vue
+src/components/Navbar.vue
+src/components/NewsLikeButton.vue
+src/components/Pagination.vue
+src/components/PriceWithArrow.vue
+src/components/SearchBar.vue
+src/components/SortSelect.vue
+src/components/StatCard.vue
+src/components/ThemeToggle.vue
+src/components/VoteButtons.vue
+src/composables/useAuth.js
+src/composables/useLivePrices.js
+src/composables/useReactions.js
+src/composables/useTheme.js
+src/composables/useWatchlist.js
+src/data/coins.js
+src/data/news.json
+src/main.js
+src/router/index.js
+src/services/api.js
+src/services/binance.js
+src/services/livePrices.js
+src/services/news.js
+src/services/websocket.js
+src/utils/format.js
+src/views/About.vue
+src/views/CoinDetail.vue
+src/views/Home.vue
+src/views/Login.vue
+src/views/Markets.vue
+src/views/News.vue
+src/views/NewsDetail.vue
+src/views/Profile.vue
+src/views/Register.vue
+src/views/SetPassword.vue
+src/views/Watchlist.vue
+supabase/create_news_table.sql
+supabase/supabase.js
+vite.config.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".env.example">
+# Supabase Configuration
+VITE_SUPABASE_URL=https://zahkrafltxhvttoxhars.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphaGtyYWZsdHhodnR0b3hoYXJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzEyMzUsImV4cCI6MjA5NTEwNzIzNX0.9SztWyVUtYDShwxe7yoSmTQpxNe3-mWJ4f4vyHUtCfU
+</file>
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="public/favicon.svg">
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="46" fill="none" viewBox="0 0 48 46"><path fill="#863bff" d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z" style="fill:#863bff;fill:color(display-p3 .5252 .23 1);fill-opacity:1"/><mask id="a" width="48" height="46" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M25.842 44.938c-.664.844-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.183c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.498 0-3.579-1.842-3.579H1.133c-.92 0-1.456-1.04-.92-1.787L9.91.473c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.578 1.842 3.578h11.377c.943 0 1.473 1.088.89 1.832L25.843 44.94z" style="fill:#000;fill-opacity:1"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#ede6ff" rx="5.508" ry="14.704" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -4.47 31.516)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#ede6ff" rx="10.399" ry="29.851" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -39.328 7.883)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#7e14ff" rx="5.508" ry="30.487" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -25.913 -14.639)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -32.644 -3.334)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -34.34 30.47)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#ede6ff" rx="14.072" ry="22.078" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="rotate(93.35 24.506 48.493)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx=".387" cy="8.972" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(39.51 .387 8.972)"/></g><g filter="url(#k)"><ellipse cx="47.523" cy="-6.092" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 47.523 -6.092)"/></g><g filter="url(#l)"><ellipse cx="41.412" cy="6.333" fill="#47bfff" rx="5.971" ry="9.665" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 41.412 6.333)"/></g><g filter="url(#m)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#n)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#o)"><ellipse cx="35.651" cy="29.907" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 35.651 29.907)"/></g><g filter="url(#p)"><ellipse cx="38.418" cy="32.4" fill="#47bfff" rx="5.971" ry="15.297" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 38.418 32.4)"/></g></g><defs><filter id="b" width="60.045" height="41.654" x="-19.77" y="16.149" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-54.613" y="-7.533" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-49.64" y="2.03" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-45.045" y="20.029" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-43.513" y="21.178" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="15.756" y="-17.901" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-27.636" y="-22.853" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="20.116" y="-38.415" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="24.641" y="-11.323" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="8.244" y="-2.416" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="18.713" y="10.588" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter></defs></svg>
+</file>
+
+<file path="public/icons.svg">
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="bluesky-icon" viewBox="0 0 16 17">
+    <g clip-path="url(#bluesky-clip)"><path fill="#08060d" d="M7.75 7.735c-.693-1.348-2.58-3.86-4.334-5.097-1.68-1.187-2.32-.981-2.74-.79C.188 2.065.1 2.812.1 3.251s.241 3.602.398 4.13c.52 1.744 2.367 2.333 4.07 2.145-2.495.37-4.71 1.278-1.805 4.512 3.196 3.309 4.38-.71 4.987-2.746.608 2.036 1.307 5.91 4.93 2.746 2.72-2.746.747-4.143-1.747-4.512 1.702.189 3.55-.4 4.07-2.145.156-.528.397-3.691.397-4.13s-.088-1.186-.575-1.406c-.42-.19-1.06-.395-2.741.79-1.755 1.24-3.64 3.752-4.334 5.099"/></g>
+    <defs><clipPath id="bluesky-clip"><path fill="#fff" d="M.1.85h15.3v15.3H.1z"/></clipPath></defs>
+  </symbol>
+  <symbol id="discord-icon" viewBox="0 0 20 19">
+    <path fill="#08060d" d="M16.224 3.768a14.5 14.5 0 0 0-3.67-1.153c-.158.286-.343.67-.47.976a13.5 13.5 0 0 0-4.067 0c-.128-.306-.317-.69-.476-.976A14.4 14.4 0 0 0 3.868 3.77C1.546 7.28.916 10.703 1.231 14.077a14.7 14.7 0 0 0 4.5 2.306q.545-.748.965-1.587a9.5 9.5 0 0 1-1.518-.74q.191-.14.372-.293c2.927 1.369 6.107 1.369 8.999 0q.183.152.372.294-.723.437-1.52.74.418.838.963 1.588a14.6 14.6 0 0 0 4.504-2.308c.37-3.911-.63-7.302-2.644-10.309m-9.13 8.234c-.878 0-1.599-.82-1.599-1.82 0-.998.705-1.82 1.6-1.82.894 0 1.614.82 1.599 1.82.001 1-.705 1.82-1.6 1.82m5.91 0c-.878 0-1.599-.82-1.599-1.82 0-.998.705-1.82 1.6-1.82.893 0 1.614.82 1.599 1.82 0 1-.706 1.82-1.6 1.82"/>
+  </symbol>
+  <symbol id="documentation-icon" viewBox="0 0 21 20">
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="m15.5 13.333 1.533 1.322c.645.555.967.833.967 1.178s-.322.623-.967 1.179L15.5 18.333m-3.333-5-1.534 1.322c-.644.555-.966.833-.966 1.178s.322.623.966 1.179l1.534 1.321"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M17.167 10.836v-4.32c0-1.41 0-2.117-.224-2.68-.359-.906-1.118-1.621-2.08-1.96-.599-.21-1.349-.21-2.848-.21-2.623 0-3.935 0-4.983.369-1.684.591-3.013 1.842-3.641 3.428C3 6.449 3 7.684 3 10.154v2.122c0 2.558 0 3.838.706 4.726q.306.383.713.671c.76.536 1.79.64 3.581.66"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M3 10a2.78 2.78 0 0 1 2.778-2.778c.555 0 1.209.097 1.748-.047.48-.129.854-.503.982-.982.145-.54.048-1.194.048-1.749a2.78 2.78 0 0 1 2.777-2.777"/>
+  </symbol>
+  <symbol id="github-icon" viewBox="0 0 19 19">
+    <path fill="#08060d" fill-rule="evenodd" d="M9.356 1.85C5.05 1.85 1.57 5.356 1.57 9.694a7.84 7.84 0 0 0 5.324 7.44c.387.079.528-.168.528-.376 0-.182-.013-.805-.013-1.454-2.165.467-2.616-.935-2.616-.935-.349-.91-.864-1.143-.864-1.143-.71-.48.051-.48.051-.48.787.051 1.2.805 1.2.805.695 1.194 1.817.857 2.268.649.064-.507.27-.857.49-1.052-1.728-.182-3.545-.857-3.545-3.87 0-.857.31-1.558.8-2.104-.078-.195-.349-1 .077-2.078 0 0 .657-.208 2.14.805a7.5 7.5 0 0 1 1.946-.26c.657 0 1.328.092 1.946.26 1.483-1.013 2.14-.805 2.14-.805.426 1.078.155 1.883.078 2.078.502.546.799 1.247.799 2.104 0 3.013-1.818 3.675-3.558 3.87.284.247.528.714.528 1.454 0 1.052-.012 1.896-.012 2.156 0 .208.142.455.528.377a7.84 7.84 0 0 0 5.324-7.441c.013-4.338-3.48-7.844-7.773-7.844" clip-rule="evenodd"/>
+  </symbol>
+  <symbol id="social-icon" viewBox="0 0 20 20">
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M12.5 6.667a4.167 4.167 0 1 0-8.334 0 4.167 4.167 0 0 0 8.334 0"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M2.5 16.667a5.833 5.833 0 0 1 8.75-5.053m3.837.474.513 1.035c.07.144.257.282.414.309l.93.155c.596.1.736.536.307.965l-.723.73a.64.64 0 0 0-.152.531l.207.903c.164.715-.213.991-.84.618l-.872-.52a.63.63 0 0 0-.577 0l-.872.52c-.624.373-1.003.094-.84-.618l.207-.903a.64.64 0 0 0-.152-.532l-.723-.729c-.426-.43-.289-.864.306-.964l.93-.156a.64.64 0 0 0 .412-.31l.513-1.034c.28-.562.735-.562 1.012 0"/>
+  </symbol>
+  <symbol id="x-icon" viewBox="0 0 19 19">
+    <path fill="#08060d" fill-rule="evenodd" d="M1.893 1.98c.052.072 1.245 1.769 2.653 3.77l2.892 4.114c.183.261.333.48.333.486s-.068.089-.152.183l-.522.593-.765.867-3.597 4.087c-.375.426-.734.834-.798.905a1 1 0 0 0-.118.148c0 .01.236.017.664.017h.663l.729-.83c.4-.457.796-.906.879-.999a692 692 0 0 0 1.794-2.038c.034-.037.301-.34.594-.675l.551-.624.345-.392a7 7 0 0 1 .34-.374c.006 0 .93 1.306 2.052 2.903l2.084 2.965.045.063h2.275c1.87 0 2.273-.003 2.266-.021-.008-.02-1.098-1.572-3.894-5.547-2.013-2.862-2.28-3.246-2.273-3.266.008-.019.282-.332 2.085-2.38l2-2.274 1.567-1.782c.022-.028-.016-.03-.65-.03h-.674l-.3.342a871 871 0 0 1-1.782 2.025c-.067.075-.405.458-.75.852a100 100 0 0 1-.803.91c-.148.172-.299.344-.99 1.127-.304.343-.32.358-.345.327-.015-.019-.904-1.282-1.976-2.808L6.365 1.85H1.8zm1.782.91 8.078 11.294c.772 1.08 1.413 1.973 1.425 1.984.016.017.241.02 1.05.017l1.03-.004-2.694-3.766L7.796 5.75 5.722 2.852l-1.039-.004-1.039-.004z" clip-rule="evenodd"/>
+  </symbol>
+</svg>
+</file>
+
+<file path="src/assets/vite.svg">
+<svg xmlns="http://www.w3.org/2000/svg" width="77" height="47" fill="none" aria-labelledby="vite-logo-title" viewBox="0 0 77 47"><title id="vite-logo-title">Vite</title><style>.parenthesis{fill:#000}@media (prefers-color-scheme:dark){.parenthesis{fill:#fff}}</style><path fill="#9135ff" d="M40.151 45.71c-.663.844-2.02.374-2.02-.699V34.708a2.26 2.26 0 0 0-2.262-2.262H24.493c-.92 0-1.457-1.04-.92-1.788l7.479-10.471c1.07-1.498 0-3.578-1.842-3.578H15.443c-.92 0-1.456-1.04-.92-1.788l9.696-13.576c.213-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.472c-1.07 1.497 0 3.578 1.842 3.578h11.376c.944 0 1.474 1.087.89 1.83L40.153 45.712z"/><mask id="a" width="48" height="47" x="14" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M40.047 45.71c-.663.843-2.02.374-2.02-.699V34.708a2.26 2.26 0 0 0-2.262-2.262H24.389c-.92 0-1.457-1.04-.92-1.788l7.479-10.472c1.07-1.497 0-3.578-1.842-3.578H15.34c-.92 0-1.456-1.04-.92-1.788l9.696-13.575c.213-.297.556-.474.92-.474H53.93c.92 0 1.456 1.04.92 1.788L47.37 13.03c-1.07 1.498 0 3.578 1.842 3.578h11.376c.944 0 1.474 1.088.89 1.831L40.049 45.712z"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#eee6ff" rx="5.508" ry="14.704" transform="rotate(269.814 20.96 11.29)scale(-1 1)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#eee6ff" rx="10.399" ry="29.851" transform="rotate(89.814 -16.902 -8.275)scale(1 -1)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#8900ff" rx="5.508" ry="30.487" transform="rotate(89.814 -19.197 -7.127)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#8900ff" rx="5.508" ry="30.599" transform="rotate(89.814 -25.928 4.177)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#8900ff" rx="5.508" ry="30.599" transform="rotate(89.814 -25.738 5.52)scale(1 -1)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#eee6ff" rx="14.072" ry="22.078" transform="rotate(93.35 31.245 55.578)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#8900ff" rx="3.47" ry="21.501" transform="rotate(89.009 35.419 55.202)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#8900ff" rx="3.47" ry="21.501" transform="rotate(89.009 35.419 55.202)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx="14.592" cy="9.743" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(39.51 14.592 9.743)"/></g><g filter="url(#k)"><ellipse cx="61.728" cy="-5.321" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 61.728 -5.32)"/></g><g filter="url(#l)"><ellipse cx="55.618" cy="7.104" fill="#00c2ff" rx="5.971" ry="9.665" transform="rotate(37.892 55.618 7.104)"/></g><g filter="url(#m)"><ellipse cx="12.326" cy="39.103" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 12.326 39.103)"/></g><g filter="url(#n)"><ellipse cx="12.326" cy="39.103" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 12.326 39.103)"/></g><g filter="url(#o)"><ellipse cx="49.857" cy="30.678" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 49.857 30.678)"/></g><g filter="url(#p)"><ellipse cx="52.623" cy="33.171" fill="#00c2ff" rx="5.971" ry="15.297" transform="rotate(37.892 52.623 33.17)"/></g></g><path d="M6.919 0c-9.198 13.166-9.252 33.575 0 46.789h6.215c-9.25-13.214-9.196-33.623 0-46.789zm62.424 0h-6.215c9.198 13.166 9.252 33.575 0 46.789h6.215c9.25-13.214 9.196-33.623 0-46.789" class="parenthesis"/><defs><filter id="b" width="60.045" height="41.654" x="-5.564" y="16.92" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-40.407" y="-6.762" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-35.435" y="2.801" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-30.84" y="20.8" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-29.307" y="21.949" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="29.961" y="-17.13" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="37.754" y="3.055" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="37.754" y="3.055" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-13.43" y="-22.082" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="34.321" y="-37.644" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="38.847" y="-10.552" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-15.081" y="6.78" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-15.081" y="6.78" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="22.45" y="-1.645" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="32.919" y="11.36" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter></defs></svg>
+</file>
+
+<file path="src/assets/vue.svg">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="37.07" height="36" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 198"><path fill="#41B883" d="M204.8 0H256L128 220.8L0 0h97.92L128 51.2L157.44 0h47.36Z"></path><path fill="#41B883" d="m0 0l128 220.8L256 0h-51.2L128 132.48L50.56 0H0Z"></path><path fill="#35495E" d="M50.56 0L128 133.12L204.8 0h-47.36L128 51.2L97.92 0H50.56Z"></path></svg>
+</file>
+
+<file path="src/components/AiAssistant.vue">
+<script setup>
+import { ref } from 'vue'
+
+const open = ref(false)
+const input = ref('')
+const messages = ref([
+  {
+    role: 'assistant',
+    text: 'Hi — I can explain coins, summarise markets, or suggest what to check on the dashboard. (Demo UI — no live AI API yet.)',
+  },
+])
+
+const replies = [
+  'BTC often leads the market. Check Markets for 24h % and the coin detail page for more stats.',
+  'Top gainers today are on the Home page. Add coins to your Watchlist with the star button.',
+  'Use the News page to filter headlines. Like posts to save your reaction locally.',
+  'Markets supports sorting by price, gainers, and losers. Prices refresh on a live interval when API is connected.',
+]
+
+function toggle() {
+  open.value = !open.value
+}
+
+function send() {
+  const text = input.value.trim()
+  if (!text) return
+  messages.value.push({ role: 'user', text })
+  input.value = ''
+  const reply = replies[Math.floor(Math.random() * replies.length)]
+  setTimeout(() => {
+    messages.value.push({ role: 'assistant', text: reply })
+  }, 400)
+}
+
+function quickPrompt(prompt) {
+  input.value = prompt
+  send()
+}
+</script>
+
+<template>
+  <div>
+    <div v-if="open" class="ai-panel">
+      <div class="p-3 border-bottom" style="border-color: var(--border-color) !important">
+        <strong class="text-emphasis">Crypto Assistant</strong>
+        <p class="small text-secondary mb-0">Market helper (demo)</p>
+      </div>
+      <div class="flex-grow-1 overflow-auto p-3" style="max-height: 240px">
+        <div
+          v-for="(msg, i) in messages"
+          :key="i"
+          class="mb-2 small"
+          :class="msg.role === 'user' ? 'text-end' : ''"
+        >
+          <span
+            class="d-inline-block p-2 rounded"
+            :style="{
+              background: msg.role === 'user' ? 'rgba(240,185,11,0.2)' : 'var(--bg-secondary)',
+              color: 'var(--text-primary)',
+            }"
+          >
+            {{ msg.text }}
+          </span>
+        </div>
+      </div>
+      <div class="p-2 border-top d-flex flex-wrap gap-1" style="border-color: var(--border-color) !important">
+        <button type="button" class="btn btn-sm btn-outline-accent" @click="quickPrompt('Summarise the market')">
+          Market summary
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-accent" @click="quickPrompt('Explain Bitcoin')">
+          Explain BTC
+        </button>
+      </div>
+      <form class="p-3 border-top d-flex gap-2" style="border-color: var(--border-color) !important" @submit.prevent="send">
+        <input v-model="input" type="text" class="form-control form-control-sm" placeholder="Ask about crypto..." />
+        <button type="submit" class="btn btn-sm btn-accent">Send</button>
+      </form>
+    </div>
+    <button type="button" class="ai-fab" aria-label="Open assistant" @click="toggle">
+      {{ open ? '×' : '💬' }}
+    </button>
+  </div>
+</template>
+</file>
+
+<file path="src/components/ChartPlaceholder.vue">
+<script setup>
+defineProps({
+  label: { type: String, default: 'Price chart — coming soon' },
+})
+</script>
+
+<template>
+  <div class="chart-placeholder">
+    <div class="text-center px-3">
+      <div class="mb-2 opacity-50">📈</div>
+      <span>{{ label }}</span>
+    </div>
+  </div>
+</template>
+</file>
+
+<file path="src/components/EmptyState.vue">
+<script setup>
+defineProps({
+  title: { type: String, default: 'Nothing here' },
+  message: { type: String, default: '' },
+  icon: { type: String, default: '∅' },
+})
+</script>
+
+<template>
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">{{ icon }}</div>
+    <h3 class="h6 text-emphasis mb-1">{{ title }}</h3>
+    <p v-if="message" class="small mb-0">{{ message }}</p>
+    <slot />
+  </div>
+</template>
+</file>
+
+<file path="src/components/LiveBadge.vue">
+<script setup>
+defineProps({
+  label: { type: String, default: 'Live' },
+})
+</script>
+
+<template>
+  <span class="badge-live">
+    <span class="badge-live-dot" aria-hidden="true"></span>
+    {{ label }}
+  </span>
+</template>
+</file>
+
+<file path="src/components/LoadingSpinner.vue">
+<script setup>
+defineProps({
+  message: { type: String, default: 'Loading...' },
+})
+</script>
+
+<template>
+  <div class="loading-wrap" role="status">
+    <div class="spinner-crypto" aria-hidden="true"></div>
+    <span>{{ message }}</span>
+  </div>
+</template>
+</file>
+
+<file path="src/components/MarketOverviewCards.vue">
+<script setup>
+import { RouterLink } from 'vue-router'
+import { formatMarketCap, formatChange, changeClass } from '../utils/format.js'
+
+defineProps({
+  coins: { type: Array, required: true },
+  title: { type: String, required: true },
+})
+</script>
+
+<template>
+  <div class="mb-4">
+    <h3 class="section-heading h5 mb-3">{{ title }}</h3>
+    <div class="row g-3">
+      <div v-for="coin in coins" :key="coin.id" class="col-6 col-md-4 col-lg-2">
+        <RouterLink :to="{ name: 'CoinDetail', params: { id: coin.id } }" class="text-decoration-none">
+          <div class="card card-crypto card-hover-lift h-100">
+            <div class="card-body p-3">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <img v-if="coin.image" :src="coin.image" :alt="coin.name" width="24" height="24" class="rounded-circle" />
+                <span class="small fw-semibold text-emphasis">{{ coin.symbol }}</span>
+              </div>
+              <p class="small mb-1 text-secondary">{{ formatMarketCap(coin.marketCap) }}</p>
+              <span class="small fw-semibold" :class="changeClass(coin.change24h)">
+                {{ formatChange(coin.change24h) }}
+              </span>
+            </div>
+          </div>
+        </RouterLink>
+      </div>
+    </div>
+  </div>
+</template>
+</file>
+
+<file path="src/components/SortSelect.vue">
+<script>
+export default {
+  props: {
+    modelValue: { type: String, default: 'default' },
+  },
+  emits: ['update:modelValue'],
+  methods: {
+    onChange(e) {
+      this.$emit('update:modelValue', e.target.value)
+    },
+  },
+}
+</script>
+
+<template>
+  <div>
+    <label class="form-label text-secondary small mb-1">Sort by</label>
+    <select class="form-select" :value="modelValue" @change="onChange">
+      <option value="default">Market cap (default)</option>
+      <option value="price">Highest price</option>
+      <option value="gainers">Top gainers</option>
+      <option value="losers">Top losers</option>
+    </select>
+  </div>
+</template>
+</file>
+
+<file path="src/components/StatCard.vue">
+<script setup>
+defineProps({
+  label: { type: String, required: true },
+  value: { type: String, required: true },
+  changeClass: { type: String, default: '' },
+})
+</script>
+
+<template>
+  <div class="card card-crypto stat-card h-100">
+    <p class="stat-card-label mb-0">{{ label }}</p>
+    <p class="stat-card-value mb-0" :class="changeClass">{{ value }}</p>
+  </div>
+</template>
+</file>
+
+<file path="src/components/VoteButtons.vue">
+<script setup>
+import { computed } from 'vue'
+import { useReactions } from '../composables/useReactions.js'
+
+const props = defineProps({
+  coinId: { type: [String, Number], required: true },
+})
+
+const { getCoinVote, setCoinVote } = useReactions()
+
+const vote = computed(() => getCoinVote(props.coinId))
+
+function bullish() {
+  setCoinVote(props.coinId, 'bullish')
+}
+
+function bearish() {
+  setCoinVote(props.coinId, 'bearish')
+}
+</script>
+
+<template>
+  <div class="d-flex gap-2 flex-wrap">
+    <button
+      type="button"
+      class="btn btn-sm"
+      :class="vote === 'bullish' ? 'btn-accent' : 'btn-outline-accent'"
+      @click="bullish"
+    >
+      Bullish
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm"
+      :class="vote === 'bearish' ? 'btn-accent' : 'btn-outline-accent'"
+      @click="bearish"
+    >
+      Bearish
+    </button>
+  </div>
+</template>
+</file>
+
+<file path="src/composables/useTheme.js">
+import { ref, computed } from 'vue'
+
+const STORAGE_KEY = 'cryptodash-theme'
+
+const theme = ref(
+  typeof localStorage !== 'undefined'
+    ? localStorage.getItem(STORAGE_KEY) || 'dark'
+    : 'dark'
+)
+
+function applyTheme(value) {
+  document.documentElement.setAttribute('data-theme', value)
+  localStorage.setItem(STORAGE_KEY, value)
+}
+
+export function initTheme() {
+  applyTheme(theme.value)
+}
+
+export function useTheme() {
+  const isDark = computed(() => theme.value === 'dark')
+
+  function setTheme(value) {
+    if (value !== 'dark' && value !== 'light') return
+    theme.value = value
+    applyTheme(value)
+  }
+
+  function toggleTheme() {
+    setTheme(theme.value === 'dark' ? 'light' : 'dark')
+  }
+
+  return {
+    theme,
+    isDark,
+    setTheme,
+    toggleTheme,
+  }
+}
+</file>
+
+<file path="src/services/binance.js">
+/**
+ * Binance public API — prices & 24h stats (no API key, browser-friendly).
+ */
+
+const BINANCE_24H = 'https://api.binance.com/api/v3/ticker/24hr'
+
+const STABLE_BASES = new Set([
+  'USDC',
+  'USDT',
+  'BUSD',
+  'DAI',
+  'TUSD',
+  'FDUSD',
+  'USDP',
+  'USDS',
+  'USD1',
+])
+
+const LEVERAGE_PATTERN = /(UP|DOWN|BULL|BEAR|\d+L|\d+S)$/i
+
+let tickerCache = null
+let tickerCacheAt = 0
+const CACHE_MS = 60_000
+
+export function parseUsdtTicker(row) {
+  if (!row?.symbol?.endsWith('USDT')) return null
+  const base = row.symbol.slice(0, -4)
+  if (!base || STABLE_BASES.has(base) || LEVERAGE_PATTERN.test(base)) return null
+
+  const price = parseFloat(row.lastPrice)
+  const change24h = parseFloat(row.priceChangePercent)
+  const volume24h = parseFloat(row.quoteVolume)
+  if (Number.isNaN(price)) return null
+
+  return {
+    symbol: base,
+    price,
+    change24h: Number.isNaN(change24h) ? 0 : change24h,
+    volume24h: Number.isNaN(volume24h) ? 0 : volume24h,
+  }
+}
+
+export async function fetchUsdtTickers({ useCache = true } = {}) {
+  if (useCache && tickerCache && Date.now() - tickerCacheAt < CACHE_MS) {
+    return tickerCache
+  }
+
+  const res = await fetch(BINANCE_24H)
+  if (!res.ok) throw new Error(`Binance ${res.status}`)
+
+  const rows = await res.json()
+  tickerCache = rows.map(parseUsdtTicker).filter(Boolean)
+  tickerCacheAt = Date.now()
+  return tickerCache
+}
+
+export function findUsdtTicker(tickers, idOrSymbol) {
+  const key = String(idOrSymbol).toUpperCase()
+  return (
+    tickers.find((t) => t.symbol === key) ||
+    tickers.find((t) => t.symbol === key.replace(/USDT$/, ''))
+  )
+}
+</file>
+
+<file path="src/services/websocket.js">
+/**
+ * Live price WebSocket — Binance mini-tickers + REST backup poll.
+ */
+
+const BINANCE_WS = 'wss://stream.binance.com:9443/ws/!miniTicker@arr'
+const BINANCE_REST = 'https://api.binance.com/api/v3/ticker/24hr'
+const NOTIFY_MS = 500
+const REST_POLL_MS = 3000
+const MAX_RECONNECT = 8
+
+const SYMBOL_TO_BINANCE = {
+  MATIC: 'POLUSDT',
+}
+
+class LivePriceWebSocket {
+  constructor() {
+    this.ws = null
+    this.symbolToLocalId = new Map()
+    this.prices = {}
+    this.listeners = new Set()
+    this.reconnectAttempts = 0
+    this.reconnectTimer = null
+    this.notifyTimer = null
+    this.restPollTimer = null
+    this.wsConnected = false
+    this.intentionalClose = false
+    this.trackingActive = false
+  }
+
+  toBinancePair(symbol) {
+    if (!symbol) return null
+    const upper = String(symbol).toUpperCase()
+    if (SYMBOL_TO_BINANCE[upper]) return SYMBOL_TO_BINANCE[upper]
+    return `${upper}USDT`
+  }
+
+  setTrackedCoins(coins) {
+    this.symbolToLocalId.clear()
+
+    for (const coin of coins) {
+      const localId = String(coin.id)
+      const pair = this.toBinancePair(coin.symbol)
+      if (pair) this.symbolToLocalId.set(pair, localId)
+    }
+
+    this.trackingActive = this.symbolToLocalId.size > 0
+
+    if (!this.trackingActive) {
+      this.stopRestPoll()
+      return
+    }
+
+    this.startRestPoll()
+
+    if (this.ws?.readyState === WebSocket.OPEN) return
+    if (this.ws?.readyState === WebSocket.CONNECTING) return
+
+    this.connectBinance()
+  }
+
+  connectBinance() {
+    if (!this.trackingActive) return
+    if (this.ws?.readyState === WebSocket.OPEN) return
+    if (this.ws?.readyState === WebSocket.CONNECTING) return
+
+    this.closeSocket()
+    this.intentionalClose = false
+    this.wsConnected = false
+
+    try {
+      this.ws = new WebSocket(BINANCE_WS)
+
+      this.ws.onopen = () => {
+        this.reconnectAttempts = 0
+        this.wsConnected = true
+        console.info('[WebSocket] Binance connected')
+      }
+
+      this.ws.onmessage = (event) => {
+        const tickers = this.parseTickerPayload(event.data)
+        if (tickers?.length) this.handleBinanceTickers(tickers)
+      }
+
+      this.ws.onerror = () => {
+        this.wsConnected = false
+      }
+
+      this.ws.onclose = () => {
+        this.ws = null
+        this.wsConnected = false
+        if (!this.intentionalClose && this.trackingActive) {
+          this.scheduleReconnect()
+        }
+      }
+    } catch {
+      this.scheduleReconnect()
+    }
+  }
+
+  parseMiniTicker(t) {
+    const price = parseFloat(t.c)
+    if (Number.isNaN(price)) return null
+
+    const open = parseFloat(t.o)
+    let change = 0
+    if (!Number.isNaN(open) && open > 0) {
+      change = ((price - open) / open) * 100
+    }
+
+    return { price, change }
+  }
+
+  parseFullTicker(t) {
+    const price = parseFloat(t.c)
+    const change = parseFloat(t.P)
+    if (Number.isNaN(price)) return null
+    return {
+      price,
+      change: Number.isNaN(change) ? 0 : change,
+    }
+  }
+
+  async fetchBinanceRest() {
+    if (!this.symbolToLocalId.size) return false
+
+    const symbols = [...this.symbolToLocalId.keys()]
+    const chunkSize = 100
+    let changed = false
+
+    for (let i = 0; i < symbols.length; i += chunkSize) {
+      const chunk = symbols.slice(i, i + chunkSize)
+      const url = `${BINANCE_REST}?symbols=${encodeURIComponent(JSON.stringify(chunk))}`
+
+      try {
+        const res = await fetch(url)
+        if (!res.ok) continue
+        const rows = await res.json()
+        if (!Array.isArray(rows)) continue
+
+        for (const row of rows) {
+          const localId = this.symbolToLocalId.get(row.symbol)
+          if (!localId) continue
+          const price = parseFloat(row.lastPrice)
+          const change = parseFloat(row.priceChangePercent)
+          if (Number.isNaN(price)) continue
+          this.prices[localId] = {
+            usd: price,
+            usd_24h_change: Number.isNaN(change)
+              ? this.prices[localId]?.usd_24h_change ?? 0
+              : change,
+          }
+          changed = true
+        }
+      } catch (e) {
+        console.warn('[WebSocket] REST poll failed:', e.message)
+      }
+    }
+
+    if (changed) this.scheduleNotify()
+    return changed
+  }
+
+  startRestPoll() {
+    if (this.restPollTimer) return
+    this.fetchBinanceRest()
+    this.restPollTimer = setInterval(() => this.fetchBinanceRest(), REST_POLL_MS)
+  }
+
+  stopRestPoll() {
+    if (this.restPollTimer) {
+      clearInterval(this.restPollTimer)
+      this.restPollTimer = null
+    }
+  }
+
+  parseTickerPayload(raw) {
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed
+      if (Array.isArray(parsed?.data)) return parsed.data
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  handleBinanceTickers(tickers) {
+    let matched = 0
+
+    for (const t of tickers) {
+      const localId = this.symbolToLocalId.get(t.s)
+      if (!localId) continue
+
+      const parsed = t.P != null ? this.parseFullTicker(t) : this.parseMiniTicker(t)
+      if (!parsed) continue
+
+      this.prices[localId] = {
+        usd: parsed.price,
+        usd_24h_change: parsed.change,
+      }
+      matched += 1
+    }
+
+    if (matched) this.scheduleNotify()
+  }
+
+  /** Trailing throttle — always flush latest prices after NOTIFY_MS */
+  scheduleNotify() {
+    if (this.notifyTimer) clearTimeout(this.notifyTimer)
+    this.notifyTimer = setTimeout(() => {
+      this.notifyTimer = null
+      const snapshot = { ...this.prices }
+      this.listeners.forEach((cb) => {
+        try {
+          cb(snapshot)
+        } catch (e) {
+          console.error('[WebSocket] listener error:', e)
+        }
+      })
+    }, NOTIFY_MS)
+  }
+
+  scheduleReconnect() {
+    if (!this.trackingActive) return
+    if (this.reconnectAttempts >= MAX_RECONNECT) return
+    if (this.reconnectTimer) return
+
+    this.reconnectAttempts += 1
+    const delay = Math.min(2000 * this.reconnectAttempts, 12000)
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null
+      this.connectBinance()
+    }, delay)
+  }
+
+  subscribe(callback) {
+    this.listeners.add(callback)
+    if (Object.keys(this.prices).length) callback({ ...this.prices })
+    return () => this.listeners.delete(callback)
+  }
+
+  closeSocket() {
+    if (this.ws) {
+      this.ws.onopen = null
+      this.ws.onmessage = null
+      this.ws.onerror = null
+      this.ws.onclose = null
+      try {
+        this.ws.close()
+      } catch {
+        /* ignore */
+      }
+      this.ws = null
+    }
+  }
+
+  disconnect() {
+    this.intentionalClose = true
+    this.trackingActive = false
+    this.wsConnected = false
+    clearTimeout(this.reconnectTimer)
+    clearTimeout(this.notifyTimer)
+    this.stopRestPoll()
+    this.reconnectTimer = null
+    this.notifyTimer = null
+    this.closeSocket()
+    this.listeners.clear()
+    this.symbolToLocalId.clear()
+    this.prices = {}
+    this.reconnectAttempts = 0
+  }
+}
+
+export const coinWebSocket = new LivePriceWebSocket()
+export default coinWebSocket
+</file>
+
+<file path="src/utils/format.js">
+export function formatPrice(value) {
+  if (value == null || Number.isNaN(value)) return '—'
+  if (value >= 1) {
+    return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  }
+  return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 })
+}
+
+export function formatMarketCap(value) {
+  if (value == null) return '—'
+  if (value >= 1e12) return '$' + (value / 1e12).toFixed(2) + 'T'
+  if (value >= 1e9) return '$' + (value / 1e9).toFixed(2) + 'B'
+  if (value >= 1e6) return '$' + (value / 1e6).toFixed(2) + 'M'
+  return '$' + value.toLocaleString()
+}
+
+export function formatVolume(value) {
+  return formatMarketCap(value)
+}
+
+export function formatChange(value) {
+  if (value == null) return '—'
+  const sign = value >= 0 ? '+' : ''
+  return sign + Number(value).toFixed(2) + '%'
+}
+
+export function changeClass(value) {
+  return value >= 0 ? 'text-positive' : 'text-negative'
+}
+</file>
+
+<file path="src/views/NewsDetail.vue">
+<script>
+import { fetchNewsById } from "../services/news.js";
+import NewsLikeButton from "../components/NewsLikeButton.vue";
+import LoadingSpinner from "../components/LoadingSpinner.vue";
+import EmptyState from "../components/EmptyState.vue";
+
+export default {
+  components: { NewsLikeButton, LoadingSpinner, EmptyState },
+  data() {
+    return {
+      article: null,
+      loading: true,
+      error: null,
+    };
+  },
+  watch: {
+    "$route.params.id": {
+      immediate: true,
+      handler() {
+        this.loadArticle();
+      },
+    },
+  },
+  methods: {
+    async loadArticle() {
+      this.loading = true;
+      this.error = null;
+      this.article = null;
+      try {
+        this.article = await fetchNewsById(this.$route.params.id);
+        if (!this.article) this.error = "Article not found";
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    formatDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString("en-AU", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    },
+  },
+};
+</script>
+
+<template>
+  <section class="page-section article-detail-page">
+    <div class="container">
+      <LoadingSpinner v-if="loading" message="Loading article..." />
+
+      <EmptyState
+        v-else-if="error || !article"
+        title="Article not found"
+        :message="error || 'This article does not exist.'"
+      >
+        <RouterLink to="/news" class="btn btn-accent btn-sm mt-3"
+          >Back to News</RouterLink
+        >
+      </EmptyState>
+
+      <article v-else>
+        <button
+          type="button"
+          class="btn btn-outline-accent btn-sm mb-4"
+          @click="$router.back()"
+        >
+          ← Back
+        </button>
+
+        <img
+          :src="article.image_url"
+          :alt="article.title"
+          class="article-hero-img w-100 rounded-3 mb-4"
+        />
+
+        <header class="mb-4">
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+            <span class="blog-category">{{ article.category }}</span>
+            <span class="text-secondary small">{{
+              formatDate(article.date)
+            }}</span>
+            <span v-if="article.source_name" class="text-secondary small"
+              >· {{ article.source_name }}</span
+            >
+          </div>
+          <h1 class="page-title">{{ article.title }}</h1>
+        </header>
+
+        <div
+          class="article-body text-secondary"
+          v-html="article.full_content"
+        ></div>
+
+        <footer
+          class="d-flex flex-wrap gap-3 align-items-center mt-4 pt-4 border-top border-secondary border-opacity-25"
+        >
+          <NewsLikeButton :article-id="article.id" />
+          <a
+            v-if="article.source_url"
+            :href="article.source_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-sm btn-outline-accent"
+          >
+            Read original source
+          </a>
+        </footer>
+      </article>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.article-detail-page {
+  padding: 40px 0;
+}
+
+.article-hero-img {
+  max-height: 400px;
+  object-fit: cover;
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.blog-category {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+article {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.article-body {
+  font-size: 18px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.article-body :deep(p) {
+  margin-bottom: 1.5em;
+}
+
+.article-body :deep(h2),
+.article-body :deep(h3) {
+  color: white;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  font-weight: 700;
+}
+
+.article-body :deep(h2) {
+  font-size: 24px;
+}
+
+.article-body :deep(h3) {
+  font-size: 20px;
+}
+
+.article-body :deep(ul),
+.article-body :deep(ol) {
+  margin-bottom: 1.5em;
+  padding-left: 2em;
+}
+
+.article-body :deep(li) {
+  margin-bottom: 0.5em;
+}
+
+.article-body :deep(blockquote) {
+  border-left: 4px solid #667eea;
+  padding-left: 1.5em;
+  margin: 1.5em 0;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.article-body :deep(a) {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.article-body :deep(a:hover) {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.article-body :deep(code) {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.article-body :deep(pre) {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+
+.article-body :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+</style>
+</file>
+
+<file path="src/views/Profile.vue">
+<script setup>
+import { useAuth } from '../composables/useAuth.js'
+import { useRouter } from 'vue-router'
+
+const { user, logout } = useAuth()
+const router = useRouter()
+
+function handleLogout() {
+  logout()
+  router.push('/')
+}
+</script>
+
+<template>
+  <section class="page-section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card card-crypto p-4">
+            <h1 class="page-title h4">Profile</h1>
+            <p class="text-secondary">Signed in (demo — no real backend).</p>
+            <p class="mb-1"><strong>Email:</strong> {{ user?.email }}</p>
+            <p class="mb-4"><strong>Name:</strong> {{ user?.name }}</p>
+            <div class="d-flex gap-2 flex-wrap">
+              <RouterLink to="/watchlist" class="btn btn-accent btn-sm">Watchlist</RouterLink>
+              <button type="button" class="btn btn-outline-accent btn-sm" @click="handleLogout">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+</file>
+
+<file path="src/views/SetPassword.vue">
+<script>
+import { useAuth } from '../composables/useAuth.js'
+
+export default {
+  setup() {
+    const { setPassword } = useAuth()
+    return { setPassword }
+  },
+  data() {
+    return {
+      password: '',
+      confirmPassword: '',
+      submitted: false,
+      loading: false,
+      message: '',
+      messageType: '', // 'success' or 'error'
+    }
+  },
+  computed: {
+    passwordValid() {
+      if (!this.submitted && !this.password) return null
+      return this.password.length >= 6
+    },
+    confirmValid() {
+      if (!this.submitted && !this.confirmPassword) return null
+      return (
+        this.password === this.confirmPassword &&
+        this.confirmPassword.length > 0
+      )
+    },
+    formValid() {
+      return this.passwordValid && this.confirmValid
+    },
+  },
+  methods: {
+    showMessage(msg, type = 'success') {
+      this.message = msg
+      this.messageType = type
+      setTimeout(() => {
+        this.message = ''
+      }, 5000)
+    },
+
+    async onSubmit(event) {
+      event.preventDefault()
+      this.submitted = true
+      if (this.formValid) {
+        this.loading = true
+        const result = await this.setPassword(this.password)
+        this.loading = false
+
+        if (result.success) {
+          this.showMessage(result.message, 'success')
+          // Redirect after successful password set
+          setTimeout(() => {
+            this.$router.push('/')
+          }, 2000)
+        } else {
+          this.showMessage(result.message, 'error')
+        }
+      }
+    },
+  },
+}
+</script>
+
+<template>
+  <section class="page-section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
+          <div class="card card-crypto p-4 p-md-5">
+            <h1 class="page-title text-center mb-1">Set Password</h1>
+            <p class="text-secondary text-center mb-4 small">
+              Your email has been verified. Set your password to complete registration.
+            </p>
+
+            <!-- Alert message -->
+            <div
+              v-if="message"
+              :class="`alert alert-${messageType === 'error' ? 'danger' : 'success'} mb-4`"
+              role="alert"
+            >
+              {{ message }}
+            </div>
+
+            <form novalidate @submit="onSubmit">
+              <div class="mb-3">
+                <label for="setPassword" class="form-label">Password</label>
+                <input
+                  id="setPassword"
+                  v-model="password"
+                  type="password"
+                  class="form-control"
+                  :class="{
+                    'is-valid': submitted && passwordValid,
+                    'is-invalid': submitted && !passwordValid,
+                  }"
+                  placeholder="At least 6 characters"
+                  autocomplete="new-password"
+                  :disabled="loading"
+                />
+                <div
+                  v-if="submitted && !passwordValid"
+                  class="invalid-feedback"
+                >
+                  Password must be at least 6 characters.
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="setConfirm" class="form-label">Confirm password</label>
+                <input
+                  id="setConfirm"
+                  v-model="confirmPassword"
+                  type="password"
+                  class="form-control"
+                  :class="{
+                    'is-valid': submitted && confirmValid,
+                    'is-invalid': submitted && !confirmValid,
+                  }"
+                  placeholder="Re-enter password"
+                  autocomplete="new-password"
+                  :disabled="loading"
+                />
+                <div v-if="submitted && !confirmValid" class="invalid-feedback">
+                  Passwords must match.
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-accent w-100 mb-3"
+                :disabled="loading"
+              >
+                <span
+                  v-if="loading"
+                  class="spinner-border spinner-border-sm me-2"
+                ></span>
+                {{ loading ? 'Setting...' : 'Set password' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.is-valid {
+  border-color: var(--positive) !important;
+}
+
+.is-invalid {
+  border-color: var(--negative) !important;
+}
+</style>
+</file>
+
+<file path="supabase/create_news_table.sql">
+create table profiles (
+  id uuid references auth.users on delete cascade primary key,
+  name text,
+  role text default 'user',
+  created_at timestamptz default now()
+);
+
+create table watchlist (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users on delete cascade not null,
+  coin_id text not null,
+  created_at timestamptz default now(),
+  unique(user_id, coin_id)
+);
+
+
+create table news_likes (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users on delete cascade not null,
+  article_id int references news(id) on delete cascade not null,
+  created_at timestamptz default now(),
+  unique(user_id, article_id)
+);
+</file>
+
+<file path="supabase/supabase.js">
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Supabase credentials not found in environment variables')
+}
+
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
+
+export default supabase
+</file>
+
+<file path="vite.config.js">
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [vue()],
+})
+</file>
+
+<file path="index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function () {
+        var theme = localStorage.getItem('cryptodash-theme');
+        if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      })();
+    </script>
+    <link rel="icon" href="/site-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CryptoDash | Cryptocurrency Dashboard</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+</file>
+
+<file path="src/assets/global.css">
+/* Theme variables */
+:root,
+[data-theme='dark'] {
+  --bg-primary: #0b0e11;
+  --bg-secondary: #141820;
+  --bg-card: #1e2329;
+  --bg-card-hover: #252b33;
+  --border-color: #2b3139;
+  --text-primary: #eaecef;
+  --text-emphasis: #f5f7fa;
+  --text-secondary: #848e9c;
+  --accent: #f0b90b;
+  --accent-hover: #fcd535;
+  --accent-text: #0b0e11;
+  --positive: #0ecb81;
+  --negative: #f6465d;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --navbar-toggler-filter: none;
+  --transition-fast: 0.2s ease;
+}
+
+[data-theme='light'] {
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f2f5;
+  --border-color: #e6e8ea;
+  --text-primary: #1e2329;
+  --text-emphasis: #1e2329;
+  --text-secondary: #707a8a;
+  --accent: #f0b90b;
+  --accent-hover: #d9a60a;
+  --accent-text: #1e2329;
+  --positive: #03a66d;
+  --negative: #cf304a;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --navbar-toggler-filter: invert(1) hue-rotate(180deg);
+}
+
+html {
+  color-scheme: dark;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+}
+
+/* Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+/* Layout — use Bootstrap .container / .row / .col-* for grid */
+.page-section {
+  padding: 2rem 0 3rem;
+}
+
+.page-title {
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-emphasis);
+}
+
+.page-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.section-heading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-emphasis);
+}
+
+/* Cards */
+.card-crypto {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  --bs-card-color: var(--text-primary);
+  --bs-card-bg: var(--bg-card);
+  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.card-crypto .card-body {
+  color: var(--text-primary);
+}
+
+.card-crypto:hover {
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow);
+}
+
+.card-crypto.card-hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card {
+  padding: 1.25rem;
+}
+
+.stat-card-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.stat-card-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-emphasis);
+}
+
+/* Buttons */
+.btn-accent {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn-accent:hover,
+.btn-accent:focus {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--accent-text);
+}
+
+.btn-outline-accent {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: transparent;
+}
+
+.btn-outline-accent:hover {
+  background: rgba(240, 185, 11, 0.12);
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* Text utilities */
+.text-positive {
+  color: var(--positive) !important;
+}
+
+.text-negative {
+  color: var(--negative) !important;
+}
+
+.text-emphasis {
+  color: var(--text-emphasis);
+}
+
+/* Forms */
+.form-control,
+.form-select {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 0.2rem rgba(240, 185, 11, 0.25);
+}
+
+.form-control::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Tables */
+.table-dark-custom {
+  --bs-table-bg: var(--bg-card);
+  --bs-table-color: var(--text-primary);
+  --bs-table-border-color: var(--border-color);
+  --bs-table-hover-bg: var(--bg-card-hover);
+}
+
+.table-dark-custom th {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.table-row-link {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+/* Badges */
+.badge-category {
+  background: rgba(240, 185, 11, 0.15);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--positive);
+  background: rgba(14, 203, 129, 0.12);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+
+.badge-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--positive);
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.price-with-arrow {
+  justify-content: flex-end;
+}
+
+.price-with-arrow--sm .price-with-arrow__value {
+  font-size: 0.875rem;
+}
+
+.price-with-arrow--lg .price-with-arrow__value {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.price-arrow {
+  display: inline-block;
+  font-size: 0.75em;
+  line-height: 1;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.price-with-arrow--lg .price-arrow {
+  font-size: 0.55em;
+}
+
+.price-flash-up {
+  animation: flash-up 0.6s ease;
+}
+
+.price-flash-down {
+  animation: flash-down 0.6s ease;
+}
+
+@keyframes flash-up {
+  0% { background-color: rgba(14, 203, 129, 0.25); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flash-down {
+  0% { background-color: rgba(246, 70, 93, 0.25); }
+  100% { background-color: transparent; }
+}
+
+/* Navbar / Footer */
+.crypto-navbar {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 0;
+}
+
+.site-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.navbar-brand:hover .brand-text {
+  color: var(--accent);
+}
+
+.crypto-navbar .nav-link {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+  padding: 0.5rem 0.85rem !important;
+  border-radius: 6px;
+  transition: color var(--transition-fast);
+}
+
+.crypto-navbar .nav-link:hover,
+.crypto-navbar .nav-link.active {
+  color: var(--accent) !important;
+}
+
+.crypto-navbar .navbar-toggler {
+  border-color: var(--border-color);
+}
+
+.crypto-navbar .navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(240, 185, 11, 0.25);
+}
+
+.crypto-navbar .navbar-toggler-icon {
+  filter: var(--navbar-toggler-filter);
+}
+
+.crypto-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-brand {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Hero */
+.hero-section {
+  padding: 3rem 0 2rem;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.hero-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--text-emphasis);
+}
+
+.hero-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+}
+
+.hero-visual {
+  margin-left: auto;
+  padding-left: 0.5rem;
+}
+
+.hero-img {
+  object-fit: cover;
+  height: 180px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+}
+
+@media (min-width: 768px) {
+  .hero-img {
+    height: 220px;
+  }
+}
+
+@media (min-width: 992px) {
+  .hero-visual {
+    padding-left: 1.5rem;
+  }
+}
+
+/* Coin card */
+.coin-card .card-body {
+  padding: 1.25rem;
+}
+
+.coin-name {
+  font-weight: 600;
+  color: var(--text-emphasis);
+}
+
+.coin-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-emphasis);
+}
+
+/* Loading / empty */
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  gap: 1rem;
+  color: var(--text-secondary);
+}
+
+.spinner-crypto {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-secondary);
+}
+
+.empty-state-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.6;
+}
+
+/* Chart placeholder */
+.chart-placeholder {
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius);
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Pagination */
+.pagination-nav .page-link {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.pagination-nav .page-link:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent);
+}
+
+.pagination-nav .page-item.active .page-link {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Search bar */
+.search-bar .input-group-text {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* AI assistant */
+.ai-fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1050;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 1.4rem;
+  box-shadow: var(--shadow);
+  transition: transform var(--transition-fast);
+}
+
+.ai-fab:hover {
+  transform: scale(1.05);
+}
+
+.ai-panel {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 1.5rem;
+  z-index: 1049;
+  width: min(360px, calc(100vw - 2rem));
+  max-height: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.news-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-emphasis);
+}
+
+.alert-theme {
+  background: var(--bg-secondary);
+  border-color: var(--border-color) !important;
+  color: var(--accent);
+}
+
+.is-valid {
+  border-color: var(--positive) !important;
+}
+
+.is-invalid {
+  border-color: var(--negative) !important;
+}
+</file>
+
+<file path="src/components/FavoriteButton.vue">
+<script setup>
+import { computed, ref } from 'vue'
+import { useWatchlist } from '../composables/useWatchlist.js'
+
+const props = defineProps({
+  coinId: { type: [String, Number], required: true },
+  size: { type: String, default: 'sm' },
+})
+
+const { isFavorite, toggleFavorite } = useWatchlist()
+const busy = ref(false)
+
+const active = computed(() => isFavorite(props.coinId))
+
+async function onClick(e) {
+  e.preventDefault()
+  e.stopPropagation()
+  if (busy.value) return
+  busy.value = true
+  try {
+    await toggleFavorite(props.coinId)
+  } finally {
+    busy.value = false
+  }
+}
+</script>
+
+<template>
+  <button
+    type="button"
+    class="btn btn-outline-accent"
+    :class="size === 'sm' ? 'btn-sm' : ''"
+    :disabled="busy"
+    :aria-label="active ? 'Remove from watchlist' : 'Add to watchlist'"
+    :title="active ? 'Remove from watchlist' : 'Add to watchlist'"
+    @click="onClick"
+  >
+    <span aria-hidden="true">{{ active ? '★' : '☆' }}</span>
+  </button>
+</template>
+</file>
+
+<file path="src/components/Footer.vue">
+<template>
+  <footer class="crypto-footer mt-auto">
+    <div class="container py-4">
+      <div class="row align-items-center gy-3">
+        <div class="col-md-6 text-center text-md-start">
+          <p class="mb-0 footer-brand">
+            <img src="/site-logo.png" alt="" width="20" height="20" class="me-1 align-text-bottom" />
+            CryptoDash
+          </p>
+          <small class="text-secondary">COS30043 · Swinburne University</small>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <small class="text-secondary">&copy; {{ currentYear }} CryptoDash</small>
+        </div>
+      </div>
+    </div>
+  </footer>
+</template>
+
+<script>
+export default {
+  computed: {
+    currentYear() {
+      return new Date().getFullYear()
+    },
+  },
+}
+</script>
+</file>
+
+<file path="src/components/HeroSection.vue">
+<script setup>
+import { RouterLink } from 'vue-router'
+
+defineProps({
+  title: {
+    type: String,
+    default: 'Track Crypto Markets in Real Time',
+  },
+  subtitle: {
+    type: String,
+    default: 'Check prices, market cap, and news in one place. Built for COS30043 at Swinburne.',
+  },
+  ctaText: { type: String, default: 'Explore Markets' },
+  ctaLink: { type: String, default: '/markets' },
+})
+</script>
+
+<template>
+  <section class="hero-section">
+    <div class="container">
+      <div class="row align-items-center g-4 g-lg-5">
+        <div class="col-lg-7">
+          <h1 class="hero-title">{{ title }}</h1>
+          <p class="hero-subtitle">{{ subtitle }}</p>
+          <RouterLink :to="ctaLink" class="btn btn-accent btn-lg px-4">
+            {{ ctaText }}
+          </RouterLink>
+        </div>
+        <div class="col-lg-5">
+          <div class="hero-visual">
+            <img
+              src="/hero.jpg"
+              alt="Cryptocurrency dashboard"
+              class="hero-img w-100"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+</file>
+
+<file path="src/components/NewsLikeButton.vue">
+<script setup>
+import { computed, ref } from 'vue'
+import { useReactions } from '../composables/useReactions.js'
+import { useAuth } from '../composables/useAuth.js'
+
+const props = defineProps({
+  articleId: { type: [String, Number], required: true },
+})
+
+const { isNewsLiked, toggleNewsLike } = useReactions()
+const { isLoggedIn } = useAuth()
+const busy = ref(false)
+
+const liked = computed(() => isNewsLiked(props.articleId))
+
+async function onClick() {
+  if (busy.value) return
+  busy.value = true
+  try {
+    await toggleNewsLike(props.articleId)
+  } finally {
+    busy.value = false
+  }
+}
+</script>
+
+<template>
+  <button
+    type="button"
+    class="btn btn-sm"
+    :class="liked ? 'btn-accent' : 'btn-outline-accent'"
+    :disabled="busy"
+    @click="onClick"
+  >
+    {{ liked ? '♥ Liked' : '♡ Like' }}
+    <span v-if="!isLoggedIn" class="visually-hidden"> (saved locally when logged out)</span>
+  </button>
+</template>
+</file>
+
+<file path="src/components/Pagination.vue">
+<script>
+export default {
+  props: {
+    currentPage: { type: Number, required: true },
+    totalPages: { type: Number, required: true },
+  },
+  emits: ['page-change'],
+  computed: {
+    pages() {
+      const pages = []
+      for (let i = 1; i <= this.totalPages; i++) pages.push(i)
+      return pages
+    },
+    showPagination() {
+      return this.totalPages > 1
+    },
+  },
+  methods: {
+    goTo(page) {
+      if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+        this.$emit('page-change', page)
+      }
+    },
+  },
+}
+</script>
+
+<template>
+  <nav v-if="showPagination" class="pagination-nav" aria-label="Pagination">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
+      <li class="page-item" :class="{ disabled: currentPage === 1 }">
+        <button class="page-link" type="button" @click="goTo(currentPage - 1)">Prev</button>
+      </li>
+      <li
+        v-for="page in pages"
+        :key="page"
+        class="page-item"
+        :class="{ active: page === currentPage }"
+      >
+        <button class="page-link" type="button" @click="goTo(page)">{{ page }}</button>
+      </li>
+      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+        <button class="page-link" type="button" @click="goTo(currentPage + 1)">Next</button>
+      </li>
+    </ul>
+  </nav>
+</template>
+</file>
+
+<file path="src/components/PriceWithArrow.vue">
+<script>
+import { formatPrice } from '../utils/format.js'
+
+export default {
+  props: {
+    price: { type: Number, required: true },
+    /** Last live tick direction: 'up' | 'down' (not 24h %) */
+    flash: { type: String, default: null },
+    /** True only on the frame when price just changed (background pulse) */
+    pulse: { type: Boolean, default: false },
+    size: {
+      type: String,
+      default: 'md',
+      validator: (v) => ['sm', 'md', 'lg'].includes(v),
+    },
+    inline: { type: Boolean, default: true },
+  },
+  computed: {
+    direction() {
+      if (this.flash === 'up' || this.flash === 'down') return this.flash
+      return null
+    },
+    arrowClass() {
+      if (this.direction === 'up') return 'text-positive'
+      if (this.direction === 'down') return 'text-negative'
+      return ''
+    },
+    flashClass() {
+      if (!this.pulse) return ''
+      if (this.direction === 'up') return 'price-flash-up'
+      if (this.direction === 'down') return 'price-flash-down'
+      return ''
+    },
+    sizeClass() {
+      if (this.size === 'sm') return 'price-with-arrow--sm'
+      if (this.size === 'lg') return 'price-with-arrow--lg'
+      return ''
+    },
+  },
+  methods: {
+    formatPrice,
+  },
+}
+</script>
+
+<template>
+  <span
+    class="price-with-arrow"
+    :class="[sizeClass, flashClass, inline ? 'd-inline-flex' : 'd-flex', 'align-items-center gap-1']"
+  >
+    <span
+      v-if="direction"
+      class="price-arrow"
+      :class="arrowClass"
+      :title="direction === 'up' ? 'Price up' : 'Price down'"
+      aria-hidden="true"
+    >{{ direction === 'up' ? '▲' : '▼' }}</span>
+    <span class="price-with-arrow__value">{{ formatPrice(price) }}</span>
+  </span>
+</template>
+</file>
+
+<file path="src/components/SearchBar.vue">
+<script>
+export default {
+  props: {
+    modelValue: { type: String, default: '' },
+    placeholder: { type: String, default: 'Search...' },
+    label: { type: String, default: '' },
+  },
+  emits: ['update:modelValue'],
+  methods: {
+    onInput(event) {
+      this.$emit('update:modelValue', event.target.value)
+    },
+    clear() {
+      this.$emit('update:modelValue', '')
+    },
+  },
+}
+</script>
+
+<template>
+  <div class="search-bar">
+    <label v-if="label" class="form-label text-secondary small mb-1">{{ label }}</label>
+    <div class="input-group">
+      <span class="input-group-text">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.1a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+        </svg>
+      </span>
+      <input
+        type="search"
+        class="form-control"
+        :placeholder="placeholder"
+        :value="modelValue"
+        @input="onInput"
+      />
+      <button
+        v-if="modelValue"
+        class="btn btn-outline-accent"
+        type="button"
+        @click="clear"
+        aria-label="Clear search"
+      >
+        &times;
+      </button>
+    </div>
+  </div>
+</template>
+</file>
+
+<file path="src/components/ThemeToggle.vue">
+<script setup>
+import { useTheme } from '../composables/useTheme.js'
+
+const { isDark, toggleTheme } = useTheme()
+</script>
+
+<template>
+  <button
+    type="button"
+    class="btn theme-toggle"
+    :aria-label="isDark ? 'Switch to day mode' : 'Switch to night mode'"
+    :title="isDark ? 'Day mode' : 'Night mode'"
+    @click="toggleTheme"
+  >
+    <span class="theme-toggle-icon" aria-hidden="true">
+      <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+      </svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M6 .278a.768.768 0 0 1 .08.828 7.984 7.984 0 0 0-.923 3.217 8 8 0 0 0 7.743 7.743 7.984 7.984 0 0 0 3.217-.923.768.768 0 0 1 .828.08 8.097 8.097 0 0 1-1.854 2.707 8.19 8.19 0 0 1-2.707 1.854.768.768 0 0 1-.828-.08 7.984 7.984 0 0 0-3.217.923 8 8 0 0 1-7.743-7.743 7.984 7.984 0 0 0-.923-3.217.768.768 0 0 1 .08-.828A8.097 8.097 0 0 1 3.854.146 8.19 8.19 0 0 1 6.561 0a8.098 8.098 0 0 1 1.439 0z"/>
+      </svg>
+    </span>
+    <span class="theme-toggle-label d-none d-sm-inline">{{ isDark ? 'Day' : 'Night' }}</span>
+  </button>
+</template>
+</file>
+
+<file path="src/composables/useReactions.js">
+import { ref, watch } from "vue";
+import { supabase } from "../../supabase/supabase.js";
+import { user } from "./useAuth.js";
+
+const STORAGE_KEY = "cryptodash-reactions";
+
+const state = ref({
+  newsLikes: {},
+  coinVotes: {},
+});
+
+let authWatcherStarted = false;
+
+function loadCoinVotesFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.value.coinVotes = parsed.coinVotes || {};
+    }
+  } catch {
+    /* keep defaults */
+  }
+}
+
+function saveCoinVotesToLocalStorage() {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ coinVotes: state.value.coinVotes }),
+  );
+}
+
+function loadNewsLikesFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.value.newsLikes = parsed.newsLikes || {};
+    }
+  } catch {
+    state.value.newsLikes = {};
+  }
+}
+
+function saveNewsLikesToLocalStorage() {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      newsLikes: state.value.newsLikes,
+      coinVotes: state.value.coinVotes,
+    }),
+  );
+}
+
+async function loadNewsLikesFromSupabase(userId) {
+  const { data, error } = await supabase
+    .from("news_likes")
+    .select("article_id")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.warn("[reactions] news_likes load failed:", error.message);
+    loadNewsLikesFromLocalStorage();
+    return;
+  }
+
+  const likes = {};
+  (data || []).forEach((row) => {
+    likes[String(row.article_id)] = true;
+  });
+  state.value.newsLikes = likes;
+}
+
+async function syncNewsLikesForUser(authUser) {
+  if (authUser?.id) {
+    await loadNewsLikesFromSupabase(authUser.id);
+  } else {
+    loadNewsLikesFromLocalStorage();
+  }
+}
+
+function startAuthWatcher() {
+  if (authWatcherStarted) return;
+  authWatcherStarted = true;
+  loadCoinVotesFromLocalStorage();
+  watch(user, (u) => syncNewsLikesForUser(u), { immediate: true });
+}
+
+export function useReactions() {
+  startAuthWatcher();
+
+  function isNewsLiked(articleId) {
+    return !!state.value.newsLikes[String(articleId)];
+  }
+
+  async function toggleNewsLike(articleId) {
+    const key = String(articleId);
+
+    if (user.value?.id) {
+      if (isNewsLiked(key)) {
+        const { error } = await supabase
+          .from("news_likes")
+          .delete()
+          .eq("user_id", user.value.id)
+          .eq("article_id", Number(articleId));
+
+        if (error) {
+          console.warn("[reactions] unlike failed:", error.message);
+          return;
+        }
+        const next = { ...state.value.newsLikes };
+        delete next[key];
+        state.value.newsLikes = next;
+      } else {
+        const { error } = await supabase.from("news_likes").insert({
+          user_id: user.value.id,
+          article_id: Number(articleId),
+        });
+
+        if (error) {
+          console.warn("[reactions] like failed:", error.message);
+          return;
+        }
+        state.value.newsLikes = { ...state.value.newsLikes, [key]: true };
+      }
+      return;
+    }
+
+    const next = { ...state.value.newsLikes };
+    next[key] = !next[key];
+    if (!next[key]) delete next[key];
+    state.value.newsLikes = next;
+    saveNewsLikesToLocalStorage();
+  }
+
+  function getNewsLikeCount(articleId) {
+    return state.value.newsLikes[String(articleId)] ? 1 : 0;
+  }
+
+  function getCoinVote(coinId) {
+    return state.value.coinVotes[String(coinId)] || null;
+  }
+
+  function setCoinVote(coinId, vote) {
+    const key = String(coinId);
+    if (state.value.coinVotes[key] === vote) {
+      delete state.value.coinVotes[key];
+    } else {
+      state.value.coinVotes[key] = vote;
+    }
+    saveCoinVotesToLocalStorage();
+  }
+
+  return {
+    isNewsLiked,
+    toggleNewsLike,
+    getNewsLikeCount,
+    getCoinVote,
+    setCoinVote,
+  };
+}
+</file>
+
+<file path="src/composables/useWatchlist.js">
+import { ref, computed, watch } from "vue";
+import { supabase } from "../../supabase/supabase.js";
+import { user } from "./useAuth.js";
+
+const STORAGE_KEY = "cryptodash-watchlist";
+const ids = ref([]);
+let authWatcherStarted = false;
+
+function loadFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    ids.value = raw ? JSON.parse(raw) : [];
+  } catch {
+    ids.value = [];
+  }
+}
+
+function saveToLocalStorage() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids.value));
+}
+
+async function loadFromSupabase(userId) {
+  const { data, error } = await supabase
+    .from("watchlist")
+    .select("coin_id")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.warn("[watchlist] Supabase load failed:", error.message);
+    loadFromLocalStorage();
+    return;
+  }
+
+  ids.value = (data || []).map((row) => String(row.coin_id));
+}
+
+async function syncForUser(authUser) {
+  if (authUser?.id) {
+    await loadFromSupabase(authUser.id);
+  } else {
+    loadFromLocalStorage();
+  }
+}
+
+function startAuthWatcher() {
+  if (authWatcherStarted) return;
+  authWatcherStarted = true;
+  watch(user, (u) => syncForUser(u), { immediate: true });
+}
+
+export function useWatchlist() {
+  startAuthWatcher();
+
+  const watchlistIds = computed(() => ids.value);
+
+  function isFavorite(coinId) {
+    return ids.value.includes(String(coinId));
+  }
+
+  async function toggleFavorite(coinId) {
+    const id = String(coinId);
+
+    if (user.value?.id) {
+      if (isFavorite(id)) {
+        const { error } = await supabase
+          .from("watchlist")
+          .delete()
+          .eq("user_id", user.value.id)
+          .eq("coin_id", id);
+
+        if (error) {
+          console.warn("[watchlist] delete failed:", error.message);
+          return;
+        }
+        ids.value = ids.value.filter((x) => x !== id);
+      } else {
+        const { error } = await supabase.from("watchlist").insert({
+          user_id: user.value.id,
+          coin_id: id,
+        });
+
+        if (error) {
+          console.warn("[watchlist] insert failed:", error.message);
+          return;
+        }
+        ids.value = [...ids.value, id];
+      }
+      return;
+    }
+
+    const idx = ids.value.indexOf(id);
+    if (idx >= 0) {
+      ids.value = ids.value.filter((x) => x !== id);
+    } else {
+      ids.value = [...ids.value, id];
+    }
+    saveToLocalStorage();
+  }
+
+  async function removeFavorite(coinId) {
+    const id = String(coinId);
+
+    if (user.value?.id) {
+      await supabase
+        .from("watchlist")
+        .delete()
+        .eq("user_id", user.value.id)
+        .eq("coin_id", id);
+    }
+
+    ids.value = ids.value.filter((x) => x !== id);
+    if (!user.value?.id) saveToLocalStorage();
+  }
+
+  return {
+    watchlistIds,
+    isFavorite,
+    toggleFavorite,
+    removeFavorite,
+  };
+}
+</file>
+
+<file path="src/data/coins.js">
+export const coins = [
+  {
+    id: 'bitcoin',
+    coingeckoId: 'bitcoin',
+    name: 'Bitcoin',
+    symbol: 'BTC',
+    price: 68420.5,
+    marketCap: 1340000000000,
+    volume24h: 28500000000,
+    change24h: 2.34,
+    image: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+  },
+  {
+    id: 'ethereum',
+    coingeckoId: 'ethereum',
+    name: 'Ethereum',
+    symbol: 'ETH',
+    price: 3521.8,
+    marketCap: 423000000000,
+    volume24h: 15200000000,
+    change24h: -1.12,
+    image: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+  },
+  {
+    id: 'binancecoin',
+    coingeckoId: 'binancecoin',
+    name: 'BNB',
+    symbol: 'BNB',
+    price: 612.4,
+    marketCap: 92000000000,
+    volume24h: 1800000000,
+    change24h: 0.87,
+    image: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+  },
+  {
+    id: 'solana',
+    coingeckoId: 'solana',
+    name: 'Solana',
+    symbol: 'SOL',
+    price: 178.92,
+    marketCap: 81000000000,
+    volume24h: 3200000000,
+    change24h: 5.21,
+    image: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+  },
+  {
+    id: 'ripple',
+    coingeckoId: 'ripple',
+    name: 'XRP',
+    symbol: 'XRP',
+    price: 0.62,
+    marketCap: 34000000000,
+    volume24h: 2100000000,
+    change24h: -0.45,
+    image: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
+  },
+  {
+    id: 'cardano',
+    coingeckoId: 'cardano',
+    name: 'Cardano',
+    symbol: 'ADA',
+    price: 0.58,
+    marketCap: 20500000000,
+    volume24h: 480000000,
+    change24h: 1.78,
+    image: 'https://assets.coingecko.com/coins/images/975/small/cardano.png',
+  },
+  {
+    id: 'dogecoin',
+    coingeckoId: 'dogecoin',
+    name: 'Dogecoin',
+    symbol: 'DOGE',
+    price: 0.16,
+    marketCap: 23000000000,
+    volume24h: 1200000000,
+    change24h: 3.45,
+    image: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
+  },
+  {
+    id: 'polkadot',
+    coingeckoId: 'polkadot',
+    name: 'Polkadot',
+    symbol: 'DOT',
+    price: 7.42,
+    marketCap: 10500000000,
+    volume24h: 320000000,
+    change24h: -2.1,
+    image: 'https://assets.coingecko.com/coins/images/12171/small/polkadot.png',
+  },
+  {
+    id: 'avalanche-2',
+    coingeckoId: 'avalanche-2',
+    name: 'Avalanche',
+    symbol: 'AVAX',
+    price: 38.15,
+    marketCap: 14200000000,
+    volume24h: 580000000,
+    change24h: 4.02,
+    image: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+  },
+  {
+    id: 'chainlink',
+    coingeckoId: 'chainlink',
+    name: 'Chainlink',
+    symbol: 'LINK',
+    price: 15.88,
+    marketCap: 9200000000,
+    volume24h: 410000000,
+    change24h: 0.56,
+    image: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
+  },
+  {
+    id: 'litecoin',
+    coingeckoId: 'litecoin',
+    name: 'Litecoin',
+    symbol: 'LTC',
+    price: 84.2,
+    marketCap: 6200000000,
+    volume24h: 520000000,
+    change24h: -0.92,
+    image: 'https://assets.coingecko.com/coins/images/2/small/litecoin.png',
+  },
+  {
+    id: 'matic-network',
+    coingeckoId: 'matic-network',
+    name: 'Polygon',
+    symbol: 'MATIC',
+    price: 0.72,
+    marketCap: 7100000000,
+    volume24h: 290000000,
+    change24h: 1.34,
+    image: 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',
+  },
+]
+
+export const trendingCoins = coins.slice(0, 6)
+
+export function getCoinById(id) {
+  return coins.find((c) => c.id === id || c.coingeckoId === id || String(c.id) === String(id))
+}
+</file>
+
+<file path="src/services/news.js">
+import fallbackNews from "../data/news.json";
+
+const DEFAULT_IMAGE = "/hero.jpg";
+
+function toSummary(text, max = 180) {
+  if (!text) return "";
+  const plain = text.replace(/<[^>]+>/g, "").trim();
+  if (plain.length <= max) return plain;
+  return plain.slice(0, max).trim() + "...";
+}
+
+function toFullHtml(row) {
+  if (row.full_content) return row.full_content;
+  const text = row.content || "";
+  if (text.includes("<")) return text;
+  return `<p>${text}</p>`;
+}
+
+export function normalizeArticle(row) {
+  const full_content = toFullHtml(row);
+  const summary = row.summary || toSummary(row.content || full_content);
+
+  return {
+    id: row.id,
+    title: row.title,
+    summary,
+    full_content,
+    content: summary,
+    category: row.category,
+    date: row.date,
+    image_url: row.image_url || DEFAULT_IMAGE,
+    source_url: row.source_url ?? null,
+    source_name: row.source_name ?? null,
+  };
+}
+
+export async function fetchNews() {
+  return fallbackNews.map(normalizeArticle);
+}
+
+export async function fetchNewsById(id) {
+  const local = fallbackNews.find((a) => String(a.id) === String(id));
+  if (local) return normalizeArticle(local);
+  return null;
+}
+
+export default { fetchNews, fetchNewsById, normalizeArticle };
+</file>
+
+<file path="src/views/About.vue">
+<script>
+export default {
+  data() {
+    return {
+      techStack: ['Vue 3', 'Vite', 'Vue Router', 'Bootstrap 5', 'JavaScript'],
+    }
+  },
+}
+</script>
+
+<template>
+  <section class="page-section about-page">
+    <div class="container">
+      <header class="mb-4">
+        <p class="unit-line mb-2">COS30043 — Swinburne University</p>
+        <h1 class="page-title">About</h1>
+        <p class="about-intro">
+          CryptoDash is a website for checking cryptocurrency prices and reading crypto news.
+          It was made for a web development assignment. The layout is based on sites like
+          Binance and CoinMarketCap — dark background, price tables, and simple cards.
+        </p>
+      </header>
+
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <article class="card card-crypto">
+            <div class="card-body p-4">
+              <h2 class="block-title">What this site does</h2>
+              <p class="about-p">
+                On the <RouterLink to="/">Home</RouterLink> page you can see a few trending coins
+                with the current price and 24-hour change. The
+                <RouterLink to="/markets">Markets</RouterLink> page lists more coins in a table —
+                name, symbol, price, market cap, and whether the price went up or down today.
+                You can search and flip through pages because the full list is longer than one screen.
+              </p>
+              <p class="about-p">
+                The <RouterLink to="/news">News</RouterLink> page loads articles from a JSON file
+                on the server (no live news API yet). Each post has a date, title, body text, and
+                category such as Bitcoin, Ethereum, or Regulation.
+              </p>
+              <p class="about-p mb-0">
+                Login and Register are only front-end forms for now — nothing is sent to a server.
+                Coin images and numbers are fake local data until a real API is hooked up later.
+              </p>
+            </div>
+          </article>
+
+          <article class="card card-crypto mt-4">
+            <div class="card-body p-4">
+              <h2 class="block-title">Why crypto dashboards?</h2>
+              <p class="about-p">
+                Bitcoin and other coins trade 24 hours a day. Exchanges publish prices every few
+                seconds. Most people do not need every tick — they want a quick table: what is BTC
+                at right now, how much did ETH move this week, which altcoins are up.
+              </p>
+              <p class="about-p mb-0">
+                A dashboard puts that in one place instead of opening five different tabs.
+                Market cap tells you how big a coin is relative to others; the 24h % column shows
+                short-term momentum. News sits beside prices because headlines often move the market
+                the same day.
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-4">
+          <aside class="card card-crypto">
+            <div class="card-body p-4">
+              <h2 class="block-title">Built with</h2>
+              <ul class="stack-list list-unstyled mb-4">
+                <li v-for="tech in techStack" :key="tech">{{ tech }}</li>
+              </ul>
+
+              <h2 class="block-title">Pages</h2>
+              <ul class="page-list">
+                <li><RouterLink to="/">Home</RouterLink> — landing + trending coins</li>
+                <li><RouterLink to="/markets">Markets</RouterLink> — price table</li>
+                <li><RouterLink to="/news">News</RouterLink> — articles from JSON</li>
+                <li><RouterLink to="/login">Login</RouterLink> — form UI only</li>
+                <li><RouterLink to="/register">Register</RouterLink> — form UI only</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.unit-line {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.about-intro {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin-bottom: 0;
+}
+
+.block-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-emphasis);
+  margin-bottom: 0.75rem;
+}
+
+.about-p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 1rem;
+}
+
+.stack-list li {
+  padding: 0.35rem 0;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stack-list li:last-child {
+  border-bottom: none;
+}
+
+.page-list {
+  padding-left: 1.1rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.page-list li {
+  margin-bottom: 0.35rem;
+}
+</style>
+</file>
+
+<file path="package.json">
+{
+  "name": "cryptocurrencies",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.1",
+    "bootstrap": "^5.3.8",
+    "dompurify": "^3.4.5",
+    "vue": "^3.5.34",
+    "vue-router": "^5.0.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.6",
+    "vite": "^8.0.12"
+  }
+}
+</file>
+
+<file path="README.md">
+# CryptoDash
+
+Vue 3 cryptocurrency dashboard — COS30043 Stage 1 foundation (Swinburne University).
+
+## Tech stack
+
+- Vue 3 + Vite
+- Vue Router
+- Bootstrap 5
+- JavaScript (no TypeScript)
+
+## Getting started
+
+```bash
+npm install
+npm run dev
+```
+
+Open the URL shown in the terminal (usually `http://localhost:5173`).
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## Supabase
+
+- Client: `supabase/supabase.js` (env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
+- Schema reference: `supabase/create_news_table.sql`
+- Edge Function `fetch-news` is deployed on Supabase only (not in this repo). The app calls it via `supabase.functions.invoke('fetch-news')` when the `news` table is empty.
+
+## Project structure
+
+```
+src/
+├── assets/
+├── components/     # Navbar, Footer, CoinCard, CoinTable, etc.
+├── views/          # Home, Markets, News, About, Login, Register
+├── router/
+├── data/           # Local fake coins + news.json
+├── services/       # api.js placeholder for Stage 2
+├── App.vue
+└── main.js
+```
+
+## Routes
+
+| Path | Page |
+|------|------|
+| `/` | Home |
+| `/markets` | Markets |
+| `/news` | News |
+| `/about` | About |
+| `/login` | Login |
+| `/register` | Register |
+
+## Stage 1 scope
+
+This build includes routing, Bootstrap dark UI, reusable components, local placeholder data, search, and pagination. It does **not** include WebSockets, AI chatbot, real APIs, or backend authentication.
+</file>
+
+<file path="src/App.vue">
+<script setup>
+import Navbar from './components/Navbar.vue'
+import Footer from './components/Footer.vue'
+import AiAssistant from './components/AiAssistant.vue'
+</script>
+
+<template>
+  <div class="app-wrapper d-flex flex-column min-vh-100">
+    <Navbar />
+    <main class="flex-grow-1">
+      <RouterView />
+    </main>
+    <Footer />
+    <AiAssistant />
+  </div>
+</template>
+</file>
+
+<file path="src/composables/useAuth.js">
+import { ref, computed } from "vue";
+import { supabase } from "../../supabase/supabase.js";
+
+export const user = ref(null);
+
+function mapUser(authUser) {
+  return {
+    email: authUser.email,
+    name:
+      authUser.user_metadata?.name || authUser.email?.split("@")[0] || "User",
+    id: authUser.id,
+  };
+}
+
+export async function loadUser() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  user.value = session?.user ? mapUser(session.user) : null;
+}
+
+async function upsertProfile(authUser, name) {
+  const profileName =
+    name ||
+    authUser.user_metadata?.name ||
+    authUser.email?.split("@")[0] ||
+    "User";
+
+  const { error } = await supabase.from("profiles").upsert(
+    {
+      id: authUser.id,
+      name: profileName,
+      role: "user",
+    },
+    { onConflict: "id" },
+  );
+
+  if (error) {
+    console.warn("[auth] profile upsert failed:", error.message);
+  }
+}
+
+supabase.auth.onAuthStateChange((_event, session) => {
+  user.value = session?.user ? mapUser(session.user) : null;
+});
+
+loadUser();
+
+export function useAuth() {
+  const isLoggedIn = computed(() => !!user.value);
+
+  async function login(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    if (data.user) {
+      user.value = mapUser(data.user);
+      return { success: true, message: "Login successful" };
+    }
+
+    return { success: false, message: "Login failed" };
+  }
+
+  async function logout() {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      user.value = null;
+      return { success: true, message: "Logged out successfully" };
+    }
+    return { success: false, message: error.message };
+  }
+
+  async function requestRegistration(email, name) {
+    const tempPassword =
+      Math.random().toString(36).slice(-10) +
+      Math.random().toString(36).slice(-10);
+
+    const displayName = name || email.split("@")[0] || "User";
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: tempPassword,
+      options: {
+        data: {
+          name: displayName,
+          tempPassword: tempPassword,
+        },
+        emailRedirectTo: `${window.location.origin}/set-password`,
+      },
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    if (data.user) {
+      await upsertProfile(data.user, displayName);
+    }
+
+    if (data.user && !data.session) {
+      return {
+        success: true,
+        message:
+          "Registration successful. Please check your email to verify your account.",
+      };
+    }
+
+    if (data.user) {
+      user.value = mapUser(data.user);
+      return { success: true, message: "Registration successful" };
+    }
+
+    return { success: false, message: "Registration failed" };
+  }
+
+  async function setPassword(password) {
+    const { data, error } = await supabase.auth.updateUser({
+      password: password,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    if (data.user) {
+      user.value = mapUser(data.user);
+      return { success: true, message: "Password set successfully" };
+    }
+
+    return { success: false, message: "Failed to set password" };
+  }
+
+  async function signUp(email, password, name) {
+    const displayName = name || email.split("@")[0] || "User";
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name: displayName },
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    if (data.user) {
+      await upsertProfile(data.user, displayName);
+    }
+
+    if (data.user && !data.session) {
+      return {
+        success: true,
+        message:
+          "Registration successful. Please check your email to verify your account.",
+      };
+    }
+
+    if (data.user) {
+      user.value = mapUser(data.user);
+      return { success: true, message: "Registration successful" };
+    }
+
+    return { success: false, message: "Registration failed" };
+  }
+
+  return {
+    user,
+    isLoggedIn,
+    login,
+    logout,
+    signUp,
+    requestRegistration,
+    setPassword,
+  };
+}
+</file>
+
+<file path="src/composables/useLivePrices.js">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { livePrices, applyLiveFlashes, getLiveQuote } from '../services/livePrices.js'
+
+export function useLivePrices(getCoinIds) {
+  const liveData = ref({})
+  const liveFlashes = ref({})
+  const liveFlashTick = ref({})
+  const isLive = ref(false)
+
+  let unsubscribe = null
+
+  onMounted(() => {
+    const coins =
+      typeof getCoinIds === 'function'
+        ? getCoinIds()
+        : getCoinIds?.value ?? getCoinIds ?? []
+
+    livePrices.start(Array.isArray(coins) ? coins : [])
+
+    unsubscribe = livePrices.subscribe((data) => {
+      const { directions, tick } = applyLiveFlashes(
+        liveFlashes.value,
+        liveData.value,
+        data,
+      )
+      liveFlashes.value = directions
+      liveFlashTick.value = tick
+      liveData.value = data
+      isLive.value = true
+    })
+  })
+
+  onUnmounted(() => {
+    if (unsubscribe) unsubscribe()
+    livePrices.stop()
+  })
+
+  function applyLive(coin) {
+    const id = String(coin.coingeckoId || coin.id)
+    const live = getLiveQuote(liveData.value, coin)
+    if (!live) return coin
+
+    return {
+      ...coin,
+      price: live.usd ?? coin.price,
+      change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+      _flash: liveFlashes.value[id],
+      _flashTick: !!liveFlashTick.value[id],
+    }
+  }
+
+  return { liveData, isLive, applyLive }
+}
+</file>
+
+<file path="src/main.js">
+import { createApp } from 'vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import './assets/global.css'
+import { initTheme } from './composables/useTheme.js'
+import App from './App.vue'
+import router from './router'
+
+initTheme()
+
+createApp(App).use(router).mount('#app')
+</file>
+
+<file path="src/services/api.js">
+import { coins as localCoins } from '../data/coins.js'
+import { fetchUsdtTickers, findUsdtTicker } from './binance.js'
+
+const symbolToLocal = new Map(
+  localCoins.map((c) => [String(c.symbol).toUpperCase(), c])
+)
+
+const idToLocal = new Map(
+  localCoins.flatMap((c) => {
+    const keys = [String(c.id), String(c.coingeckoId || c.id)]
+    return keys.map((k) => [k, c])
+  })
+)
+
+function mapMarketCoin(c) {
+  return {
+    id: c.id,
+    coingeckoId: c.coingeckoId || c.id,
+    name: c.name,
+    symbol: (c.symbol || '').toUpperCase(),
+    price: c.current_price ?? c.price ?? 0,
+    marketCap: c.market_cap ?? c.marketCap ?? 0,
+    volume24h: c.total_volume ?? c.volume24h ?? 0,
+    change24h: c.price_change_percentage_24h ?? c.change24h ?? 0,
+    image: c.image,
+  }
+}
+
+function mapLocalCoin(c) {
+  return {
+    ...mapMarketCoin(c),
+    volume24h: c.volume24h ?? c.marketCap * 0.08,
+  }
+}
+
+function tickerToCoin(t) {
+  const local = symbolToLocal.get(t.symbol)
+  if (local) {
+    return mapLocalCoin({
+      ...local,
+      price: t.price,
+      change24h: t.change24h,
+      volume24h: t.volume24h,
+    })
+  }
+
+  const slug = t.symbol.toLowerCase()
+  return {
+    id: slug,
+    coingeckoId: slug,
+    name: t.symbol,
+    symbol: t.symbol,
+    price: t.price,
+    marketCap: 0,
+    volume24h: t.volume24h,
+    change24h: t.change24h,
+    image: null,
+  }
+}
+
+async function getBinanceTopCoins(perPage = 50) {
+  const tickers = await fetchUsdtTickers()
+  return [...tickers]
+    .sort((a, b) => b.volume24h - a.volume24h)
+    .slice(0, perPage)
+    .map(tickerToCoin)
+}
+
+export const api = {
+  async getTopCoins(perPage = 50) {
+    try {
+      const coins = await getBinanceTopCoins(perPage)
+      if (coins.length) return coins
+    } catch (err) {
+      console.warn('[api] Binance markets failed, using local:', err.message)
+    }
+    return localCoins.slice(0, perPage).map(mapLocalCoin)
+  },
+
+  getAllLocalCoins() {
+    return localCoins.map(mapLocalCoin)
+  },
+
+  async getTrendingCoins() {
+    try {
+      const tickers = await fetchUsdtTickers()
+      const top = [...tickers]
+        .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
+        .slice(0, 6)
+        .map(tickerToCoin)
+      if (top.length) return top
+    } catch (err) {
+      console.warn('[api] trending:', err.message)
+    }
+    return localCoins.slice(0, 6).map(mapLocalCoin)
+  },
+
+  async getCoinById(id) {
+    const local = idToLocal.get(String(id))
+
+    try {
+      const tickers = await fetchUsdtTickers()
+      const ticker = local
+        ? findUsdtTicker(tickers, local.symbol)
+        : findUsdtTicker(tickers, id)
+
+      if (ticker) {
+        const base = local ? mapLocalCoin(local) : tickerToCoin(ticker)
+        const price = ticker.price
+        return {
+          ...base,
+          price,
+          change24h: ticker.change24h,
+          volume24h: ticker.volume24h,
+          high24h: price * (1 + Math.max(ticker.change24h, 0) / 200),
+          low24h: price * (1 - Math.max(-ticker.change24h, 0) / 200),
+          ath: local?.price ? local.price * 1.5 : price * 1.2,
+          description:
+            base.description ||
+            `${base.name} — live price from Binance (${base.symbol}/USDT).`,
+        }
+      }
+    } catch (err) {
+      console.warn('[api] coin detail:', err.message)
+    }
+
+    if (local) {
+      return {
+        ...mapLocalCoin(local),
+        high24h: local.price * 1.02,
+        low24h: local.price * 0.98,
+        ath: local.price * 1.5,
+        description: `${local.name} market data (offline fallback).`,
+      }
+    }
+    throw new Error('Coin not found')
+  },
+}
+
+export default api
+</file>
+
+<file path="src/services/livePrices.js">
+import { coinWebSocket } from "./websocket.js";
+import { coins as localCoins } from "../data/coins.js";
+
+const subscribers = new Set();
+let trackedIds = [];
+let refCount = 0;
+let unsubscribeWs = null;
+let latestPrices = {};
+let trackedCoinsMeta = [];
+const hideArrowOnUnchanged = true;
+
+function notify(prices) {
+  latestPrices = { ...latestPrices, ...prices };
+  const snapshot = { ...latestPrices };
+  subscribers.forEach((cb) => {
+    try {
+      cb(snapshot);
+    } catch (e) {
+      console.error("[livePrices] subscriber error:", e);
+    }
+  });
+}
+
+function normalizeTrackedEntry(entry) {
+  if (entry == null) return null;
+
+  if (typeof entry === "object") {
+    const id = String(entry.coingeckoId || entry.id || "").trim();
+    const symbol = String(entry.symbol || "")
+      .trim()
+      .toUpperCase();
+    if (id && symbol) return { id, symbol };
+    if (!id) return null;
+    const local = localCoins.find(
+      (c) => String(c.id) === id || String(c.coingeckoId) === id,
+    );
+    if (local) {
+      return {
+        id: String(local.coingeckoId || local.id),
+        symbol: local.symbol,
+      };
+    }
+    return null;
+  }
+
+  const id = String(entry).trim();
+  const local = localCoins.find(
+    (c) => String(c.id) === id || String(c.coingeckoId) === id,
+  );
+  if (!local) return null;
+  return { id: String(local.coingeckoId || local.id), symbol: local.symbol };
+}
+
+function resolveCoins(coinsOrIds) {
+  const seen = new Set();
+  const resolved = [];
+
+  for (const entry of coinsOrIds) {
+    const coin = normalizeTrackedEntry(entry);
+    if (!coin || seen.has(coin.id)) continue;
+    seen.add(coin.id);
+    resolved.push(coin);
+  }
+
+  return resolved;
+}
+
+function mergeTrackedIds(newEntries) {
+  const resolved = resolveCoins(newEntries);
+  const set = new Set([...trackedIds, ...resolved.map((c) => c.id)]);
+  trackedIds = [...set];
+  return resolved;
+}
+
+function applyWebSocketTracking() {
+  const coins = trackedCoinsMeta.length
+    ? trackedCoinsMeta
+    : resolveCoins(trackedIds);
+  if (!coins.length) return;
+
+  if (!unsubscribeWs) {
+    unsubscribeWs = coinWebSocket.subscribe((prices) => notify(prices));
+  }
+
+  coinWebSocket.setTrackedCoins(coins);
+}
+
+function fullStop() {
+  trackedIds = [];
+  trackedCoinsMeta = [];
+  latestPrices = {};
+
+  if (unsubscribeWs) {
+    unsubscribeWs();
+    unsubscribeWs = null;
+  }
+  coinWebSocket.disconnect();
+}
+
+export function getLiveQuote(liveMap, coin) {
+  const id = String(coin.coingeckoId || coin.id);
+  const sym = String(coin.symbol || "").toUpperCase();
+  return (
+    liveMap[id] ||
+    (sym ? liveMap[sym] : null) ||
+    (sym ? liveMap[sym.toLowerCase()] : null)
+  );
+}
+
+/**
+ * Arrow direction follows actual price ticks only (not 24h %).
+ * Returns persistent directions + which ids changed this tick (for pulse).
+ */
+export function applyLiveFlashes(stored, prevMap, nextMap) {
+  const directions = { ...stored };
+  const tick = {};
+
+  Object.entries(nextMap).forEach(([id, live]) => {
+    const prev = prevMap[id]?.usd;
+    if (prev == null || live?.usd == null) return;
+    if (prev === live.usd) {
+      if (hideArrowOnUnchanged && directions[id]) {
+        delete directions[id];
+      }
+      return;
+    }
+
+    const dir = live.usd >= prev ? "up" : "down";
+    directions[id] = dir;
+    tick[id] = dir;
+  });
+
+  return { directions, tick };
+}
+
+// `hideArrowOnUnchanged` is always enabled; no runtime setter exposed.
+
+export const livePrices = {
+  subscribe(callback) {
+    subscribers.add(callback);
+    if (Object.keys(latestPrices).length) {
+      callback({ ...latestPrices });
+    }
+    return () => subscribers.delete(callback);
+  },
+
+  start(coinsOrIds) {
+    if (!coinsOrIds?.length) return;
+
+    if (refCount > 8) {
+      console.warn("[livePrices] resetting leaked sessions");
+      refCount = 0;
+      fullStop();
+    }
+
+    refCount += 1;
+    const resolved = mergeTrackedIds(coinsOrIds);
+    if (resolved.length) {
+      const byId = new Map(trackedCoinsMeta.map((c) => [c.id, c]));
+      resolved.forEach((c) => byId.set(c.id, c));
+      trackedCoinsMeta = [...byId.values()];
+    }
+    applyWebSocketTracking();
+  },
+
+  track(coinsOrIds) {
+    if (!coinsOrIds?.length) return;
+    const resolved = mergeTrackedIds(coinsOrIds);
+    if (resolved.length) {
+      const byId = new Map(trackedCoinsMeta.map((c) => [c.id, c]));
+      resolved.forEach((c) => byId.set(c.id, c));
+      trackedCoinsMeta = [...byId.values()];
+    }
+    applyWebSocketTracking();
+  },
+
+  stop() {
+    refCount = Math.max(0, refCount - 1);
+    if (refCount > 0) return;
+    fullStop();
+  },
+
+  stopAll() {
+    refCount = 0;
+    fullStop();
+  },
+};
+
+export default livePrices;
+</file>
+
+<file path="src/views/CoinDetail.vue">
+<script>
+import { api } from '../services/api.js'
+import { livePrices, applyLiveFlashes, getLiveQuote } from '../services/livePrices.js'
+import StatCard from '../components/StatCard.vue'
+import PriceWithArrow from '../components/PriceWithArrow.vue'
+import ChartPlaceholder from '../components/ChartPlaceholder.vue'
+import FavoriteButton from '../components/FavoriteButton.vue'
+import VoteButtons from '../components/VoteButtons.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import EmptyState from '../components/EmptyState.vue'
+import LiveBadge from '../components/LiveBadge.vue'
+import { formatPrice, formatMarketCap, formatVolume, formatChange, changeClass } from '../utils/format.js'
+
+export default {
+  components: {
+    StatCard,
+    PriceWithArrow,
+    ChartPlaceholder,
+    FavoriteButton,
+    VoteButtons,
+    LoadingSpinner,
+    EmptyState,
+    LiveBadge,
+  },
+  data() {
+    return {
+      coin: null,
+      loading: true,
+      error: null,
+      livePricesMap: {},
+      liveFlashes: {},
+      liveFlashTick: {},
+      liveTick: 0,
+      isLive: false,
+    }
+  },
+  computed: {
+    displayCoin() {
+      if (!this.coin) return null
+      return this.mergeLive(this.coin)
+    },
+    changeCls() {
+      return this.displayCoin ? changeClass(this.displayCoin.change24h) : ''
+    },
+  },
+  watch: {
+    '$route.params.id': {
+      immediate: true,
+      handler() {
+        this.loadCoin()
+      },
+    },
+  },
+  beforeUnmount() {
+    if (this._unsub) this._unsub()
+    livePrices.stop()
+  },
+  methods: {
+    formatPrice,
+    formatMarketCap,
+    formatVolume,
+    formatChange,
+    async loadCoin() {
+      this.loading = true
+      this.error = null
+      if (this._unsub) {
+        this._unsub()
+        this._unsub = null
+      }
+      livePrices.stop()
+
+      try {
+        this.coin = await api.getCoinById(this.$route.params.id)
+        this.startLive()
+      } catch (e) {
+        this.error = e.message || 'Failed to load coin'
+        this.coin = null
+      } finally {
+        this.loading = false
+      }
+    },
+    startLive() {
+      if (!this.coin) return
+      if (this._unsub) this._unsub()
+      livePrices.start([this.coin])
+      this._unsub = livePrices.subscribe((data) => {
+        const { directions, tick } = applyLiveFlashes(
+          this.liveFlashes,
+          this.livePricesMap,
+          data,
+        )
+        this.liveFlashes = directions
+        this.liveFlashTick = tick
+        this.livePricesMap = { ...data }
+        this.liveTick += 1
+        this.isLive = Object.keys(data).length > 0
+      })
+    },
+    mergeLive(coin) {
+      void this.liveTick
+      const id = String(coin.coingeckoId || coin.id)
+      const live = getLiveQuote(this.livePricesMap, coin)
+      if (live?.usd == null) return coin
+      return {
+        ...coin,
+        price: live.usd,
+        change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        _flash: this.liveFlashes[id],
+        _flashTick: !!this.liveFlashTick[id],
+      }
+    },
+  },
+}
+</script>
+
+<template>
+  <section class="page-section">
+    <div class="container">
+      <LoadingSpinner v-if="loading" message="Loading coin..." />
+
+      <EmptyState
+        v-else-if="error || !displayCoin"
+        title="Coin not found"
+        :message="error || 'This coin does not exist.'"
+        icon="?"
+      >
+        <RouterLink to="/markets" class="btn btn-accent btn-sm mt-3">Back to Markets</RouterLink>
+      </EmptyState>
+
+      <template v-else>
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+          <div class="d-flex align-items-center gap-3">
+            <img
+              v-if="displayCoin.image"
+              :src="displayCoin.image"
+              :alt="displayCoin.name"
+              width="48"
+              height="48"
+              class="rounded-circle"
+            />
+            <div>
+              <h1 class="page-title mb-0">{{ displayCoin.name }}</h1>
+              <span class="text-secondary">{{ displayCoin.symbol }}</span>
+            </div>
+          </div>
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <LiveBadge v-if="isLive" label="Live" />
+            <FavoriteButton :coin-id="displayCoin.id" />
+            <RouterLink to="/markets" class="btn btn-sm btn-outline-accent">← Markets</RouterLink>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <div class="col-lg-8">
+            <ChartPlaceholder :label="`${displayCoin.symbol} price chart placeholder`" />
+          </div>
+          <div class="col-lg-4">
+            <div class="card card-crypto p-4 h-100">
+              <p class="stat-card-label mb-1">Current price</p>
+              <p class="mb-2">
+                <PriceWithArrow
+                  :price="displayCoin.price"
+                  :flash="displayCoin._flash"
+                  :pulse="!!displayCoin._flashTick"
+                  size="lg"
+                  :inline="false"
+                />
+              </p>
+              <p class="fw-semibold mb-3" :class="changeCls">
+                {{ formatChange(displayCoin.change24h) }} (24h)
+              </p>
+              <VoteButtons :coin-id="displayCoin.id" />
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <StatCard label="Market cap" :value="formatMarketCap(displayCoin.marketCap)" />
+          </div>
+          <div class="col-6 col-md-3">
+            <StatCard label="24h volume" :value="formatVolume(displayCoin.volume24h)" />
+          </div>
+          <div class="col-6 col-md-3">
+            <StatCard label="24h high" :value="formatPrice(displayCoin.high24h)" />
+          </div>
+          <div class="col-6 col-md-3">
+            <StatCard label="24h low" :value="formatPrice(displayCoin.low24h)" />
+          </div>
+        </div>
+
+        <div v-if="displayCoin.description" class="card card-crypto p-4">
+          <h2 class="h5 text-emphasis mb-2">About {{ displayCoin.name }}</h2>
+          <p class="text-secondary small mb-0">{{ displayCoin.description }}</p>
+        </div>
+      </template>
+    </div>
+  </section>
+</template>
+</file>
+
+<file path="src/views/Watchlist.vue">
+<script>
+import { api } from '../services/api.js'
+import { livePrices, applyLiveFlashes, getLiveQuote } from '../services/livePrices.js'
+import { useWatchlist } from '../composables/useWatchlist.js'
+import CoinTable from '../components/CoinTable.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import EmptyState from '../components/EmptyState.vue'
+import LiveBadge from '../components/LiveBadge.vue'
+
+export default {
+  components: { CoinTable, LoadingSpinner, EmptyState, LiveBadge },
+  setup() {
+    return useWatchlist()
+  },
+  data() {
+    return {
+      allCoins: [],
+      loading: true,
+      livePricesMap: {},
+      liveFlashes: {},
+      liveFlashTick: {},
+      liveTick: 0,
+      isLive: false,
+    }
+  },
+  computed: {
+    watchlistCoins() {
+      const ids = this.watchlistIds
+      return this.allCoins
+        .filter((c) => ids.includes(String(c.id)))
+        .map((c) => this.mergeLive(c))
+    },
+  },
+  async mounted() {
+    try {
+      this.allCoins = await api.getTopCoins(50)
+    } finally {
+      this.loading = false
+      this.startLive()
+    }
+  },
+  beforeUnmount() {
+    if (this._unsub) this._unsub()
+    livePrices.stop()
+  },
+  methods: {
+    startLive() {
+      const tracked = this.watchlistIds.length
+        ? this.allCoins.filter((c) => this.watchlistIds.includes(String(c.id)))
+        : this.allCoins
+
+      if (this._unsub) this._unsub()
+      livePrices.start(tracked)
+      this._unsub = livePrices.subscribe((data) => {
+        const { directions, tick } = applyLiveFlashes(
+          this.liveFlashes,
+          this.livePricesMap,
+          data,
+        )
+        this.liveFlashes = directions
+        this.liveFlashTick = tick
+        this.livePricesMap = { ...data }
+        this.liveTick += 1
+        this.isLive = Object.keys(data).length > 0
+      })
+    },
+    mergeLive(coin) {
+      void this.liveTick
+      const id = String(coin.coingeckoId || coin.id)
+      const live = getLiveQuote(this.livePricesMap, coin)
+      if (live?.usd == null) return coin
+      return {
+        ...coin,
+        price: live.usd,
+        change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        _flash: this.liveFlashes[id],
+        _flashTick: !!this.liveFlashTick[id],
+      }
+    },
+  },
+}
+</script>
+
+<template>
+  <section class="page-section">
+    <div class="container">
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <h1 class="page-title mb-0">Watchlist</h1>
+        <LiveBadge v-if="isLive && !loading" label="Live" />
+      </div>
+      <p class="page-subtitle">Coins you saved — live prices via WebSocket.</p>
+
+      <LoadingSpinner v-if="loading" />
+
+      <EmptyState
+        v-else-if="watchlistCoins.length === 0"
+        title="Watchlist is empty"
+        message="Open Markets or a coin page and tap ☆ to add favourites."
+        icon="☆"
+      >
+        <RouterLink to="/markets" class="btn btn-accent btn-sm mt-3">Browse markets</RouterLink>
+      </EmptyState>
+
+      <CoinTable v-else :coins="watchlistCoins" :show-rank="false" />
+    </div>
+  </section>
+</template>
+</file>
+
+<file path="src/components/CoinCard.vue">
+<script>
+import PriceWithArrow from './PriceWithArrow.vue'
+import { formatChange, changeClass } from '../utils/format.js'
+
+export default {
+  components: { PriceWithArrow },
+  props: {
+    coin: { type: Object, required: true },
+  },
+  methods: {
+    formatChange,
+    changeClass,
+  },
+  computed: {
+    changeCls() {
+      return changeClass(this.coin.change24h)
+    },
+  },
+}
+</script>
+
+<template>
+  <div class="card card-crypto card-hover-lift coin-card h-100">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <img
+          v-if="coin.image"
+          :src="coin.image"
+          :alt="coin.name"
+          class="coin-icon rounded-circle"
+          width="40"
+          height="40"
+        />
+        <div>
+          <h6 class="mb-0 coin-name">{{ coin.name }}</h6>
+          <small class="text-secondary">{{ coin.symbol }}</small>
+        </div>
+      </div>
+      <p class="coin-price mb-1">
+        <PriceWithArrow
+          :price="coin.price"
+          :flash="coin._flash"
+          :pulse="!!coin._flashTick"
+          :inline="false"
+        />
+      </p>
+      <span class="fw-semibold" :class="changeCls">{{ formatChange(coin.change24h) }}</span>
+    </div>
+  </div>
+</template>
+</file>
+
+<file path="src/components/CoinTable.vue">
+<script>
+import { RouterLink } from 'vue-router'
+import FavoriteButton from './FavoriteButton.vue'
+import PriceWithArrow from './PriceWithArrow.vue'
+import { formatMarketCap, formatChange, changeClass } from '../utils/format.js'
+
+export default {
+  components: { RouterLink, FavoriteButton, PriceWithArrow },
+  props: {
+    coins: { type: Array, required: true },
+    showRank: { type: Boolean, default: true },
+    startRank: { type: Number, default: 1 },
+  },
+  methods: {
+    formatMarketCap,
+    formatChange,
+    changeClass,
+    rowClass(coin) {
+      if (!coin._flashTick) return ''
+      if (coin._flash === 'up') return 'price-flash-up'
+      if (coin._flash === 'down') return 'price-flash-down'
+      return ''
+    },
+  },
+}
+</script>
+
+<template>
+  <div class="table-responsive rounded-3 border border-secondary border-opacity-25">
+    <table class="table table-hover table-dark-custom mb-0 align-middle">
+      <thead>
+        <tr>
+          <th v-if="showRank" scope="col" class="d-none d-sm-table-cell">#</th>
+          <th scope="col">Coin</th>
+          <th scope="col" class="text-end d-none d-md-table-cell">Price</th>
+          <th scope="col" class="text-end d-none d-lg-table-cell">Market Cap</th>
+          <th scope="col" class="text-end">24h %</th>
+          <th scope="col" class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="coins.length === 0">
+          <td :colspan="showRank ? 6 : 5" class="text-center text-secondary py-4">
+            <slot name="empty">No coins found.</slot>
+          </td>
+        </tr>
+        <tr
+          v-for="(coin, index) in coins"
+          :key="coin.id"
+          class="table-row-link"
+          :class="rowClass(coin)"
+        >
+          <td v-if="showRank" class="text-secondary d-none d-sm-table-cell">{{ startRank + index }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <img
+                v-if="coin.image"
+                :src="coin.image"
+                :alt="coin.name"
+                width="28"
+                height="28"
+                class="rounded-circle"
+              />
+              <div>
+                <RouterLink
+                  :to="{ name: 'CoinDetail', params: { id: coin.id } }"
+                  class="fw-semibold text-emphasis text-decoration-none"
+                >
+                  {{ coin.name }}
+                </RouterLink>
+                <small class="text-secondary ms-1">{{ coin.symbol }}</small>
+                <div class="d-md-none small text-secondary">
+                  <PriceWithArrow
+                    :price="coin.price"
+                    :flash="coin._flash"
+                    :pulse="!!coin._flashTick"
+                    size="sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="text-end d-none d-md-table-cell">
+            <PriceWithArrow
+              :price="coin.price"
+              :flash="coin._flash"
+              :pulse="!!coin._flashTick"
+            />
+          </td>
+          <td class="text-end d-none d-lg-table-cell text-secondary">{{ formatMarketCap(coin.marketCap) }}</td>
+          <td class="text-end fw-semibold" :class="changeClass(coin.change24h)">
+            {{ formatChange(coin.change24h) }}
+          </td>
+          <td class="text-end">
+            <div class="d-flex gap-1 justify-content-end align-items-center">
+              <FavoriteButton :coin-id="coin.id" />
+              <RouterLink
+                :to="{ name: 'CoinDetail', params: { id: coin.id } }"
+                class="btn btn-sm btn-outline-accent"
+              >
+                Details
+              </RouterLink>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+</file>
+
+<file path="src/data/news.json">
+[
+  {
+    "id": 1,
+    "title": "Bitcoin Holds Above $68K as Institutional Demand Grows",
+    "summary": "Bitcoin continues to trade above key support levels as institutional investors increase allocations. Analysts note steady ETF inflows and reduced exchange reserves as bullish signals.",
+    "full_content": "<p>Bitcoin continues to trade above key support levels as institutional investors increase allocations. Analysts note steady ETF inflows and reduced exchange reserves as bullish signals for the medium term.</p><h2>Key Factors Driving Bitcoin's Strength</h2><p>The cryptocurrency has maintained its position above the $68,000 mark despite recent market volatility, with major financial institutions showing renewed interest in digital assets. Market observers point to several factors supporting Bitcoin's current strength:</p><ul><li><strong>Growing institutional adoption</strong> - Traditional finance firms are increasing their Bitcoin holdings</li><li><strong>Favorable regulatory developments</strong> - Key jurisdictions are implementing clearer crypto regulations</li><li><strong>ETF inflows</strong> - Spot Bitcoin ETFs continue to attract significant capital</li><li><strong>Reduced exchange reserves</strong> - Less Bitcoin available on exchanges suggests holder confidence</li></ul><blockquote>\"The resilience of Bitcoin's price action has impressed analysts who had predicted more significant pullbacks following the recent rally.\"</blockquote><h3>Market Outlook</h3><p>Trading volumes have remained robust, suggesting strong market participation at current price levels. The network's hash rate continues to reach new highs, indicating sustained miner confidence in Bitcoin's long-term viability.</p>",
+    "category": "Bitcoin",
+    "date": "2026-05-18T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "CryptoDaily"
+  },
+  {
+    "id": 2,
+    "title": "Ethereum Layer-2 Networks See Record Transaction Volume",
+    "summary": "Layer-2 scaling solutions on Ethereum processed a record number of transactions this week, lowering average gas fees for DeFi and NFT users.",
+    "full_content": "<p>Layer-2 scaling solutions on Ethereum processed a record number of transactions this week, lowering average gas fees for DeFi and NFT users. Developers highlight improved user experience across major rollups.</p><h2>L2 Ecosystem Growth</h2><p>Arbitrum, Optimism, and other L2 solutions have seen unprecedented adoption as users seek more affordable alternatives to mainnet transactions. The surge in L2 activity comes as Ethereum continues to address scalability challenges through various upgrade initiatives.</p><h3>Key Statistics</h3><ul><li>Transaction volume: <strong>Record high</strong></li><li>Gas fee reduction: <strong>Up to 90%</strong></li><li>User adoption: <strong>300% increase</strong> year-over-year</li></ul><p>Network data shows that L2 solutions now handle a significant portion of total Ethereum transactions, effectively reducing congestion on the main network. This trend is expected to continue as more projects migrate to L2 platforms.</p><blockquote>\"The future of Ethereum scaling lies in Layer-2 solutions, and we're seeing that future arrive faster than expected.\"</blockquote>",
+    "category": "Ethereum",
+    "date": "2026-05-17T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1622630998477-20aa696fab60?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "EthereumWorld"
+  },
+  {
+    "id": 3,
+    "title": "Global Regulators Discuss Unified Crypto Framework",
+    "summary": "Financial regulators from multiple jurisdictions met to discuss harmonised standards for digital asset markets, including custody rules and disclosure requirements.",
+    "full_content": "<p>Financial regulators from multiple jurisdictions met to discuss harmonised standards for digital asset markets, including custody rules, disclosure requirements, and consumer protection measures. The meeting represents a significant step toward global coordination in cryptocurrency regulation.</p><h2>Participating Jurisdictions</h2><ul><li>United States</li><li>European Union</li><li>United Kingdom</li><li>Japan</li><li>Singapore</li><li>Switzerland</li></ul><h3>Key Discussion Topics</h3><p>Regulators emphasized the need to balance innovation with investor protection. Key discussion topics included:</p><ol><li>Stablecoin oversight and reserve requirements</li><li>Exchange licensing and operational standards</li><li>Cross-border transaction monitoring</li><li>Consumer protection measures</li><li>Anti-money laundering (AML) compliance</li></ol><blockquote>\"The framework is expected to provide clearer guidelines for crypto businesses operating across multiple jurisdictions, reducing regulatory uncertainty.\"</blockquote>",
+    "category": "Regulation",
+    "date": "2026-05-16T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "RegulatoryWatch"
+  },
+  {
+    "id": 4,
+    "title": "Solana Ecosystem Expands with New DeFi Protocols",
+    "summary": "Several new decentralised finance protocols launched on Solana, attracting liquidity from cross-chain bridges. Total value locked reached new quarterly highs.",
+    "full_content": "<p>Several new decentralised finance protocols launched on Solana, attracting liquidity from cross-chain bridges. Total value locked on the network reached new quarterly highs according to on-chain data.</p><h2>New Protocol Launches</h2><p>The expansion includes new lending platforms, decentralized exchanges, and yield farming opportunities that leverage Solana's high throughput and low transaction costs. Network performance has remained stable despite increased activity, with transaction times averaging under 400 milliseconds.</p><h3>Performance Metrics</h3><ul><li><strong>TPS:</strong> 65,000+ transactions per second</li><li><strong>Average block time:</strong> 400ms</li><li><strong>Transaction cost:</strong> $0.00025 average</li><li><strong>TVL:</strong> New quarterly high</li></ul><blockquote>\"Solana's architecture is proving ideal for DeFi applications that require high throughput and low costs.\"</blockquote><p>The ecosystem's growth has been supported by recent grants and funding programs aimed at attracting developers to build on Solana. Analysts predict continued expansion as more projects recognize the advantages of Solana's architecture.</p>",
+    "category": "DeFi",
+    "date": "2026-05-15T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "DeFiPulse"
+  },
+  {
+    "id": 5,
+    "title": "Stablecoin Market Cap Reaches All-Time High",
+    "summary": "The combined market capitalisation of major stablecoins hit a new record as traders sought liquidity amid volatile altcoin markets.",
+    "full_content": "<p>The combined market capitalisation of major stablecoins hit a new record as traders sought liquidity amid volatile altcoin markets. USDT and USDC remain the dominant issuers by volume.</p><h2>Market Leaders</h2><ul><li><strong>Tether (USDT):</strong> Market leader with highest trading volume</li><li><strong>USD Coin (USDC):</strong> Growing institutional adoption</li><li><strong>DAI:</strong> Decentralised alternative gaining traction</li><li><strong>FRAX:</strong> Algorithmic stablecoin with unique mechanics</li></ul><h3>Growth Drivers</h3><p>The growth reflects increasing adoption of stablecoins for:</p><ol><li>Trading and arbitrage</li><li>Cross-border remittances</li><li>Store of value in regions with unstable currencies</li><li>DeFi protocol collateral</li></ol><blockquote>\"Central banks are accelerating their own digital currency projects in response to the growing popularity of private stablecoins.\"</blockquote><p>Regulatory scrutiny has intensified as stablecoins become more integrated into the traditional financial system. Market analysts expect continued growth in the stablecoin sector.</p>",
+    "category": "Market",
+    "date": "2026-05-14T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "MarketWatch"
+  },
+  {
+    "id": 6,
+    "title": "NFT Sales Rebound on Major Marketplaces",
+    "summary": "Non-fungible token trading volumes increased across leading marketplaces, driven by gaming collections and digital art drops.",
+    "full_content": "<p>Non-fungible token trading volumes increased across leading marketplaces, driven by gaming collections and digital art drops. Creators report stronger royalty enforcement on newer platforms.</p><h2>Recovery Drivers</h2><p>The recovery comes after a prolonged downturn in the NFT market, with renewed interest from both collectors and speculators. Key drivers include:</p><ul><li><strong>Gaming integration:</strong> Major game studios exploring blockchain</li><li><strong>Digital art:</strong> High-profile launches generating volume</li><li><strong>Royalty enforcement:</strong> Better creator compensation</li><li><strong>Platform improvements:</strong> Enhanced UX and features</li></ul><h3>Market Segments</h3><p>Gaming-related NFTs have shown particular strength, while digital art collections have also seen increased activity. Market observers attribute the rebound to improved platform features, better user education, and growing mainstream acceptance.</p><blockquote>\"The NFT market is maturing, with more sustainable business models and better user experiences.\"</blockquote>",
+    "category": "NFT",
+    "date": "2026-05-13T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1634973357973-f2ed2657db3c?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "NFTWeekly"
+  },
+  {
+    "id": 7,
+    "title": "Mining Difficulty Adjusts After Network Hash Rate Surge",
+    "summary": "Bitcoin mining difficulty adjusted upward following a sustained increase in network hash rate. Miners remain profitable at current electricity costs.",
+    "full_content": "<p>Bitcoin mining difficulty adjusted upward following a sustained increase in network hash rate. Miners remain profitable at current electricity costs in several key regions.</p><h2>Difficulty Adjustment Mechanism</h2><p>The adjustment reflects the network's self-correcting mechanism to maintain consistent block times despite changes in computational power. Mining operations have expanded in areas with abundant renewable energy, improving the environmental profile of Bitcoin mining.</p><h3>Current Mining Metrics</h3><ul><li><strong>Hash rate:</strong> New all-time high</li><li><strong>Difficulty:</strong> Increased by 5.2%</li><li><strong>Block time:</strong> Maintained at ~10 minutes</li><li><strong>Energy efficiency:</strong> Improved with new ASIC miners</li></ul><blockquote>\"Mining profitability remains attractive despite the difficulty increase, thanks to Bitcoin's price stability and improved equipment efficiency.\"</blockquote><p>Industry analysts note that the hash rate growth suggests continued confidence in Bitcoin's long-term viability among mining operators.</p>",
+    "category": "Bitcoin",
+    "date": "2026-05-12T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1516245834210-c4c14278733f?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "MiningReport"
+  },
+  {
+    "id": 8,
+    "title": "Central Banks Explore CBDC Pilot Programs",
+    "summary": "Multiple central banks announced expanded pilot programs for central bank digital currencies, focusing on retail payments and cross-border settlement.",
+    "full_content": "<p>Multiple central banks announced expanded pilot programs for central bank digital currencies, focusing on retail payments and cross-border settlement experiments with commercial partners. The initiatives represent a significant acceleration in CBDC development globally.</p><h2>Pilot Program Focus Areas</h2><p>Pilot programs are testing various technical approaches, including blockchain-based systems and centralized ledger solutions. Key focus areas include:</p><ul><li><strong>Payment efficiency:</strong> Faster transaction settlement</li><li><strong>Financial inclusion:</strong> Banking the unbanked</li><li><strong>Monetary sovereignty:</strong> Maintaining control in digital age</li><li><strong>Cross-border payments:</strong> Reducing friction in international transfers</li></ul><h3>Participating Central Banks</h3><ol><li>European Central Bank (Digital Euro)</li><li>People's Bank of China (Digital Yuan)</li><li>Bank of Japan (Digital Yen)</li><li>Federal Reserve (Research phase)</li></ol><blockquote>\"Central banks are collaborating with commercial banks and fintech companies to ensure practical implementation and user acceptance.\"</blockquote>",
+    "category": "Regulation",
+    "date": "2026-05-11T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "CBDCInsider"
+  },
+  {
+    "id": 9,
+    "title": "Altcoin Season Debate Heats Up Among Traders",
+    "summary": "Crypto traders debate whether an altcoin season is underway as several mid-cap tokens outperform Bitcoin over the past month.",
+    "full_content": "<p>Crypto traders debate whether an altcoin season is underway as several mid-cap tokens outperform Bitcoin over the past month. Social sentiment metrics show rising interest in layer-1 narratives.</p><h2>Altcoin Performance</h2><p>Technical indicators suggest a potential rotation of capital from Bitcoin to alternative cryptocurrencies, particularly those with strong fundamentals and active development communities. Market analysts point to several factors driving altcoin performance:</p><ul><li><strong>Improved tokenomics:</strong> Better utility and scarcity models</li><li><strong>Ecosystem growth:</strong> Expanding dApp ecosystems</li><li><strong>Regulatory clarity:</strong> Favorable developments in key markets</li><li><strong>Technical innovations:</strong> New features and capabilities</li></ul><h3>Skepticism Remains</h3><blockquote>\"Skeptics caution that altcoin seasons are often short-lived and advise maintaining diversified portfolios.\"</blockquote><p>The debate reflects broader market uncertainty about the sustainability of current price trends. Historical data shows that altcoin seasons typically last 3-6 months before capital rotates back to Bitcoin.</p>",
+    "category": "Market",
+    "date": "2026-05-10T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1621504450168-b8c437566642?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "AltcoinAnalysis"
+  },
+  {
+    "id": 10,
+    "title": "Security Firms Warn of Phishing Campaigns Targeting Wallets",
+    "summary": "Cybersecurity researchers reported a surge in phishing campaigns impersonating popular wallet and exchange brands. Users are advised to verify URLs.",
+    "full_content": "<p>Cybersecurity researchers reported a surge in phishing campaigns impersonating popular wallet and exchange brands. Users are advised to verify URLs and enable two-factor authentication.</p><h2>Phishing Tactics</h2><p>The attacks have become increasingly sophisticated, using social engineering tactics and convincing fake websites to steal credentials and private keys. Common tactics include:</p><ul><li><strong>Impersonation:</strong> Fake wallet and exchange websites</li><li><strong>Social engineering:</strong> Fake support emails and messages</li><li><strong>Urgency tactics:</strong> False security alerts requiring immediate action</li><li><strong>Airdrop scams:</strong> Fake token distribution campaigns</li></ul><h3>Protection Measures</h3><p>Security firms recommend:</p><ol><li>Use hardware wallets for significant holdings</li><li>Always verify URLs before entering credentials</li><li>Enable two-factor authentication everywhere possible</li><li>Never share private keys or seed phrases</li><li>Be skeptical of unsolicited messages</li></ol><blockquote>\"The rise in phishing attempts correlates with the growing value of cryptocurrency assets, making them attractive targets for cybercriminals.\"</blockquote>",
+    "category": "Security",
+    "date": "2026-05-09T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "CryptoSecurity"
+  },
+  {
+    "id": 11,
+    "title": "DeFi Lending Rates Normalise After Volatility Spike",
+    "summary": "Borrowing and lending rates on major DeFi platforms stabilised after last week's volatility-driven spikes. Liquidity providers returned to pools.",
+    "full_content": "<p>Borrowing and lending rates on major DeFi platforms stabilised after last week's volatility-driven spikes. Liquidity providers returned to pools offering competitive yields on blue-chip collateral.</p><h2>Market Normalisation</h2><p>The normalization reflects improved market conditions and reduced uncertainty among participants. DeFi protocols have implemented enhanced risk management measures to better handle market stress events.</p><h3>Platform Performance</h3><ul><li><strong>Aave:</strong> Rates stabilised at 2-4% APY</li><li><strong>Compound:</strong> Liquidity returned to pre-spike levels</li><li><strong>MakerDAO:</strong> DAI savings rate adjusted</li><li><strong>Liquity:</strong> Stable borrowing conditions maintained</li></ul><blockquote>\"The resilience of DeFi lending markets during the volatility period demonstrates the maturity of the sector.\"</blockquote><p>However, users are advised to maintain awareness of the risks associated with smart contract vulnerabilities and market fluctuations when participating in DeFi lending activities.</p>",
+    "category": "DeFi",
+    "date": "2026-05-08T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "DeFiRates"
+  },
+  {
+    "id": 12,
+    "title": "Exchange Listings Drive Volume for Emerging Tokens",
+    "summary": "Several emerging tokens saw significant volume increases following tier-one exchange listing announcements. Community governance proposals gained traction.",
+    "full_content": "<p>Several emerging tokens saw significant volume increases following tier-one exchange listing announcements. Community governance proposals also gained traction across DAO platforms.</p><h2>Listing Impact</h2><p>The listing announcements often trigger immediate price appreciation and trading activity as investors anticipate increased liquidity and market access. However, analysts caution that post-listing performance varies significantly depending on token fundamentals.</p><h3>Recent Listings</h3><ul><li><strong>Token A:</strong> +200% volume after Binance listing</li><li><strong>Token B:</strong> +150% after Coinbase listing</li><li><strong>Token C:</strong> +180% after Kraken listing</li></ul><h3>Governance Activity</h3><blockquote>\"Governance token voting participation has increased as communities become more engaged in protocol decision-making.\"</blockquote><p>The trend reflects growing sophistication among crypto investors and the increasing importance of community governance in the success of decentralized projects. Active governance participation is becoming a key indicator of project health and community engagement.</p>",
+    "category": "Market",
+    "date": "2026-05-07T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "ExchangeNews"
+  },
+  {
+    "id": 13,
+    "title": "Cross-Chain Bridges Enhance Interoperability",
+    "summary": "New cross-chain bridge solutions launched, enabling seamless asset transfers between different blockchain networks with improved security measures.",
+    "full_content": "<p>New cross-chain bridge solutions launched, enabling seamless asset transfers between different blockchain networks with improved security measures. The bridges support multiple token standards and offer competitive fees.</p><h2>Bridge Features</h2><ul><li><strong>Multi-chain support:</strong> Ethereum, Polygon, Arbitrum, Optimism</li><li><strong>Low fees:</strong> Sub-cent transaction costs</li><li><strong>Fast transfers:</strong> Under 5 minutes confirmation</li><li><strong>Security audits:</strong> Multiple security firm reviews</li></ul><h3>Security Improvements</h3><blockquote>\"New bridges implement advanced security measures including multi-sig wallets, time locks, and insurance funds to protect user assets.\"</blockquote><p>The interoperability improvements are expected to accelerate DeFi growth by enabling users to easily move assets between chains to access the best yields and opportunities.</p>",
+    "category": "DeFi",
+    "date": "2026-05-06T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "BridgeTech"
+  },
+  {
+    "id": 14,
+    "title": "Web3 Gaming Sector Attracts $500M in Funding",
+    "summary": "Web3 gaming projects raised over $500 million in venture capital funding this quarter, signaling strong investor confidence in blockchain gaming.",
+    "full_content": "<p>Web3 gaming projects raised over $500 million in venture capital funding this quarter, signaling strong investor confidence in blockchain gaming. Major gaming studios are actively exploring blockchain integration.</p><h2>Funding Highlights</h2><ul><li><strong>GameFi platform:</strong> $150M Series B</li><li><strong>Metaverse game:</strong> $120M Series A</li><li><strong>Gaming infrastructure:</strong> $80M seed round</li><li><strong>NFT gaming marketplace:</strong> $65M Series A</li></ul><h3>Market Trends</h3><blockquote>\"The gaming sector represents one of the most promising use cases for blockchain technology, with potential to onboard millions of new users.\"</blockquote><p>Investors are particularly interested in projects that combine engaging gameplay with meaningful blockchain integration, rather than simply adding NFTs to traditional games.</p>",
+    "category": "Gaming",
+    "date": "2026-05-05T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "GamingCrypto"
+  },
+  {
+    "id": 15,
+    "title": "Crypto Adoption Surges in Emerging Markets",
+    "summary": "Cryptocurrency adoption rates reached new highs in emerging markets, driven by inflation hedging and remittance needs.",
+    "full_content": "<p>Cryptocurrency adoption rates reached new highs in emerging markets, driven by inflation hedging and remittance needs. Countries in Latin America, Africa, and Southeast Asia lead the adoption curve.</p><h2>Adoption Drivers</h2><ul><li><strong>Inflation protection:</strong> Hedge against currency devaluation</li><li><strong>Remittances:</strong> Lower-cost cross-border transfers</li><li><strong>Financial inclusion:</strong> Banking the unbanked population</li><li><strong>Mobile-first:</strong> Smartphone penetration enables easy access</li></ul><h3>Leading Countries</h3><ol><li>Nigeria</li><li>Vietnam</li><li>Philippines</li><li>Argentina</li><li>Brazil</li></ol><blockquote>\"Emerging markets are leapfrogging traditional banking infrastructure and going straight to cryptocurrency-based financial services.\"</blockquote>",
+    "category": "Adoption",
+    "date": "2026-05-04T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "GlobalCrypto"
+  },
+  {
+    "id": 16,
+    "title": "DAO Governance Tools See Major Upgrades",
+    "summary": "Decentralized autonomous organization governance platforms released significant upgrades, improving voting efficiency and proposal management.",
+    "full_content": "<p>Decentralized autonomous organization governance platforms released significant upgrades, improving voting efficiency and proposal management. The updates address common pain points in DAO operations.</p><h2>New Features</h2><ul><li><strong>Delegated voting:</strong> Token holders can delegate votes</li><li><strong>Quadratic voting:</strong> More democratic decision making</li><li><strong>Time-locked voting:</strong> Prevents last-minute vote manipulation</li><li><strong>Proposal templates:</strong> Standardized submission formats</li></ul><h3>Impact on DAO Operations</h3><blockquote>\"These upgrades are expected to increase participation rates and improve the quality of governance decisions across major DAOs.\"</blockquote><p>The improvements come as DAOs manage increasingly large treasuries and complex operations, making effective governance more critical than ever.</p>",
+    "category": "DAO",
+    "date": "2026-05-03T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "DAOWatch"
+  },
+  {
+    "id": 17,
+    "title": "Privacy Coins Face Regulatory Scrutiny",
+    "summary": "Privacy-focused cryptocurrencies faced increased regulatory pressure as governments implement stricter AML and KYC requirements.",
+    "full_content": "<p>Privacy-focused cryptocurrencies faced increased regulatory pressure as governments implement stricter anti-money laundering (AML) and know-your-customer (KYC) requirements. Several exchanges delisted privacy coins.</p><h2>Regulatory Actions</h2><ul><li><strong>Exchange delistings:</strong> Major platforms remove privacy coins</li><li><strong>Travel Rule enforcement:</strong> Transaction monitoring requirements</li><li><strong>Enhanced KYC:</strong> Stricter identity verification</li><li><strong>Reporting obligations:</strong> Increased compliance burden</li></ul><h3>Industry Response</h3><blockquote>\"Privacy coin developers are exploring compliance-friendly alternatives while preserving user privacy to the extent possible.\"</blockquote><p>The regulatory pressure has led to price declines for major privacy coins, though some projects are adapting by implementing optional compliance features.</p>",
+    "category": "Regulation",
+    "date": "2026-05-02T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "PrivacyCoinNews"
+  },
+  {
+    "id": 18,
+    "title": "Ethereum Staking Rewards Hit New Highs",
+    "summary": "Ethereum validators earned record staking rewards as network activity increased and the merge to proof-of-stake proved successful.",
+    "full_content": "<p>Ethereum validators earned record staking rewards as network activity increased and the merge to proof-of-stake proved successful. The staking ecosystem continues to mature with new service providers.</p><h2>Staking Metrics</h2><ul><li><strong>APR:</strong> 5-7% annual percentage rate</li><li><strong>Total staked:</strong> 18% of ETH supply</li><li><strong>Validator count:</strong> Over 500,000 active validators</li><li><strong>Slashing rate:</strong> Historically low</li></ul><h3>Staking Options</h3><blockquote>\"Users can now choose between solo staking, staking pools, liquid staking tokens, and centralized exchange staking services.\"</blockquote><p>The success of Ethereum's proof-of-stake transition has validated the security model and encouraged more users to participate in securing the network.</p>",
+    "category": "Ethereum",
+    "date": "2026-05-01T00:00:00Z",
+    "image_url": "https://images.unsplash.com/photo-1622630998477-20aa696fab60?w=800&h=400&fit=crop",
+    "source_url": null,
+    "source_name": "EthereumStaking"
+  }
+]
+</file>
+
+<file path="src/views/Login.vue">
+<script>
+import { useAuth } from "../composables/useAuth.js";
+
+export default {
+  setup() {
+    const { login, logout } = useAuth();
+    return { login, logout };
+  },
+  data() {
+    return {
+      email: "",
+      password: "",
+      submitted: false,
+      loading: false,
+      message: "",
+      messageType: "", // 'success' or 'error'
+    };
+  },
+  computed: {
+    emailValid() {
+      if (!this.submitted && !this.email) return null;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
+    },
+    passwordValid() {
+      if (!this.submitted && !this.password) return null;
+      return this.password.length >= 1;
+    },
+    formValid() {
+      return this.emailValid && this.passwordValid;
+    },
+  },
+  methods: {
+    showMessage(msg, type = "success") {
+      this.message = msg;
+      this.messageType = type;
+      setTimeout(() => {
+        this.message = "";
+      }, 5000);
+    },
+
+    async onSubmit(event) {
+      event.preventDefault();
+      this.submitted = true;
+      if (this.formValid) {
+        this.loading = true;
+        const result = await this.login(this.email, this.password);
+        this.loading = false;
+
+        if (result.success) {
+          this.showMessage(result.message, "success");
+          const redirect = this.$route.query.redirect || "/";
+          setTimeout(() => {
+            this.$router.push(redirect);
+          }, 500);
+        } else {
+          this.showMessage(result.message, "error");
+        }
+      }
+    },
+  },
+};
+</script>
+
+<template>
+  <section class="page-section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
+          <div class="card card-crypto p-4 p-md-5">
+            <h1 class="page-title text-center mb-1">Login</h1>
+            <p class="text-secondary text-center mb-4 small">
+              Sign in to your account
+            </p>
+
+            <!-- Alert message -->
+            <div
+              v-if="message"
+              :class="`alert alert-${messageType === 'error' ? 'danger' : 'success'} mb-4`"
+              role="alert"
+            >
+              {{ message }}
+            </div>
+
+            <form novalidate @submit="onSubmit">
+              <div class="mb-3">
+                <label for="loginEmail" class="form-label">Email address</label>
+                <input
+                  id="loginEmail"
+                  v-model="email"
+                  type="email"
+                  class="form-control"
+                  :class="{
+                    'is-valid': submitted && emailValid,
+                    'is-invalid': submitted && !emailValid,
+                  }"
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                  :disabled="loading"
+                />
+                <div v-if="submitted && !emailValid" class="invalid-feedback">
+                  Please enter a valid email address.
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="loginPassword" class="form-label">Password</label>
+                <input
+                  id="loginPassword"
+                  v-model="password"
+                  type="password"
+                  class="form-control"
+                  :class="{
+                    'is-valid': submitted && passwordValid,
+                    'is-invalid': submitted && !passwordValid,
+                  }"
+                  placeholder="Your password"
+                  autocomplete="current-password"
+                  :disabled="loading"
+                />
+                <div
+                  v-if="submitted && !passwordValid"
+                  class="invalid-feedback"
+                >
+                  Please enter your password.
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-accent w-100 mb-3"
+                :disabled="loading"
+              >
+                <span
+                  v-if="loading"
+                  class="spinner-border spinner-border-sm me-2"
+                ></span>
+                {{ loading ? "Signing in..." : "Sign in" }}
+              </button>
+
+              <p class="text-center text-secondary small mb-0">
+                Don't have an account?
+                <RouterLink to="/register">Register</RouterLink>
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+</file>
+
+<file path="src/views/Register.vue">
+<script>
+import { useAuth } from "../composables/useAuth.js";
+
+export default {
+  setup() {
+    const { requestRegistration } = useAuth();
+    return { requestRegistration };
+  },
+  data() {
+    return {
+      email: "",
+      name: "",
+      submitted: false,
+      loading: false,
+      message: "",
+      messageType: "", // 'success' or 'error'
+    };
+  },
+  computed: {
+    emailValid() {
+      if (!this.submitted && !this.email) return null;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
+    },
+    formValid() {
+      return this.emailValid;
+    },
+  },
+  methods: {
+    showMessage(msg, type = "success") {
+      this.message = msg;
+      this.messageType = type;
+      setTimeout(() => {
+        this.message = "";
+      }, 5000);
+    },
+
+    async onSubmit(event) {
+      event.preventDefault();
+      this.submitted = true;
+      if (this.formValid) {
+        this.loading = true;
+        const result = await this.requestRegistration(this.email, this.name);
+        this.loading = false;
+
+        if (result.success) {
+          this.showMessage(result.message, "success");
+          // Redirect after successful registration
+          setTimeout(() => {
+            this.$router.push("/login");
+          }, 3000);
+        } else {
+          this.showMessage(result.message, "error");
+        }
+      }
+    },
+  },
+};
+</script>
+
+<template>
+  <section class="page-section">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
+          <div class="card card-crypto p-4 p-md-5">
+            <h1 class="page-title text-center mb-1">Register</h1>
+            <p class="text-secondary text-center mb-4 small">
+              Create your account with email verification
+            </p>
+
+            <!-- Alert message -->
+            <div
+              v-if="message"
+              :class="`alert alert-${messageType === 'error' ? 'danger' : 'success'} mb-4`"
+              role="alert"
+            >
+              {{ message }}
+            </div>
+
+            <form novalidate @submit="onSubmit">
+              <div class="mb-3">
+                <label for="regName" class="form-label">Name (optional)</label>
+                <input
+                  id="regName"
+                  v-model="name"
+                  type="text"
+                  class="form-control"
+                  placeholder="Your name"
+                  autocomplete="name"
+                  :disabled="loading"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="regEmail" class="form-label">Email address</label>
+                <input
+                  id="regEmail"
+                  v-model="email"
+                  type="email"
+                  class="form-control"
+                  :class="{
+                    'is-valid': submitted && emailValid,
+                    'is-invalid': submitted && !emailValid,
+                  }"
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                  :disabled="loading"
+                />
+                <div v-if="submitted && !emailValid" class="invalid-feedback">
+                  Please enter a valid email address.
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-accent w-100 mb-3"
+                :disabled="loading"
+              >
+                <span
+                  v-if="loading"
+                  class="spinner-border spinner-border-sm me-2"
+                ></span>
+                {{ loading ? "Sending..." : "Send verification email" }}
+              </button>
+
+              <p class="text-center text-secondary small mb-0">
+                Already have an account?
+                <RouterLink to="/login">Login</RouterLink>
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.is-valid {
+  border-color: var(--positive) !important;
+}
+
+.is-invalid {
+  border-color: var(--negative) !important;
+}
+</style>
+</file>
+
+<file path="src/components/Navbar.vue">
+<script setup>
+import { RouterLink } from "vue-router";
+import ThemeToggle from "./ThemeToggle.vue";
+import { useTheme } from "../composables/useTheme.js";
+import { useAuth } from "../composables/useAuth.js";
+
+const { isDark } = useTheme();
+const { isLoggedIn, logout } = useAuth();
+
+function onLogout() {
+  logout();
+}
+</script>
+
+<template>
+  <nav
+    class="navbar navbar-expand-lg crypto-navbar sticky-top"
+    :class="isDark ? 'navbar-dark' : 'navbar-light'"
+  >
+    <div class="container">
+      <RouterLink class="navbar-brand d-flex align-items-center gap-2" to="/">
+        <img
+          src="/site-logo.png"
+          alt="CryptoDash"
+          class="site-logo"
+          width="36"
+          height="36"
+        />
+        <span class="brand-text">CryptoDash</span>
+      </RouterLink>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul
+          class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-1"
+        >
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/" active-class="active"
+              >Home</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/markets" active-class="active"
+              >Markets</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/news" active-class="active"
+              >News</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/about" active-class="active"
+              >About</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/watchlist" active-class="active"
+              >Watchlist</RouterLink
+            >
+          </li>
+          <li class="nav-item d-flex align-items-center my-2 my-lg-0">
+            <ThemeToggle />
+          </li>
+
+          <template v-if="isLoggedIn">
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/profile" active-class="active"
+                >Profile</RouterLink
+              >
+            </li>
+            <li class="nav-item ms-lg-1">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-accent px-3"
+                @click="onLogout"
+              >
+                Logout
+              </button>
+            </li>
+          </template>
+          <li v-else class="nav-item ms-lg-2">
+            <RouterLink class="btn btn-sm btn-accent px-3" to="/login"
+              >Login</RouterLink
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</template>
+</file>
+
+<file path="src/views/Home.vue">
+<script>
+import { RouterLink } from 'vue-router'
+import HeroSection from '../components/HeroSection.vue'
+import CoinCard from '../components/CoinCard.vue'
+import MarketOverviewCards from '../components/MarketOverviewCards.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import LiveBadge from '../components/LiveBadge.vue'
+import { api } from '../services/api.js'
+import { livePrices, applyLiveFlashes, getLiveQuote } from '../services/livePrices.js'
+import { coins as localCoins } from '../data/coins.js'
+
+export default {
+  components: {
+    RouterLink,
+    HeroSection,
+    CoinCard,
+    MarketOverviewCards,
+    LoadingSpinner,
+    LiveBadge,
+  },
+  data() {
+    return {
+      trending: [],
+      allCoins: [],
+      loading: true,
+      livePricesMap: {},
+      liveFlashes: {},
+      liveFlashTick: {},
+      liveTick: 0,
+      isLive: false,
+    }
+  },
+  computed: {
+    liveAllCoins() {
+      return this.allCoins.map((c) => this.mergeLive(c))
+    },
+    liveTrending() {
+      return this.trending.map((c) => this.mergeLive(c))
+    },
+    topGainers() {
+      return [...this.liveAllCoins].sort((a, b) => b.change24h - a.change24h).slice(0, 6)
+    },
+    topLosers() {
+      return [...this.liveAllCoins].sort((a, b) => a.change24h - b.change24h).slice(0, 6)
+    },
+    marketStats() {
+      const totalCap = this.liveAllCoins.reduce((s, c) => s + (c.marketCap || 0), 0)
+      const avgChange =
+        this.liveAllCoins.length > 0
+          ? this.liveAllCoins.reduce((s, c) => s + c.change24h, 0) / this.liveAllCoins.length
+          : 0
+      return { totalCap, avgChange, count: this.liveAllCoins.length }
+    },
+  },
+  async mounted() {
+    try {
+      const [trending, top] = await Promise.all([
+        api.getTrendingCoins(),
+        api.getTopCoins(50),
+      ])
+      this.trending = trending
+      this.allCoins = top
+    } catch {
+      this.trending = localCoins.slice(0, 6)
+      this.allCoins = localCoins
+    } finally {
+      this.loading = false
+      this.startLive()
+    }
+  },
+  beforeUnmount() {
+    if (this._unsub) this._unsub()
+    livePrices.stop()
+  },
+  methods: {
+    startLive() {
+      if (this._unsub) this._unsub()
+      livePrices.start([...this.trending, ...this.allCoins])
+      this._unsub = livePrices.subscribe((data) => {
+        const { directions, tick } = applyLiveFlashes(
+          this.liveFlashes,
+          this.livePricesMap,
+          data,
+        )
+        this.liveFlashes = directions
+        this.liveFlashTick = tick
+        this.livePricesMap = { ...data }
+        this.liveTick += 1
+        this.isLive = Object.keys(data).length > 0
+      })
+    },
+    mergeLive(coin) {
+      void this.liveTick
+      const id = String(coin.coingeckoId || coin.id)
+      const live = getLiveQuote(this.livePricesMap, coin)
+      if (live?.usd == null) return coin
+      return {
+        ...coin,
+        price: live.usd,
+        change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        _flash: this.liveFlashes[id],
+        _flashTick: !!this.liveFlashTick[id],
+      }
+    },
+  },
+}
+</script>
+
+<template>
+  <div>
+    <HeroSection />
+
+    <section class="page-section">
+      <div class="container">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+          <h2 class="section-heading mb-0">Market overview</h2>
+          <LiveBadge v-if="isLive && !loading" label="Live" />
+        </div>
+
+        <div v-if="!loading" class="row g-3 mb-5">
+          <div class="col-md-4">
+            <div class="card card-crypto stat-card">
+              <p class="stat-card-label">Tracked coins</p>
+              <p class="stat-card-value">{{ marketStats.count }}</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card card-crypto stat-card">
+              <p class="stat-card-label">Combined market cap</p>
+              <p class="stat-card-value small">${{ (marketStats.totalCap / 1e12).toFixed(2) }}T</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card card-crypto stat-card">
+              <p class="stat-card-label">Avg 24h change</p>
+              <p
+                class="stat-card-value"
+                :class="marketStats.avgChange >= 0 ? 'text-positive' : 'text-negative'"
+              >
+                {{ marketStats.avgChange >= 0 ? '+' : '' }}{{ marketStats.avgChange.toFixed(2) }}%
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <LoadingSpinner v-if="loading" message="Loading dashboard..." />
+
+        <template v-else>
+          <h2 class="section-heading mb-3">Trending</h2>
+          <div class="row g-4 mb-5">
+            <div
+              v-for="coin in liveTrending"
+              :key="coin.id"
+              class="col-6 col-md-4 col-lg-2"
+            >
+              <RouterLink :to="{ name: 'CoinDetail', params: { id: coin.id } }" class="text-decoration-none">
+                <CoinCard :coin="coin" />
+              </RouterLink>
+            </div>
+          </div>
+
+          <MarketOverviewCards :coins="topGainers" title="Top gainers (24h)" />
+          <MarketOverviewCards :coins="topLosers" title="Top losers (24h)" />
+
+          <div class="card card-crypto p-4">
+            <h3 class="h5 text-emphasis mb-2">Portfolio summary</h3>
+            <p class="text-secondary small mb-3">
+              UI preview — connect a wallet or exchange account in a later stage.
+            </p>
+            <div class="row g-3">
+              <div class="col-sm-4">
+                <p class="stat-card-label mb-0">Holdings</p>
+                <p class="stat-card-value h5">—</p>
+              </div>
+              <div class="col-sm-4">
+                <p class="stat-card-label mb-0">Total value</p>
+                <p class="stat-card-value h5">—</p>
+              </div>
+              <div class="col-sm-4">
+                <p class="stat-card-label mb-0">P/L today</p>
+                <p class="stat-card-value h5">—</p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
+  </div>
+</template>
+</file>
+
+<file path="src/views/Markets.vue">
+<script>
+import { api } from "../services/api.js";
+import { livePrices, applyLiveFlashes, getLiveQuote } from "../services/livePrices.js";
+import CoinTable from "../components/CoinTable.vue";
+import SearchBar from "../components/SearchBar.vue";
+import Pagination from "../components/Pagination.vue";
+import SortSelect from "../components/SortSelect.vue";
+import LoadingSpinner from "../components/LoadingSpinner.vue";
+import EmptyState from "../components/EmptyState.vue";
+import LiveBadge from "../components/LiveBadge.vue";
+
+const ITEMS_PER_PAGE = 8;
+
+export default {
+  components: {
+    CoinTable,
+    SearchBar,
+    Pagination,
+    SortSelect,
+    LoadingSpinner,
+    EmptyState,
+    LiveBadge,
+  },
+  data() {
+    return {
+      allCoins: [],
+      searchQuery: "",
+      sortBy: "default",
+      currentPage: 1,
+      itemsPerPage: ITEMS_PER_PAGE,
+      loading: true,
+      error: null,
+      livePricesMap: {},
+      liveFlashes: {},
+      liveFlashTick: {},
+      liveTick: 0,
+      isLive: false,
+    };
+  },
+  computed: {
+    filteredCoins() {
+      const q = this.searchQuery.trim().toLowerCase();
+      let list = [...this.allCoins];
+      if (q) {
+        list = list.filter(
+          (c) =>
+            c.name.toLowerCase().includes(q) ||
+            c.symbol.toLowerCase().includes(q),
+        );
+      }
+      if (this.sortBy === "price") {
+        list.sort((a, b) => b.price - a.price);
+      } else if (this.sortBy === "gainers") {
+        list.sort((a, b) => b.change24h - a.change24h);
+      } else if (this.sortBy === "losers") {
+        list.sort((a, b) => a.change24h - b.change24h);
+      }
+      return list.map((c) => this.mergeLive(c));
+    },
+    totalPages() {
+      return Math.max(
+        1,
+        Math.ceil(this.filteredCoins.length / this.itemsPerPage),
+      );
+    },
+    paginatedCoins() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.filteredCoins.slice(start, start + this.itemsPerPage);
+    },
+  },
+  watch: {
+    searchQuery() {
+      this.currentPage = 1;
+    },
+    sortBy() {
+      this.currentPage = 1;
+    },
+    filteredCoins() {
+      if (this.currentPage > this.totalPages) {
+        this.currentPage = this.totalPages;
+      }
+    },
+  },
+  async mounted() {
+    await this.loadCoins();
+    if (this.allCoins.length) this.startLive();
+  },
+  beforeUnmount() {
+    if (this._unsub) this._unsub();
+    livePrices.stop();
+  },
+  methods: {
+    async loadCoins() {
+      this.loading = true;
+      this.error = null;
+      try {
+        this.allCoins = await api.getTopCoins(50);
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    startLive() {
+      if (this._unsub) this._unsub()
+      livePrices.start(this.allCoins)
+      this._unsub = livePrices.subscribe((data) => {
+        const { directions, tick } = applyLiveFlashes(
+          this.liveFlashes,
+          this.livePricesMap,
+          data,
+        )
+        this.liveFlashes = directions
+        this.liveFlashTick = tick
+        this.livePricesMap = { ...data }
+        this.liveTick += 1
+        this.isLive = Object.keys(data).length > 0
+      })
+    },
+    mergeLive(coin) {
+      void this.liveTick
+      const id = String(coin.coingeckoId || coin.id)
+      const live = getLiveQuote(this.livePricesMap, coin)
+      if (live?.usd == null) return coin
+      return {
+        ...coin,
+        price: live.usd,
+        change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        _flash: this.liveFlashes[id],
+        _flashTick: !!this.liveFlashTick[id],
+      }
+    },
+    onPageChange(page) {
+      this.currentPage = page;
+    },
+  },
+};
+</script>
+
+<template>
+  <section class="page-section">
+    <div class="container">
+      <div
+        class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"
+      >
+        <h1 class="page-title mb-0">Markets</h1>
+          <LiveBadge v-if="isLive && !loading" label="Live" />
+      </div>
+      <p class="page-subtitle">
+        Live prices via Binance WebSocket (REST fallback every 2s). Market list from Binance.
+      </p>
+
+      <div
+        v-if="error && !loading"
+        class="alert alert-theme small mb-3"
+        role="alert"
+      >
+        {{ error }} — showing cached/local data.
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-5 col-lg-4">
+          <SearchBar
+            v-model="searchQuery"
+            label="Search coins"
+            placeholder="Search by name or symbol..."
+          />
+        </div>
+        <div class="col-12 col-md-4 col-lg-3">
+          <SortSelect v-model="sortBy" />
+        </div>
+        <div
+          class="col-12 col-md-3 col-lg-5 d-flex align-items-end justify-content-md-end"
+        >
+          <p class="text-secondary small mb-0">
+            <template v-if="!loading">
+              {{ paginatedCoins.length }} of {{ filteredCoins.length }} coins
+            </template>
+          </p>
+        </div>
+      </div>
+
+      <LoadingSpinner v-if="loading" message="Loading markets..." />
+
+      <template v-else>
+        <EmptyState
+          v-if="filteredCoins.length === 0"
+          title="No matches"
+          message="Try a different search term or clear the filter."
+          icon="⌕"
+        />
+
+        <template v-else>
+          <CoinTable
+            :coins="paginatedCoins"
+            :start-rank="(currentPage - 1) * itemsPerPage + 1"
+          />
+          <div class="mt-4">
+            <Pagination
+              :current-page="currentPage"
+              :total-pages="totalPages"
+              @page-change="onPageChange"
+            />
+          </div>
+        </template>
+      </template>
+    </div>
+  </section>
+</template>
+</file>
+
+<file path="src/router/index.js">
+import { createRouter, createWebHistory } from "vue-router";
+import Home from "../views/Home.vue";
+import Markets from "../views/Markets.vue";
+import News from "../views/News.vue";
+import NewsDetail from "../views/NewsDetail.vue";
+import About from "../views/About.vue";
+import Login from "../views/Login.vue";
+import Register from "../views/Register.vue";
+import CoinDetail from "../views/CoinDetail.vue";
+import Watchlist from "../views/Watchlist.vue";
+import Profile from "../views/Profile.vue";
+import SetPassword from "../views/SetPassword.vue";
+import { supabase } from "../../supabase/supabase.js";
+
+const routes = [
+  { path: "/", name: "Home", component: Home },
+  { path: "/markets", name: "Markets", component: Markets },
+  { path: "/coin/:id", name: "CoinDetail", component: CoinDetail },
+  { path: "/watchlist", name: "Watchlist", component: Watchlist },
+  { path: "/news", name: "News", component: News },
+  { path: "/news/:id", name: "NewsDetail", component: NewsDetail },
+  { path: "/about", name: "About", component: About },
+  {
+    path: "/login",
+    name: "Login",
+    component: Login,
+    meta: { guestOnly: true },
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: Register,
+    meta: { guestOnly: true },
+  },
+  { path: "/set-password", name: "SetPassword", component: SetPassword },
+  {
+    path: "/profile",
+    name: "Profile",
+    component: Profile,
+    meta: { requiresAuth: true },
+  },
+];
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+  scrollBehavior() {
+    return { top: 0 };
+  },
+});
+
+router.beforeEach(async (to) => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user || null;
+
+  if (to.meta.requiresAuth && !user) {
+    return { name: "Login", query: { redirect: to.fullPath } };
+  }
+  if (to.meta.guestOnly && user) {
+    return { name: "Home" };
+  }
+});
+
+export default router;
+</file>
+
+<file path="src/views/News.vue">
+<script>
+import { fetchNews } from "../services/news.js";
+import SearchBar from "../components/SearchBar.vue";
+import Pagination from "../components/Pagination.vue";
+import NewsLikeButton from "../components/NewsLikeButton.vue";
+import LoadingSpinner from "../components/LoadingSpinner.vue";
+
+const ITEMS_PER_PAGE = 6;
+
+export default {
+  components: {
+    SearchBar,
+    Pagination,
+    NewsLikeButton,
+    LoadingSpinner,
+  },
+  data() {
+    return {
+      articles: [],
+      searchQuery: "",
+      currentPage: 1,
+      itemsPerPage: ITEMS_PER_PAGE,
+      loading: true,
+      loadError: null,
+    };
+  },
+  computed: {
+    filteredArticles() {
+      const q = this.searchQuery.trim().toLowerCase();
+      if (!q) return this.articles;
+      return this.articles.filter((article) => {
+        const dateStr = String(article.date).toLowerCase();
+        const title = article.title.toLowerCase();
+        const summary = (article.summary || "").toLowerCase();
+        const full = (article.full_content || "").toLowerCase();
+        const category = article.category.toLowerCase();
+        const source = (article.source_name || "").toLowerCase();
+        return (
+          title.includes(q) ||
+          summary.includes(q) ||
+          full.includes(q) ||
+          category.includes(q) ||
+          dateStr.includes(q) ||
+          source.includes(q)
+        );
+      });
+    },
+    totalPages() {
+      return Math.max(
+        1,
+        Math.ceil(this.filteredArticles.length / this.itemsPerPage),
+      );
+    },
+    paginatedArticles() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.filteredArticles.slice(start, start + this.itemsPerPage);
+    },
+  },
+  watch: {
+    searchQuery() {
+      this.currentPage = 1;
+    },
+    filteredArticles() {
+      if (this.currentPage > this.totalPages) {
+        this.currentPage = this.totalPages;
+      }
+    },
+  },
+  async mounted() {
+    try {
+      this.articles = await fetchNews();
+    } catch (e) {
+      this.loadError = e.message;
+    } finally {
+      this.loading = false;
+    }
+  },
+  methods: {
+    onPageChange(page) {
+      this.currentPage = page;
+    },
+    formatDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString("en-AU", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
+  },
+};
+</script>
+
+<template>
+  <section class="page-section">
+    <div class="container">
+      <h1 class="page-title">Crypto News</h1>
+      <p class="page-subtitle">
+        Browse headlines — click a card for the full article.
+      </p>
+
+      <div v-if="loadError" class="alert alert-theme small mb-3" role="alert">
+        {{ loadError }}
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-12 col-md-8 col-lg-6">
+          <SearchBar
+            v-model="searchQuery"
+            label="Search articles"
+            placeholder="Search title, summary, category, or date..."
+          />
+        </div>
+      </div>
+
+      <LoadingSpinner v-if="loading" message="Loading news..." />
+
+      <template v-else>
+        <div
+          v-if="paginatedArticles.length === 0"
+          class="text-center text-secondary py-5"
+        >
+          No articles match your search.
+        </div>
+
+        <div class="row g-4 mb-4">
+          <div
+            v-for="article in paginatedArticles"
+            :key="article.id"
+            class="col-12 col-md-6 col-lg-4"
+          >
+            <article
+              class="blog-card card-crypto card-hover-lift h-100 overflow-hidden d-flex flex-column"
+            >
+              <RouterLink
+                :to="{ name: 'NewsDetail', params: { id: article.id } }"
+                class="blog-card-link text-decoration-none flex-grow-1 d-flex flex-column"
+              >
+                <img
+                  :src="article.image_url"
+                  :alt="article.title"
+                  class="blog-img w-100"
+                  loading="lazy"
+                />
+                <div class="blog-card-body p-3 flex-grow-1">
+                  <div
+                    class="blog-card-header d-flex justify-content-between align-items-center gap-2 mb-2"
+                  >
+                    <span class="blog-category">{{ article.category }}</span>
+                    <span class="blog-date text-secondary small">{{
+                      formatDate(article.date)
+                    }}</span>
+                  </div>
+                  <h3 class="blog-title h5 mb-2">{{ article.title }}</h3>
+                  <p
+                    v-if="article.source_name"
+                    class="blog-meta small text-secondary mb-2"
+                  >
+                    {{ article.source_name }}
+                  </p>
+                  <p class="blog-excerpt small text-secondary mb-0">
+                    {{ article.summary }}
+                  </p>
+                </div>
+              </RouterLink>
+              <div class="blog-footer px-3 pb-3">
+                <NewsLikeButton :article-id="article.id" />
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <Pagination
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @page-change="onPageChange"
+        />
+      </template>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.blog-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.blog-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.blog-card-link {
+  color: inherit;
+}
+
+.blog-img {
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.blog-card-header {
+  margin-bottom: 12px;
+}
+
+.blog-category {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.blog-date {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.blog-title {
+  color: white;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+.blog-card:hover .blog-title {
+  color: #667eea;
+}
+
+.blog-meta {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+.blog-excerpt {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blog-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+</style>
+</file>
+
+</files>
