@@ -201,103 +201,109 @@ a:hover {
   color: var(--text-secondary);
 }
 
-/* Tables */
-.table-dark-custom {
-  --bs-table-bg: var(--bg-card);
-  --bs-table-color: var(--text-primary);
-  --bs-table-border-color: var(--border-color);
-  --bs-table-hover-bg: var(--bg-card-hover);
+/* ── Binance-style glow & animations (single source of truth) ── */
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(240,185,11,0.18); }
+  50%      { box-shadow: 0 0 18px 2px rgba(240,185,11,0.12); }
 }
 
-.table-dark-custom th {
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+@keyframes glow-text {
+  0%   { text-shadow: 0 0 6px rgba(240,185,11,0.25); }
+  100% { text-shadow: 0 0 14px rgba(240,185,11,0.55); }
 }
 
-.table-row-link {
-  cursor: pointer;
-  transition: background var(--transition-fast);
+.card-crypto {
+  background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.35);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
 
-/* Badges */
-.badge-category {
-  background: rgba(240, 185, 11, 0.15);
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.badge-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--positive);
-  background: rgba(14, 203, 129, 0.12);
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-}
-
-.badge-live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--positive);
-  animation: pulse-live 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse-live {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-
-.price-with-arrow {
-  justify-content: flex-end;
-}
-
-.price-with-arrow--sm .price-with-arrow__value {
-  font-size: 0.875rem;
-}
-
-.price-with-arrow--lg .price-with-arrow__value {
-  font-size: 1.75rem;
-  font-weight: 700;
-}
-
-.price-arrow {
-  display: inline-block;
-  font-size: 0.75em;
-  line-height: 1;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.price-with-arrow--lg .price-arrow {
-  font-size: 0.55em;
+.card-crypto:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+  background: linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  animation: glow-pulse 2.4s ease-in-out infinite;
 }
 
 .price-flash-up {
-  animation: flash-up 0.6s ease;
+  animation: flash-up-glow 0.6s ease;
 }
 
 .price-flash-down {
-  animation: flash-down 0.6s ease;
+  animation: flash-down-glow 0.6s ease;
 }
 
-@keyframes flash-up {
-  0% { background-color: rgba(14, 203, 129, 0.25); }
-  100% { background-color: transparent; }
+@keyframes flash-up-glow {
+  0%   { background-color: rgba(14,203,129,0.3); box-shadow: inset 0 0 20px rgba(14,203,129,0.2); }
+  100% { background-color: transparent; box-shadow: inset 0 0 0 transparent; }
 }
 
-@keyframes flash-down {
-  0% { background-color: rgba(246, 70, 93, 0.25); }
-  100% { background-color: transparent; }
+@keyframes flash-down-glow {
+  0%   { background-color: rgba(246,70,93,0.3); box-shadow: inset 0 0 20px rgba(246,70,93,0.2); }
+  100% { background-color: transparent; box-shadow: inset 0 0 0 transparent; }
 }
 
-/* Navbar / Footer */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.anim-float        { animation: float-y 2.4s ease-in-out infinite; }
+.anim-fade-slide   { animation: fade-slide-up 0.65s ease-out both; }
+.anim-fade-slide-d1{ animation: fade-slide-up 0.65s 0.12s ease-out both; }
+.anim-fade-slide-d2{ animation: fade-slide-up 0.65s 0.24s ease-out both; }
+.glow-text-hover:hover {
+  animation: glow-text 1.4s ease-in-out infinite;
+  color: var(--accent-hover);
+}
+
+/* ── Live price tick flash (shared) ── */
+
+@keyframes textFlashGreen {
+  0%   { color: #0ecb81; text-shadow: 0 0 14px rgba(14,203,129,0.9); }
+  100% { color: var(--text-emphasis); text-shadow: none; }
+}
+
+@keyframes textFlashRed {
+  0%   { color: #f6465d; text-shadow: 0 0 14px rgba(246,70,93,0.9); }
+  100% { color: var(--text-emphasis); text-shadow: none; }
+}
+
+.flash-green {
+  animation: textFlashGreen 1.4s ease-out;
+}
+
+.flash-red {
+  animation: textFlashRed 1.4s ease-out;
+}
+
+/* ── Sparkline canvas ────────────────────────── */
+
+.sparkline-canvas {
+  display: block;
+  opacity: 0.95;
+}
+
+/* ── Coin card link (remove underline on hover) ─ */
+
+.coin-card-link {
+  display: block;
+}
+
+.coin-card-link:hover {
+  text-decoration: none;
+}
+
+/* Binance-style compact stat card */
 .crypto-navbar {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
@@ -570,3 +576,225 @@ a:hover {
 .is-invalid {
   border-color: var(--negative) !important;
 }
+
+/* ── Binance-style compact stats ────────────── */
+
+.bin-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.82rem;
+}
+
+.bin-stat:last-child {
+  border-bottom: none;
+}
+
+.bin-stat-lbl {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+}
+
+.bin-stat-val {
+  font-weight: 600;
+  color: var(--text-emphasis);
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, 'Roboto Mono', monospace;
+  text-align: right;
+}
+
+.bin-stats-compact {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* ── Binance-style glow & animations ─────────── */
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(240,185,11,0.18); }
+  50%      { box-shadow: 0 0 18px 2px rgba(240,185,11,0.12); }
+}
+
+@keyframes glow-text {
+  0%   { text-shadow: 0 0 6px rgba(240,185,11,0.25); }
+  100% { text-shadow: 0 0 14px rgba(240,185,11,0.55); }
+}
+
+.card-crypto {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.card-crypto:hover {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+  animation: glow-pulse 2.4s ease-in-out infinite;
+}
+
+.price-flash-up {
+  animation: flash-up-glow 0.6s ease;
+}
+
+.price-flash-down {
+  animation: flash-down-glow 0.6s ease;
+}
+
+@keyframes flash-up-glow {
+  0%   { background-color: rgba(14,203,129,0.3); box-shadow: inset 0 0 20px rgba(14,203,129,0.2); }
+  100% { background-color: transparent; box-shadow: inset 0 0 0 transparent; }
+}
+
+@keyframes flash-down-glow {
+  0%   { background-color: rgba(246,70,93,0.3); box-shadow: inset 0 0 20px rgba(246,70,93,0.2); }
+  100% { background-color: transparent; box-shadow: inset 0 0 0 transparent; }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.anim-float        { animation: float-y 2.4s ease-in-out infinite; }
+.anim-fade-slide   { animation: fade-slide-up 0.65s ease-out both; }
+.anim-fade-slide-d1{ animation: fade-slide-up 0.65s 0.12s ease-out both; }
+.anim-fade-slide-d2{ animation: fade-slide-up 0.65s 0.24s ease-out both; }
+.glow-text-hover:hover {
+  animation: glow-text 1.4s ease-in-out infinite;
+  color: var(--accent-hover);
+}
+
+/* ── Sparkline canvas ────────────────────────── */
+
+.sparkline-canvas {
+  display: block;
+  opacity: 0.95;
+}
+
+/* ── Coin card link (remove underline on hover) ─ */
+
+.coin-card-link {
+  display: block;
+}
+
+.coin-card-link:hover {
+  text-decoration: none;
+}
+
+/* ── Binance-style glow & animations ─────────── */
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(240,185,11,0.18); }
+  50%      { box-shadow: 0 0 18px 2px rgba(240,185,11,0.12); }
+}
+
+@keyframes glow-text {
+  0%   { text-shadow: 0 0 6px rgba(240,185,11,0.25); }
+  100% { text-shadow: 0 0 14px rgba(240,185,11,0.55); }
+}
+
+.card-crypto {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.card-crypto:hover {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+  animation: glow-pulse 2.4s ease-in-out infinite;
+}
+
+.price-flash-up {
+  animation: flash-up-glow 0.6s ease;
+}
+
+.price-flash-down {
+  animation: flash-down-glow 0.6s ease;
+}
+
+@keyframes flash-up-glow {
+  0%   { background-color: rgba(14,203,129,0.3); box-shadow: inset 0 0 20px rgba(14,203,129,0.2); }
+  100% { background-color: transparent; box-shadow: inset 0 0 0 transparent; }
+}
+
+@keyframes flash-down-glow {
+  0%   { background-color: rgba(246,70,93,0.3); box-shadow: inset 0 0 20px rgba(246,70,93,0.2); }
+  100% { background-color: transparent; box-shadow: inset 0 0 0 transparent; }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.anim-float        { animation: float-y 2.4s ease-in-out infinite; }
+.anim-fade-slide   { animation: fade-slide-up 0.65s ease-out both; }
+.anim-fade-slide-d1{ animation: fade-slide-up 0.65s 0.12s ease-out both; }
+.anim-fade-slide-d2{ animation: fade-slide-up 0.65s 0.24s ease-out both; }
+.glow-text-hover:hover {
+  animation: glow-text 1.4s ease-in-out infinite;
+  color: var(--accent-hover);
+}
+
+/* Binance-style compact stat card */
+.bin-stat {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bin-stat:last-child {
+  border-bottom: none;
+}
+
+.bin-stat-lbl {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bin-stat-val {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-emphasis);
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, 'Roboto Mono', monospace;
+}
+
+/* ── Live price tick flash ─────────────────── */
+
+@keyframes textFlashGreen {
+  0%   { color: #0ecb81; text-shadow: 0 0 14px rgba(14,203,129,0.9); }
+  100% { color: var(--text-emphasis); text-shadow: none; }
+}
+
+@keyframes textFlashRed {
+  0%   { color: #f6465d; text-shadow: 0 0 14px rgba(246,70,93,0.9); }
+  100% { color: var(--text-emphasis); text-shadow: none; }
+}
+
+.flash-green {
+  animation: textFlashGreen 1.4s ease-out;
+}
+
+.flash-red {
+  animation: textFlashRed 1.4s ease-out;
+}
+</style>

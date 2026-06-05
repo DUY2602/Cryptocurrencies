@@ -3,6 +3,8 @@ import { fetchNewsById } from "../services/news.js";
 import NewsLikeButton from "../components/NewsLikeButton.vue";
 import LoadingSpinner from "../components/LoadingSpinner.vue";
 import EmptyState from "../components/EmptyState.vue";
+import { getComments, postComment, removeComment } from "../composables/useComments.js";
+import { user } from "../composables/useAuth.js";
 
 export default {
   components: { NewsLikeButton, LoadingSpinner, EmptyState },
@@ -11,39 +13,64 @@ export default {
       article: null,
       loading: true,
       error: null,
-    };
+      newComment: '',
+      submitting: false,
+      comments: [],
+    }
   },
   watch: {
     "$route.params.id": {
       immediate: true,
       handler() {
-        this.loadArticle();
+        this.loadArticle()
       },
     },
   },
   methods: {
     async loadArticle() {
-      this.loading = true;
-      this.error = null;
-      this.article = null;
+      this.loading = true
+      this.error = null
+      this.article = null
       try {
-        this.article = await fetchNewsById(this.$route.params.id);
-        if (!this.article) this.error = "Article not found";
+        this.article = await fetchNewsById(this.$route.params.id)
+        if (!this.article) {
+          this.error = "Article not found"
+        } else {
+          this.comments = await getComments(this.article.id)
+        }
       } catch (e) {
-        this.error = e.message;
+        this.error = e.message
       } finally {
-        this.loading = false;
+        this.loading = false
       }
+    },
+    submitComment() {
+      if (!this.newComment.trim() || !this.article || !this.user) return
+      this.submitting = true
+      postComment(this.article.id, this.newComment, this.user).then((comment) => {
+        this.submitting = false
+        if (comment) {
+          this.newComment = ''
+          this.comments = [...this.comments, comment]
+        }
+      })
+    },
+    removeComment(comment) {
+      removeComment(comment.id, this.user).then((ok) => {
+        if (ok) {
+          this.comments = this.comments.filter((c) => c.id !== comment.id)
+        }
+      })
     },
     formatDate(dateStr) {
       return new Date(dateStr).toLocaleDateString("en-AU", {
         year: "numeric",
         month: "long",
         day: "numeric",
-      });
+      })
     },
   },
-};
+}
 </script>
 
 <template>
@@ -66,6 +93,7 @@ export default {
           type="button"
           class="btn btn-outline-accent btn-sm mb-4"
           @click="$router.back()"
+          aria-label="Go back"
         >
           ← Back
         </button>
@@ -78,10 +106,8 @@ export default {
 
         <header class="mb-4">
           <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-            <span class="blog-category">{{ article.category }}</span>
-            <span class="text-secondary small">{{
-              formatDate(article.date)
-            }}</span>
+            <span class="blog-category" role="status">{{ article.category }}</span>
+            <time class="text-secondary small" :datetime="article.date">{{ formatDate(article.date) }}</time>
             <span v-if="article.source_name" class="text-secondary small"
               >· {{ article.source_name }}</span
             >
@@ -92,6 +118,7 @@ export default {
         <div
           class="article-body text-secondary"
           v-html="article.full_content"
+          role="article"
         ></div>
 
         <footer
@@ -108,6 +135,66 @@ export default {
             Read original source
           </a>
         </footer>
+
+        <section class="comments-section mt-5" aria-labelledby="commentsHeading">
+          <h2 id="commentsHeading" class="h4 mb-3">Comments</h2>
+
+          <div v-if="comments.length === 0" class="text-secondary small mb-4">
+            No comments yet.
+          </div>
+
+          <div class="comments-list mb-4">
+            <div
+              v-for="comment in comments"
+              :key="comment.id"
+              class="comment-card card-crypto card-hover-lift p-3 mb-2"
+            >
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <strong class="comment-author">{{ comment.userName }}</strong>
+                  <span class="text-secondary small ms-2">
+                    <time :datetime="comment.createdAt">{{ formatDate(comment.createdAt) }}</time>
+                  </span>
+                </div>
+                <button
+                  v-if="user && comment.userId === user.id"
+                  type="button"
+                  class="btn btn-sm btn-outline-accent py-0 px-2"
+                  aria-label="Delete comment by {{ comment.userName }}"
+                  @click="removeComment(comment)"
+                >
+                  ×
+                </button>
+              </div>
+              <p class="mb-0 mt-2 text-secondary">{{ comment.text }}</p>
+            </div>
+          </div>
+
+          <form
+            v-if="user"
+            class="comment-form"
+            @submit.prevent="submitComment"
+            aria-label="Add a comment"
+          >
+            <label for="newComment" class="form-label visually-hidden">Your comment</label>
+            <textarea
+              id="newComment"
+              v-model="newComment"
+              class="form-control mb-2"
+              rows="3"
+              placeholder="Write a comment..."
+              :disabled="submitting"
+              aria-required="true"
+            ></textarea>
+            <button
+              type="submit"
+              class="btn btn-accent btn-sm"
+              :disabled="submitting || !newComment.trim()"
+            >
+              {{ submitting ? 'Posting...' : 'Post comment' }}
+            </button>
+          </form>
+        </section>
       </article>
     </div>
   </section>
@@ -186,35 +273,16 @@ article {
   color: rgba(255, 255, 255, 0.7);
 }
 
-.article-body :deep(a) {
-  color: #667eea;
-  text-decoration: none;
-  transition: color 0.3s ease;
+.comment-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.article-body :deep(a:hover) {
-  color: #764ba2;
-  text-decoration: underline;
+.comment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-.article-body :deep(code) {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 0.9em;
-}
-
-.article-body :deep(pre) {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 1em;
-  border-radius: 8px;
-  overflow-x: auto;
-  margin: 1.5em 0;
-}
-
-.article-body :deep(pre code) {
-  background: none;
-  padding: 0;
+.comment-author {
+  color: var(--text-emphasis);
 }
 </style>

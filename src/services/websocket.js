@@ -62,15 +62,18 @@ class LivePriceWebSocket {
     if (!this.trackingActive) return
     if (this.ws?.readyState === WebSocket.OPEN) return
     if (this.ws?.readyState === WebSocket.CONNECTING) return
+    if (this._connecting) return
 
-    this.closeSocket()
-    this.intentionalClose = false
-    this.wsConnected = false
-
+    this._connecting = true
     try {
+      this.closeSocket()
+      this.intentionalClose = false
+      this.wsConnected = false
+
       this.ws = new WebSocket(BINANCE_WS)
 
       this.ws.onopen = () => {
+        this._connecting = false
         this.reconnectAttempts = 0
         this.wsConnected = true
         console.info('[WebSocket] Binance connected')
@@ -82,10 +85,12 @@ class LivePriceWebSocket {
       }
 
       this.ws.onerror = () => {
+        this._connecting = false
         this.wsConnected = false
       }
 
       this.ws.onclose = () => {
+        this._connecting = false
         this.ws = null
         this.wsConnected = false
         if (!this.intentionalClose && this.trackingActive) {
@@ -93,6 +98,7 @@ class LivePriceWebSocket {
         }
       }
     } catch {
+      this._connecting = false
       this.scheduleReconnect()
     }
   }
@@ -106,17 +112,24 @@ class LivePriceWebSocket {
     if (!Number.isNaN(open) && open > 0) {
       change = ((price - open) / open) * 100
     }
+    const volume = parseFloat(t.q)
 
-    return { price, change }
+    return {
+      price,
+      change,
+      volume: Number.isNaN(volume) ? 0 : volume,
+    }
   }
 
   parseFullTicker(t) {
     const price = parseFloat(t.c)
     const change = parseFloat(t.P)
+    const volume = parseFloat(t.q) || (parseFloat(t.v) * price)
     if (Number.isNaN(price)) return null
     return {
       price,
       change: Number.isNaN(change) ? 0 : change,
+      volume: Number.isNaN(volume) ? 0 : volume,
     }
   }
 
@@ -143,11 +156,16 @@ class LivePriceWebSocket {
           const price = parseFloat(row.lastPrice)
           const change = parseFloat(row.priceChangePercent)
           if (Number.isNaN(price)) continue
+          const volume = parseFloat(row.quoteVolume)
           this.prices[localId] = {
             usd: price,
             usd_24h_change: Number.isNaN(change)
               ? this.prices[localId]?.usd_24h_change ?? 0
               : change,
+            usd_24h_volume: Number.isNaN(volume)
+              ? this.prices[localId]?.usd_24h_volume ?? 0
+              : volume,
+            timestamp: row.closeTime || Date.now(),
           }
           changed = true
         }
@@ -197,6 +215,8 @@ class LivePriceWebSocket {
       this.prices[localId] = {
         usd: parsed.price,
         usd_24h_change: parsed.change,
+        usd_24h_volume: parsed.volume,
+        timestamp: t.E || Date.now(),
       }
       matched += 1
     }
