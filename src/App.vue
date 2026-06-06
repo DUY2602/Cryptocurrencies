@@ -1,17 +1,11 @@
-<script setup>
-import Navbar from './components/Navbar.vue'
-import Footer from './components/Footer.vue'
-import AiAssistant from './components/AiAssistant.vue'
-</script>
-
 <template>
   <div class="app-wrapper d-flex flex-column min-vh-100">
     <Navbar />
     <main class="flex-grow-1">
       <RouterView v-slot="{ Component }">
-        <transition name="page" mode="out-in">
+        <Transition name="page" appear>
           <component :is="Component" />
-        </transition>
+        </Transition>
       </RouterView>
     </main>
     <Footer />
@@ -19,19 +13,25 @@ import AiAssistant from './components/AiAssistant.vue'
   </div>
 </template>
 
+<script setup>
+import Navbar from './components/Navbar.vue'
+import Footer from './components/Footer.vue'
+import AiAssistant from './components/AiAssistant.vue'
+</script>
+
 <style>
-.page-enter-active,
+.page-enter-active {
+  animation: pageIn 0.32s ease-out both;
+}
 .page-leave-active {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: pageOut 0.18s ease-in both;
 }
-
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
+@keyframes pageOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
 }
 </style>

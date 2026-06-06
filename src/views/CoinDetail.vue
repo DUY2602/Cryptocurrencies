@@ -2,10 +2,8 @@
 import { api } from '../services/api.js'
 import { livePrices, applyLiveFlashes, getLiveQuote } from '../services/livePrices.js'
 import StatCard from '../components/StatCard.vue'
-import PriceWithArrow from '../components/PriceWithArrow.vue'
-import ChartPlaceholder from '../components/ChartPlaceholder.vue'
+import CoinDashboard from '../components/CoinDashboard.vue'
 import FavoriteButton from '../components/FavoriteButton.vue'
-import VoteButtons from '../components/VoteButtons.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import EmptyState from '../components/EmptyState.vue'
 import LiveBadge from '../components/LiveBadge.vue'
@@ -14,10 +12,8 @@ import { formatPrice, formatMarketCap, formatVolume, formatChange, changeClass }
 export default {
   components: {
     StatCard,
-    PriceWithArrow,
-    ChartPlaceholder,
+    CoinDashboard,
     FavoriteButton,
-    VoteButtons,
     LoadingSpinner,
     EmptyState,
     LiveBadge,
@@ -105,6 +101,7 @@ export default {
         ...coin,
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        volume24h: live.usd_24h_volume ?? coin.volume24h ?? 0,
         _flash: this.liveFlashes[id],
         _flashTick: !!this.liveFlashTick[id],
       }
@@ -151,26 +148,8 @@ export default {
         </div>
 
         <div class="row g-4 mb-4">
-          <div class="col-lg-8">
-            <ChartPlaceholder :label="`${displayCoin.symbol} price chart placeholder`" />
-          </div>
-          <div class="col-lg-4">
-            <div class="card card-crypto p-4 h-100">
-              <p class="stat-card-label mb-1">Current price</p>
-              <p class="mb-2">
-                <PriceWithArrow
-                  :price="displayCoin.price"
-                  :flash="displayCoin._flash"
-                  :pulse="!!displayCoin._flashTick"
-                  size="lg"
-                  :inline="false"
-                />
-              </p>
-              <p class="fw-semibold mb-3" :class="changeCls">
-                {{ formatChange(displayCoin.change24h) }} (24h)
-              </p>
-              <VoteButtons :coin-id="displayCoin.id" />
-            </div>
+          <div class="col-12">
+            <CoinDashboard :coin="displayCoin" />
           </div>
         </div>
 
