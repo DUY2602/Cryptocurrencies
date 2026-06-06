@@ -23,9 +23,9 @@ export default {
     relatedArticles() {
       if (!this.article || !this.allArticles.length) return [];
       return this.allArticles
-        .filter(a => 
-          a.id !== this.article.id && 
-          (a.category === this.article.category || 
+        .filter(a =>
+          a.id !== this.article.id &&
+          (a.category === this.article.category ||
            a.tags?.some(tag => this.article.tags?.includes(tag)))
         )
         .slice(0, 4);
@@ -105,9 +105,9 @@ export default {
         title="Article not found"
         :message="error || 'This article does not exist.'"
       >
-        <RouterLink to="/news" class="btn btn-accent btn-sm mt-3"
-          >Back to News</RouterLink
-        >
+        <RouterLink to="/news" class="btn btn-accent btn-sm mt-3">
+          Back to News
+        </RouterLink>
       </EmptyState>
 
       <article v-else>
@@ -126,94 +126,59 @@ export default {
           class="article-hero-img w-100 rounded-3 mb-4"
         />
 
-        <header class="mb-4">
-          <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-            <span class="blog-category" role="status">{{ article.category }}</span>
-            <time class="text-secondary small" :datetime="article.date">{{ formatDate(article.date) }}</time>
-            <span v-if="article.source_name" class="text-secondary small"
-              >· {{ article.source_name }}</span
-            >
-              ← Back
-            </button>
+        <header class="article-header mb-4">
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+            <span class="blog-category">{{ article.category }}</span>
+            <span v-if="article.read_time" class="read-time-badge text-secondary small">
+              {{ article.read_time }} min read
+            </span>
+          </div>
+          <h1 class="page-title mb-3">{{ article.title }}</h1>
 
-            <img
-              :src="article.image_url"
-              :alt="article.title"
-              class="article-hero-img w-100 rounded-3 mb-4"
-            />
-
-            <header class="article-header mb-4">
-              <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                <span class="blog-category">{{ article.category }}</span>
-                <span v-if="article.read_time" class="read-time-badge text-secondary small">
-                  {{ article.read_time }} min read
-                </span>
-              </div>
-              <h1 class="page-title mb-3">{{ article.title }}</h1>
-              
-              <div class="article-meta d-flex flex-wrap gap-4 align-items-center pt-3 border-top border-secondary border-opacity-25">
-                <div v-if="article.author" class="author-section d-flex align-items-center gap-3">
-                  <img
-                    v-if="article.author.avatar"
-                    :src="article.author.avatar"
-                    :alt="article.author.name"
-                    class="author-avatar-lg rounded-circle"
-                    width="48"
-                    height="48"
-                  />
-                  <div class="author-info">
-                    <div class="author-name fw-bold">{{ article.author.name }}</div>
-                    <div class="text-secondary small">
-                      {{ formatDateTime(article.date) }}
-                      <span v-if="article.source_name"> · {{ article.source_name }}</span>
-                    </div>
-                  </div>
-                </div>
-                <div v-else class="text-secondary small">
+          <div class="article-meta d-flex flex-wrap gap-4 align-items-center pt-3 border-top border-secondary border-opacity-25">
+            <div v-if="article.author" class="author-section d-flex align-items-center gap-3">
+              <img
+                v-if="article.author.avatar"
+                :src="article.author.avatar"
+                :alt="article.author.name"
+                class="author-avatar-lg rounded-circle"
+                width="48"
+                height="48"
+              />
+              <div class="author-info">
+                <div class="author-name fw-bold">{{ article.author.name }}</div>
+                <div class="text-secondary small">
                   {{ formatDateTime(article.date) }}
                   <span v-if="article.source_name"> · {{ article.source_name }}</span>
                 </div>
               </div>
-            </header>
-
-            <div
-              class="article-body text-secondary"
-              v-html="article.full_content"
-            ></div>
-
-            <div v-if="article.tags && article.tags.length" class="article-tags-section mt-5 pt-4 border-top border-secondary border-opacity-25">
-              <h5 class="mb-3 text-white">Tags</h5>
-              <div class="tags-list d-flex flex-wrap gap-2">
-                <RouterLink
-                  v-for="tag in article.tags"
-                  :key="tag"
-                  :to="{ name: 'News', query: { q: tag } }"
-                  class="tag-item text-decoration-none"
-                >
-                  #{{ tag }}
-                </RouterLink>
-              </div>
             </div>
-
-            <footer class="article-footer d-flex flex-wrap gap-3 align-items-center mt-5 pt-4 border-top border-secondary border-opacity-25">
-              <NewsLikeButton :article-id="article.id" />
-              <a
-                v-if="article.source_url"
-                :href="article.source_url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-sm btn-outline-accent ms-auto"
-              >
-                Read original source →
-              </a>
-            </footer>
+            <div v-else class="text-secondary small">
+              {{ formatDateTime(article.date) }}
+              <span v-if="article.source_name"> · {{ article.source_name }}</span>
+            </div>
           </div>
+        </header>
 
         <div
           class="article-body text-secondary"
           v-html="article.full_content"
           role="article"
         ></div>
+
+        <div v-if="article.tags && article.tags.length" class="article-tags-section mt-5 pt-4 border-top border-secondary border-opacity-25">
+          <h5 class="mb-3 text-white">Tags</h5>
+          <div class="tags-list d-flex flex-wrap gap-2">
+            <RouterLink
+              v-for="tag in article.tags"
+              :key="tag"
+              :to="{ name: 'News', query: { q: tag } }"
+              class="tag-item text-decoration-none"
+            >
+              #{{ tag }}
+            </RouterLink>
+          </div>
+        </div>
 
         <footer
           class="d-flex flex-wrap gap-3 align-items-center mt-4 pt-4 border-top border-secondary border-opacity-25"
@@ -254,7 +219,7 @@ export default {
                   v-if="user && comment.userId === user.id"
                   type="button"
                   class="btn btn-sm btn-outline-accent py-0 px-2"
-                  aria-label="Delete comment by {{ comment.userName }}"
+                  :aria-label="`Delete comment by ${comment.userName}`"
                   @click="removeComment(comment)"
                 >
                   ×
@@ -513,15 +478,15 @@ article {
   .article-hero-img {
     max-height: 300px;
   }
-  
+
   .article-body {
     font-size: 16px;
   }
-  
+
   .article-body :deep(h2) {
     font-size: 22px;
   }
-  
+
   .article-body :deep(h3) {
     font-size: 20px;
   }
