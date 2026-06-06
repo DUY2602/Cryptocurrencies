@@ -1,10 +1,14 @@
 <script>
-import { fetchNews, fetchNewsById } from "../services/news.js";
-import NewsLikeButton from "../components/NewsLikeButton.vue";
-import LoadingSpinner from "../components/LoadingSpinner.vue";
-import EmptyState from "../components/EmptyState.vue";
-import { getComments, postComment, removeComment } from "../composables/useComments.js";
-import { user } from "../composables/useAuth.js";
+import { fetchNews, fetchNewsById } from "../../services/news.js";
+import NewsLikeButton from "../../components/NewsLikeButton.vue";
+import LoadingSpinner from "../../components/LoadingSpinner.vue";
+import EmptyState from "../../components/EmptyState.vue";
+import {
+  getComments,
+  postComment,
+  removeComment,
+} from "../../composables/useComments.js";
+import { user } from "../../composables/useAuth.js";
 
 export default {
   components: { NewsLikeButton, LoadingSpinner, EmptyState },
@@ -14,19 +18,20 @@ export default {
       allArticles: [],
       loading: true,
       error: null,
-      newComment: '',
+      newComment: "",
       submitting: false,
       comments: [],
-    }
+    };
   },
   computed: {
     relatedArticles() {
       if (!this.article || !this.allArticles.length) return [];
       return this.allArticles
-        .filter(a =>
-          a.id !== this.article.id &&
-          (a.category === this.article.category ||
-           a.tags?.some(tag => this.article.tags?.includes(tag)))
+        .filter(
+          (a) =>
+            a.id !== this.article.id &&
+            (a.category === this.article.category ||
+              a.tags?.some((tag) => this.article.tags?.includes(tag))),
         )
         .slice(0, 4);
     },
@@ -35,52 +40,54 @@ export default {
     "$route.params.id": {
       immediate: true,
       handler() {
-        this.loadArticle()
+        this.loadArticle();
       },
     },
   },
   methods: {
     async loadArticle() {
-      this.loading = true
-      this.error = null
-      this.article = null
+      this.loading = true;
+      this.error = null;
+      this.article = null;
       try {
-        this.article = await fetchNewsById(this.$route.params.id)
+        this.article = await fetchNewsById(this.$route.params.id);
         if (!this.article) {
-          this.error = "Article not found"
+          this.error = "Article not found";
         } else {
-          this.comments = await getComments(this.article.id)
+          this.comments = await getComments(this.article.id);
         }
       } catch (e) {
-        this.error = e.message
+        this.error = e.message;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
     submitComment() {
-      if (!this.newComment.trim() || !this.article || !this.user) return
-      this.submitting = true
-      postComment(this.article.id, this.newComment, this.user).then((comment) => {
-        this.submitting = false
-        if (comment) {
-          this.newComment = ''
-          this.comments = [...this.comments, comment]
-        }
-      })
+      if (!this.newComment.trim() || !this.article || !this.user) return;
+      this.submitting = true;
+      postComment(this.article.id, this.newComment, this.user).then(
+        (comment) => {
+          this.submitting = false;
+          if (comment) {
+            this.newComment = "";
+            this.comments = [...this.comments, comment];
+          }
+        },
+      );
     },
     removeComment(comment) {
       removeComment(comment.id, this.user).then((ok) => {
         if (ok) {
-          this.comments = this.comments.filter((c) => c.id !== comment.id)
+          this.comments = this.comments.filter((c) => c.id !== comment.id);
         }
-      })
+      });
     },
     formatDate(dateStr) {
       return new Date(dateStr).toLocaleDateString("en-AU", {
         year: "numeric",
         month: "long",
         day: "numeric",
-      })
+      });
     },
     formatDateTime(dateStr) {
       return new Date(dateStr).toLocaleString("en-AU", {
@@ -92,7 +99,7 @@ export default {
       });
     },
   },
-}
+};
 </script>
 
 <template>
@@ -129,14 +136,22 @@ export default {
         <header class="article-header mb-4">
           <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
             <span class="blog-category">{{ article.category }}</span>
-            <span v-if="article.read_time" class="read-time-badge text-secondary small">
+            <span
+              v-if="article.read_time"
+              class="read-time-badge text-secondary small"
+            >
               {{ article.read_time }} min read
             </span>
           </div>
           <h1 class="page-title mb-3">{{ article.title }}</h1>
 
-          <div class="article-meta d-flex flex-wrap gap-4 align-items-center pt-3 border-top border-secondary border-opacity-25">
-            <div v-if="article.author" class="author-section d-flex align-items-center gap-3">
+          <div
+            class="article-meta d-flex flex-wrap gap-4 align-items-center pt-3 border-top border-secondary border-opacity-25"
+          >
+            <div
+              v-if="article.author"
+              class="author-section d-flex align-items-center gap-3"
+            >
               <img
                 v-if="article.author.avatar"
                 :src="article.author.avatar"
@@ -149,13 +164,17 @@ export default {
                 <div class="author-name fw-bold">{{ article.author.name }}</div>
                 <div class="text-secondary small">
                   {{ formatDateTime(article.date) }}
-                  <span v-if="article.source_name"> · {{ article.source_name }}</span>
+                  <span v-if="article.source_name">
+                    · {{ article.source_name }}</span
+                  >
                 </div>
               </div>
             </div>
             <div v-else class="text-secondary small">
               {{ formatDateTime(article.date) }}
-              <span v-if="article.source_name"> · {{ article.source_name }}</span>
+              <span v-if="article.source_name">
+                · {{ article.source_name }}</span
+              >
             </div>
           </div>
         </header>
@@ -166,7 +185,10 @@ export default {
           role="article"
         ></div>
 
-        <div v-if="article.tags && article.tags.length" class="article-tags-section mt-5 pt-4 border-top border-secondary border-opacity-25">
+        <div
+          v-if="article.tags && article.tags.length"
+          class="article-tags-section mt-5 pt-4 border-top border-secondary border-opacity-25"
+        >
           <h5 class="mb-3 text-white">Tags</h5>
           <div class="tags-list d-flex flex-wrap gap-2">
             <RouterLink
@@ -195,7 +217,10 @@ export default {
           </a>
         </footer>
 
-        <section class="comments-section mt-5" aria-labelledby="commentsHeading">
+        <section
+          class="comments-section mt-5"
+          aria-labelledby="commentsHeading"
+        >
           <h2 id="commentsHeading" class="h4 mb-3">Comments</h2>
 
           <div v-if="comments.length === 0" class="text-secondary small mb-4">
@@ -208,11 +233,15 @@ export default {
               :key="comment.id"
               class="comment-card card-crypto card-hover-lift p-3 mb-2"
             >
-              <div class="d-flex justify-content-between align-items-start gap-2">
+              <div
+                class="d-flex justify-content-between align-items-start gap-2"
+              >
                 <div>
                   <strong class="comment-author">{{ comment.userName }}</strong>
                   <span class="text-secondary small ms-2">
-                    <time :datetime="comment.createdAt">{{ formatDate(comment.createdAt) }}</time>
+                    <time :datetime="comment.createdAt">{{
+                      formatDate(comment.createdAt)
+                    }}</time>
                   </span>
                 </div>
                 <button
@@ -235,7 +264,9 @@ export default {
             @submit.prevent="submitComment"
             aria-label="Add a comment"
           >
-            <label for="newComment" class="form-label visually-hidden">Your comment</label>
+            <label for="newComment" class="form-label visually-hidden"
+              >Your comment</label
+            >
             <textarea
               id="newComment"
               v-model="newComment"
@@ -250,7 +281,7 @@ export default {
               class="btn btn-accent btn-sm"
               :disabled="submitting || !newComment.trim()"
             >
-              {{ submitting ? 'Posting...' : 'Post comment' }}
+              {{ submitting ? "Posting..." : "Post comment" }}
             </button>
           </form>
         </section>
@@ -269,7 +300,7 @@ export default {
   object-fit: cover;
   width: 100%;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .article-header {
@@ -288,7 +319,7 @@ export default {
 }
 
 .read-time-badge {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   padding: 4px 12px;
   border-radius: 12px;
 }
@@ -313,7 +344,7 @@ article {
 .article-body {
   font-size: 18px;
   line-height: 1.8;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .article-body :deep(p) {
@@ -351,11 +382,13 @@ article {
   padding-left: 1.5em;
   margin: 1.5em 0;
   font-style: italic;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .comment-card {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .comment-card:hover {
@@ -379,7 +412,7 @@ article {
 }
 
 .tag-item {
-  background: rgba(102,126,234,0.15);
+  background: rgba(102, 126, 234, 0.15);
   color: #667eea;
   padding: 6px 14px;
   border-radius: 20px;
@@ -389,7 +422,7 @@ article {
 }
 
 .tag-item:hover {
-  background: rgba(102,126,234,0.25);
+  background: rgba(102, 126, 234, 0.25);
   color: #764ba2;
 }
 
@@ -403,7 +436,11 @@ article {
 }
 
 .sidebar-header {
-  background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.1) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
 }
 
 .sidebar-title {
@@ -419,7 +456,7 @@ article {
 
 .related-item {
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.2s ease;
 }
 
@@ -465,13 +502,13 @@ article {
 }
 
 .share-buttons .btn {
-  border-color: rgba(102,126,234,0.3);
+  border-color: rgba(102, 126, 234, 0.3);
   transition: all 0.2s ease;
 }
 
 .share-buttons .btn:hover {
-  background: rgba(102,126,234,0.1);
-  border-color: rgba(102,126,234,0.5);
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.5);
 }
 
 @media (max-width: 991.98px) {

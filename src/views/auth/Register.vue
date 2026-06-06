@@ -1,15 +1,15 @@
 <script>
-import { useAuth } from "../composables/useAuth.js";
+import { useAuth } from "../../composables/useAuth.js";
 
 export default {
   setup() {
-    const { login, logout } = useAuth();
-    return { login, logout };
+    const { requestRegistration } = useAuth();
+    return { requestRegistration };
   },
   data() {
     return {
       email: "",
-      password: "",
+      name: "",
       submitted: false,
       loading: false,
       message: "",
@@ -21,12 +21,8 @@ export default {
       if (!this.submitted && !this.email) return null;
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
     },
-    passwordValid() {
-      if (!this.submitted && !this.password) return null;
-      return this.password.length >= 1;
-    },
     formValid() {
-      return this.emailValid && this.passwordValid;
+      return this.emailValid;
     },
   },
   methods: {
@@ -43,15 +39,15 @@ export default {
       this.submitted = true;
       if (this.formValid) {
         this.loading = true;
-        const result = await this.login(this.email, this.password);
+        const result = await this.requestRegistration(this.email, this.name);
         this.loading = false;
 
         if (result.success) {
           this.showMessage(result.message, "success");
-          const redirect = this.$route.query.redirect || "/";
+          // Redirect after successful registration
           setTimeout(() => {
-            this.$router.push(redirect);
-          }, 500);
+            this.$router.push("/login");
+          }, 3000);
         } else {
           this.showMessage(result.message, "error");
         }
@@ -67,9 +63,9 @@ export default {
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-5">
           <div class="card card-crypto p-4 p-md-5">
-            <h1 class="page-title text-center mb-1">Login</h1>
+            <h1 class="page-title text-center mb-1">Register</h1>
             <p class="text-secondary text-center mb-4 small">
-              Sign in to your account
+              Create your account with email verification
             </p>
 
             <!-- Alert message -->
@@ -83,9 +79,22 @@ export default {
 
             <form novalidate @submit="onSubmit">
               <div class="mb-3">
-                <label for="loginEmail" class="form-label">Email address</label>
+                <label for="regName" class="form-label">Name (optional)</label>
                 <input
-                  id="loginEmail"
+                  id="regName"
+                  v-model="name"
+                  type="text"
+                  class="form-control"
+                  placeholder="Your name"
+                  autocomplete="name"
+                  :disabled="loading"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="regEmail" class="form-label">Email address</label>
+                <input
+                  id="regEmail"
                   v-model="email"
                   type="email"
                   class="form-control"
@@ -102,29 +111,6 @@ export default {
                 </div>
               </div>
 
-              <div class="mb-4">
-                <label for="loginPassword" class="form-label">Password</label>
-                <input
-                  id="loginPassword"
-                  v-model="password"
-                  type="password"
-                  class="form-control"
-                  :class="{
-                    'is-valid': submitted && passwordValid,
-                    'is-invalid': submitted && !passwordValid,
-                  }"
-                  placeholder="Your password"
-                  autocomplete="current-password"
-                  :disabled="loading"
-                />
-                <div
-                  v-if="submitted && !passwordValid"
-                  class="invalid-feedback"
-                >
-                  Please enter your password.
-                </div>
-              </div>
-
               <button
                 type="submit"
                 class="btn btn-accent w-100 mb-3"
@@ -134,12 +120,12 @@ export default {
                   v-if="loading"
                   class="spinner-border spinner-border-sm me-2"
                 ></span>
-                {{ loading ? "Signing in..." : "Sign in" }}
+                {{ loading ? "Sending..." : "Send verification email" }}
               </button>
 
               <p class="text-center text-secondary small mb-0">
-                Don't have an account?
-                <RouterLink to="/register">Register</RouterLink>
+                Already have an account?
+                <RouterLink to="/login">Login</RouterLink>
               </p>
             </form>
           </div>
@@ -148,3 +134,13 @@ export default {
     </div>
   </section>
 </template>
+
+<style scoped>
+.is-valid {
+  border-color: var(--positive) !important;
+}
+
+.is-invalid {
+  border-color: var(--negative) !important;
+}
+</style>

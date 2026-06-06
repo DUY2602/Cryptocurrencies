@@ -1,15 +1,24 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Home from "../views/Home.vue";
-import Markets from "../views/Markets.vue";
-import News from "../views/News.vue";
-import NewsDetail from "../views/NewsDetail.vue";
-import About from "../views/About.vue";
-import Login from "../views/Login.vue";
-import Register from "../views/Register.vue";
-import CoinDetail from "../views/CoinDetail.vue";
-import Watchlist from "../views/Watchlist.vue";
-import Profile from "../views/Profile.vue";
-import SetPassword from "../views/SetPassword.vue";
+import Home from "../views/general/Home.vue";
+import Markets from "../views/coins/Markets.vue";
+import News from "../views/news/News.vue";
+import NewsDetail from "../views/news/NewsDetail.vue";
+import About from "../views/general/About.vue";
+import Login from "../views/auth/Login.vue";
+import Register from "../views/auth/Register.vue";
+import CoinDetail from "../views/coins/CoinDetail.vue";
+import Watchlist from "../views/coins/Watchlist.vue";
+import Profile from "../views/auth/Profile.vue";
+import SetPassword from "../views/auth/SetPassword.vue";
+
+// Admin
+import AdminLayout from "../views/admin/AdminLayout.vue";
+import AdminDashboard from "../views/admin/AdminDashboard.vue";
+import AdminNews from "../views/admin/AdminNews.vue";
+import AdminNewsEdit from "../views/admin/AdminNewsEdit.vue";
+import AdminUsers from "../views/admin/AdminUsers.vue";
+import AdminSettings from "../views/admin/AdminSettings.vue";
+
 import { supabase } from "../../supabase/supabase.js";
 
 const routes = [
@@ -39,6 +48,40 @@ const routes = [
     component: Profile,
     meta: { requiresAuth: true },
   },
+
+  /* ─────────────── Admin section ─────────────── */
+  {
+    path: "/admin",
+    component: AdminLayout,
+    meta: { requiresAuth: true, requiresAdmin: true },
+    children: [
+      {
+        path: "",
+        name: "AdminDashboard",
+        component: AdminDashboard,
+      },
+      {
+        path: "news",
+        name: "AdminNews",
+        component: AdminNews,
+      },
+      {
+        path: "news/:id",
+        name: "AdminNewsEdit",
+        component: AdminNewsEdit,
+      },
+      {
+        path: "users",
+        name: "AdminUsers",
+        component: AdminUsers,
+      },
+      {
+        path: "settings",
+        name: "AdminSettings",
+        component: AdminSettings,
+      },
+    ],
+  },
 ];
 
 const router = createRouter({
@@ -61,6 +104,9 @@ router.beforeEach(async (to) => {
   if (to.meta.guestOnly && user) {
     return { name: "Home" };
   }
+  // requiresAdmin: bail out (the layout itself renders a friendly
+  // "promote yourself" screen) and let the AdminLayout handle the
+  // permission display.
 });
 
 export default router;

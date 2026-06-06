@@ -1,9 +1,9 @@
 <script>
-import { fetchNews } from "../services/news.js";
-import SearchBar from "../components/SearchBar.vue";
-import Pagination from "../components/Pagination.vue";
-import NewsLikeButton from "../components/NewsLikeButton.vue";
-import LoadingSpinner from "../components/LoadingSpinner.vue";
+import { fetchNews } from "../../services/news.js";
+import SearchBar from "../../components/SearchBar.vue";
+import Pagination from "../../components/Pagination.vue";
+import NewsLikeButton from "../../components/NewsLikeButton.vue";
+import LoadingSpinner from "../../components/LoadingSpinner.vue";
 
 const ITEMS_PER_PAGE = 6;
 

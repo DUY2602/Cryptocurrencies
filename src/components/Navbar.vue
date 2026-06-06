@@ -1,14 +1,41 @@
 <script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { RouterLink } from "vue-router";
 import ThemeToggle from "./ThemeToggle.vue";
 import { useTheme } from "../composables/useTheme.js";
 import { useAuth } from "../composables/useAuth.js";
+import { useAdmin } from "../composables/useAdmin.js";
+import { supabase } from "../../supabase/supabase.js";
 
 const { isDark } = useTheme();
-const { isLoggedIn, logout } = useAuth();
+const { isLoggedIn, logout, user } = useAuth();
+const { isAdmin, profile, refresh } = useAdmin();
+
+const showAdminMenu = ref(false);
+
+const userName = computed(
+  () => profile.value?.name || user.value?.name || user.value?.email?.split("@")[0] || "Account"
+);
 
 function onLogout() {
   logout();
+  showAdminMenu.value = false;
+}
+
+// Refresh role when the user logs in
+onMounted(() => {
+  refresh();
+  supabase.auth.onAuthStateChange((_e, session) => {
+    if (session?.user) refresh();
+  });
+  document.addEventListener("click", onDocClick);
+});
+onBeforeUnmount(() => document.removeEventListener("click", onDocClick));
+
+function onDocClick(e) {
+  if (!e.target.closest(".user-menu-toggle, .user-menu")) {
+    showAdminMenu.value = false;
+  }
 }
 </script>
 
@@ -75,19 +102,49 @@ function onLogout() {
           </li>
 
           <template v-if="isLoggedIn">
-            <li class="nav-item">
-              <RouterLink class="nav-link" to="/profile" active-class="active"
-                >Profile</RouterLink
+            <li v-if="isAdmin" class="nav-item">
+              <RouterLink
+                class="nav-link admin-link"
+                to="/admin"
+                active-class="active"
+                title="Admin area"
               >
+                <span class="admin-badge">★</span> Admin
+              </RouterLink>
             </li>
-            <li class="nav-item ms-lg-1">
+            <li class="nav-item dropdown">
               <button
+                class="nav-link user-menu-toggle"
                 type="button"
-                class="btn btn-sm btn-outline-accent px-4"
-                @click="onLogout"
+                @click="showAdminMenu = !showAdminMenu"
+                :aria-expanded="showAdminMenu"
               >
-                Logout
+                <span class="user-avatar-mini">
+                  {{ (userName[0] || "A").toUpperCase() }}
+                </span>
+                <span class="d-none d-lg-inline ms-1">{{ userName }}</span>
+                <span class="dropdown-caret">▾</span>
               </button>
+              <div v-if="showAdminMenu" class="user-menu">
+                <RouterLink
+                  to="/profile"
+                  class="user-menu-item"
+                  @click="showAdminMenu = false"
+                >
+                  👤 Profile
+                </RouterLink>
+                <RouterLink
+                  v-if="isAdmin"
+                  to="/admin"
+                  class="user-menu-item"
+                  @click="showAdminMenu = false"
+                >
+                  ★ Admin dashboard
+                </RouterLink>
+                <button class="user-menu-item text-danger" @click="onLogout">
+                  ⤴ Logout
+                </button>
+              </div>
             </li>
           </template>
           <li v-else class="nav-item ms-lg-2">
@@ -100,3 +157,106 @@ function onLogout() {
     </div>
   </nav>
 </template>
+
+<style scoped>
+.crypto-navbar .admin-link {
+  color: var(--accent) !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.crypto-navbar .admin-link:hover { color: var(--accent-hover) !important; }
+
+.crypto-navbar .admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.crypto-navbar .user-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.crypto-navbar .user-menu-toggle:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+}
+
+.crypto-navbar .user-avatar-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #d9a60a);
+  color: var(--accent-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.crypto-navbar .dropdown-caret {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.user-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  min-width: 200px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  padding: 0.4rem;
+  z-index: 1080;
+}
+
+.user-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.user-menu-item:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent);
+}
+
+.user-menu-item.text-danger { color: var(--negative) !important; }
+.user-menu-item.text-danger:hover {
+  background: rgba(246, 70, 93, 0.1);
+  color: var(--negative) !important;
+}
+
+.nav-item.dropdown { position: relative; }
+</style>

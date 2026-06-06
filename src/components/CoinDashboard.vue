@@ -110,9 +110,21 @@ export default {
     'coin.id': { handler() { this.resetDashboard() } },
     isDark() { this.updateChartTheme() },
     activeIndicator(val) {
+      if (this.candlestickSeries) this.candlestickSeries.applyOptions({ visible: val === 'Price' })
       if (this.maSeries) this.maSeries.applyOptions({ visible: val === 'MA' })
       if (this.emaSeries) this.emaSeries.applyOptions({ visible: val === 'EMA' })
-      if (this.volumeSeries) this.volumeSeries.applyOptions({ visible: val === 'Vol' || val === 'Price' })
+      if (this.volumeSeries) {
+        this.volumeSeries.applyOptions({ visible: val === 'Vol' })
+        if (val === 'Vol') {
+          this.volumeSeries.priceScale().applyOptions({
+            scaleMargins: { top: 0, bottom: 0 },
+          })
+        } else {
+          this.volumeSeries.priceScale().applyOptions({
+            scaleMargins: { top: 0.8, bottom: 0 },
+          })
+        }
+      }
     }
   },
   mounted() {
@@ -279,6 +291,7 @@ export default {
         borderDownColor:'#f6465d',
         wickUpColor:    '#0ecb81',
         wickDownColor:  '#f6465d',
+        visible: this.activeIndicator === 'Price',
       })
       this.candlestickSeries.setData(this.candles)
 
@@ -301,7 +314,7 @@ export default {
         priceScaleId:      '',
         lastValueVisible:  false,
         priceLineVisible:  false,
-        visible: this.activeIndicator === 'Vol' || this.activeIndicator === 'Price',
+        visible: this.activeIndicator === 'Vol',
       })
       this.volumeSeries.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } })
       this.volumeSeries.setData(this.volumes)

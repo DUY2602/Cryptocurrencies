@@ -1,13 +1,13 @@
 <script setup>
-import { useAuth } from '../composables/useAuth.js'
-import { useRouter } from 'vue-router'
+import { useAuth } from "../../composables/useAuth.js";
+import { useRouter } from "vue-router";
 
-const { user, logout } = useAuth()
-const router = useRouter()
+const { user, logout } = useAuth();
+const router = useRouter();
 
 function handleLogout() {
-  logout()
-  router.push('/')
+  logout();
+  router.push("/");
 }
 </script>
 
@@ -22,8 +22,16 @@ function handleLogout() {
             <p class="mb-1"><strong>Email:</strong> {{ user?.email }}</p>
             <p class="mb-4"><strong>Name:</strong> {{ user?.name }}</p>
             <div class="d-flex gap-2 flex-wrap">
-              <RouterLink to="/watchlist" class="btn btn-accent btn-sm">Watchlist</RouterLink>
-              <button type="button" class="btn btn-outline-accent btn-sm" @click="handleLogout">Logout</button>
+              <RouterLink to="/watchlist" class="btn btn-accent btn-sm"
+                >Watchlist</RouterLink
+              >
+              <button
+                type="button"
+                class="btn btn-outline-accent btn-sm"
+                @click="handleLogout"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>

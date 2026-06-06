@@ -1,67 +1,67 @@
 <script>
-import { useAuth } from '../composables/useAuth.js'
+import { useAuth } from "../../composables/useAuth.js";
 
 export default {
   setup() {
-    const { setPassword } = useAuth()
-    return { setPassword }
+    const { setPassword } = useAuth();
+    return { setPassword };
   },
   data() {
     return {
-      password: '',
-      confirmPassword: '',
+      password: "",
+      confirmPassword: "",
       submitted: false,
       loading: false,
-      message: '',
-      messageType: '', // 'success' or 'error'
-    }
+      message: "",
+      messageType: "", // 'success' or 'error'
+    };
   },
   computed: {
     passwordValid() {
-      if (!this.submitted && !this.password) return null
-      return this.password.length >= 6
+      if (!this.submitted && !this.password) return null;
+      return this.password.length >= 6;
     },
     confirmValid() {
-      if (!this.submitted && !this.confirmPassword) return null
+      if (!this.submitted && !this.confirmPassword) return null;
       return (
         this.password === this.confirmPassword &&
         this.confirmPassword.length > 0
-      )
+      );
     },
     formValid() {
-      return this.passwordValid && this.confirmValid
+      return this.passwordValid && this.confirmValid;
     },
   },
   methods: {
-    showMessage(msg, type = 'success') {
-      this.message = msg
-      this.messageType = type
+    showMessage(msg, type = "success") {
+      this.message = msg;
+      this.messageType = type;
       setTimeout(() => {
-        this.message = ''
-      }, 5000)
+        this.message = "";
+      }, 5000);
     },
 
     async onSubmit(event) {
-      event.preventDefault()
-      this.submitted = true
+      event.preventDefault();
+      this.submitted = true;
       if (this.formValid) {
-        this.loading = true
-        const result = await this.setPassword(this.password)
-        this.loading = false
+        this.loading = true;
+        const result = await this.setPassword(this.password);
+        this.loading = false;
 
         if (result.success) {
-          this.showMessage(result.message, 'success')
+          this.showMessage(result.message, "success");
           // Redirect after successful password set
           setTimeout(() => {
-            this.$router.push('/')
-          }, 2000)
+            this.$router.push("/");
+          }, 2000);
         } else {
-          this.showMessage(result.message, 'error')
+          this.showMessage(result.message, "error");
         }
       }
     },
   },
-}
+};
 </script>
 
 <template>
@@ -72,7 +72,8 @@ export default {
           <div class="card card-crypto p-4 p-md-5">
             <h1 class="page-title text-center mb-1">Set Password</h1>
             <p class="text-secondary text-center mb-4 small">
-              Your email has been verified. Set your password to complete registration.
+              Your email has been verified. Set your password to complete
+              registration.
             </p>
 
             <!-- Alert message -->
@@ -109,7 +110,9 @@ export default {
               </div>
 
               <div class="mb-4">
-                <label for="setConfirm" class="form-label">Confirm password</label>
+                <label for="setConfirm" class="form-label"
+                  >Confirm password</label
+                >
                 <input
                   id="setConfirm"
                   v-model="confirmPassword"
@@ -137,7 +140,7 @@ export default {
                   v-if="loading"
                   class="spinner-border spinner-border-sm me-2"
                 ></span>
-                {{ loading ? 'Setting...' : 'Set password' }}
+                {{ loading ? "Setting..." : "Set password" }}
               </button>
             </form>
           </div>

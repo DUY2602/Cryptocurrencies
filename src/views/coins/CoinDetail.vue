@@ -1,13 +1,23 @@
 <script>
-import { api } from '../services/api.js'
-import { livePrices, applyLiveFlashes, getLiveQuote } from '../services/livePrices.js'
-import StatCard from '../components/StatCard.vue'
-import CoinDashboard from '../components/CoinDashboard.vue'
-import FavoriteButton from '../components/FavoriteButton.vue'
-import LoadingSpinner from '../components/LoadingSpinner.vue'
-import EmptyState from '../components/EmptyState.vue'
-import LiveBadge from '../components/LiveBadge.vue'
-import { formatPrice, formatMarketCap, formatVolume, formatChange, changeClass } from '../utils/format.js'
+import { api } from "../../services/api.js";
+import {
+  livePrices,
+  applyLiveFlashes,
+  getLiveQuote,
+} from "../../services/livePrices.js";
+import StatCard from "../../components/StatCard.vue";
+import CoinDashboard from "../../components/CoinDashboard.vue";
+import FavoriteButton from "../../components/FavoriteButton.vue";
+import LoadingSpinner from "../../components/LoadingSpinner.vue";
+import EmptyState from "../../components/EmptyState.vue";
+import LiveBadge from "../../components/LiveBadge.vue";
+import {
+  formatPrice,
+  formatMarketCap,
+  formatVolume,
+  formatChange,
+  changeClass,
+} from "../../utils/format.js";
 
 export default {
   components: {
@@ -28,28 +38,28 @@ export default {
       liveFlashTick: {},
       liveTick: 0,
       isLive: false,
-    }
+    };
   },
   computed: {
     displayCoin() {
-      if (!this.coin) return null
-      return this.mergeLive(this.coin)
+      if (!this.coin) return null;
+      return this.mergeLive(this.coin);
     },
     changeCls() {
-      return this.displayCoin ? changeClass(this.displayCoin.change24h) : ''
+      return this.displayCoin ? changeClass(this.displayCoin.change24h) : "";
     },
   },
   watch: {
-    '$route.params.id': {
+    "$route.params.id": {
       immediate: true,
       handler() {
-        this.loadCoin()
+        this.loadCoin();
       },
     },
   },
   beforeUnmount() {
-    if (this._unsub) this._unsub()
-    livePrices.stop()
+    if (this._unsub) this._unsub();
+    livePrices.stop();
   },
   methods: {
     formatPrice,
@@ -57,46 +67,46 @@ export default {
     formatVolume,
     formatChange,
     async loadCoin() {
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
       if (this._unsub) {
-        this._unsub()
-        this._unsub = null
+        this._unsub();
+        this._unsub = null;
       }
-      livePrices.stop()
+      livePrices.stop();
 
       try {
-        this.coin = await api.getCoinById(this.$route.params.id)
-        this.startLive()
+        this.coin = await api.getCoinById(this.$route.params.id);
+        this.startLive();
       } catch (e) {
-        this.error = e.message || 'Failed to load coin'
-        this.coin = null
+        this.error = e.message || "Failed to load coin";
+        this.coin = null;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
     startLive() {
-      if (!this.coin) return
-      if (this._unsub) this._unsub()
-      livePrices.start([this.coin])
+      if (!this.coin) return;
+      if (this._unsub) this._unsub();
+      livePrices.start([this.coin]);
       this._unsub = livePrices.subscribe((data) => {
         const { directions, tick } = applyLiveFlashes(
           this.liveFlashes,
           this.livePricesMap,
           data,
-        )
-        this.liveFlashes = directions
-        this.liveFlashTick = tick
-        this.livePricesMap = { ...data }
-        this.liveTick += 1
-        this.isLive = Object.keys(data).length > 0
-      })
+        );
+        this.liveFlashes = directions;
+        this.liveFlashTick = tick;
+        this.livePricesMap = { ...data };
+        this.liveTick += 1;
+        this.isLive = Object.keys(data).length > 0;
+      });
     },
     mergeLive(coin) {
-      void this.liveTick
-      const id = String(coin.coingeckoId || coin.id)
-      const live = getLiveQuote(this.livePricesMap, coin)
-      if (live?.usd == null) return coin
+      void this.liveTick;
+      const id = String(coin.coingeckoId || coin.id);
+      const live = getLiveQuote(this.livePricesMap, coin);
+      if (live?.usd == null) return coin;
       return {
         ...coin,
         price: live.usd,
@@ -104,10 +114,10 @@ export default {
         volume24h: live.usd_24h_volume ?? coin.volume24h ?? 0,
         _flash: this.liveFlashes[id],
         _flashTick: !!this.liveFlashTick[id],
-      }
+      };
     },
   },
-}
+};
 </script>
 
 <template>
@@ -121,11 +131,15 @@ export default {
         :message="error || 'This coin does not exist.'"
         icon="?"
       >
-        <RouterLink to="/markets" class="btn btn-accent btn-sm mt-3">Back to Markets</RouterLink>
+        <RouterLink to="/markets" class="btn btn-accent btn-sm mt-3"
+          >Back to Markets</RouterLink
+        >
       </EmptyState>
 
       <template v-else>
-        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div
+          class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4"
+        >
           <div class="d-flex align-items-center gap-3">
             <img
               v-if="displayCoin.image"
@@ -143,7 +157,9 @@ export default {
           <div class="d-flex gap-2 align-items-center flex-wrap">
             <LiveBadge v-if="isLive" label="Live" />
             <FavoriteButton :coin-id="displayCoin.id" />
-            <RouterLink to="/markets" class="btn btn-sm btn-outline-accent">← Markets</RouterLink>
+            <RouterLink to="/markets" class="btn btn-sm btn-outline-accent"
+              >← Markets</RouterLink
+            >
           </div>
         </div>
 
@@ -155,16 +171,28 @@ export default {
 
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-3">
-            <StatCard label="Market cap" :value="formatMarketCap(displayCoin.marketCap)" />
+            <StatCard
+              label="Market cap"
+              :value="formatMarketCap(displayCoin.marketCap)"
+            />
           </div>
           <div class="col-6 col-md-3">
-            <StatCard label="24h volume" :value="formatVolume(displayCoin.volume24h)" />
+            <StatCard
+              label="24h volume"
+              :value="formatVolume(displayCoin.volume24h)"
+            />
           </div>
           <div class="col-6 col-md-3">
-            <StatCard label="24h high" :value="formatPrice(displayCoin.high24h)" />
+            <StatCard
+              label="24h high"
+              :value="formatPrice(displayCoin.high24h)"
+            />
           </div>
           <div class="col-6 col-md-3">
-            <StatCard label="24h low" :value="formatPrice(displayCoin.low24h)" />
+            <StatCard
+              label="24h low"
+              :value="formatPrice(displayCoin.low24h)"
+            />
           </div>
         </div>
 
