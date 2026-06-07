@@ -33,7 +33,17 @@ interface RssItem {
   "media:content"?: { "@_url"?: string } | { "@_url"?: string }[];
 }
 
-serve(async (_req) => {
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
+
   try {
     const rssRes = await fetch(COINDESK_RSS);
     if (!rssRes.ok) throw new Error(`RSS fetch failed: ${rssRes.status}`);
@@ -51,11 +61,59 @@ serve(async (_req) => {
 
     if (!items.length) {
       return new Response(
-        JSON.stringify({ inserted: 0, message: "No items found in RSS" }),
-        { status: 200 },
+        JSON.stringify({ articles: [], message: "No items found in RSS" }),
+        { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
       );
     }
 
+    const articles = items.map((item) => {
+      const title = extractText(item.title).trim();
+      const description = extractText(item.description).trim();
+      const contentRaw = extractText(item["content:encoded"]);
+      const imageUrl = extractImage(item["media:content"]);
+      const content = contentRaw
+        ? sanitizeHtml(contentRaw)
+        : `<p>${escapeHtml(description)}</p>`;
+      const cats = normalizeCategory(item.category);
+      const category = Array.isArray(cats) ? (cats[0] ?? "General") : (cats ?? "General");
+      const tags = Array.isArray(cats) ? cats.filter(Boolean) : (cats ? [cats] : []);
+      const pubDate = item.pubDate
+        ? new Date(item.pubDate).toISOString()
+        : new Date().toISOString();
+      const authorName = extractText(item["dc:creator"])?.trim() || "CoinDesk";
+      const wordCount = content.replace(/<[^>]+>/g, " ").trim().split(/\s+/).filter(Boolean).length;
+      const readTime = Math.max(1, Math.round(wordCount / 200));
+
+      return {
+        id: urlToId(item.link),
+        title,
+        summary: description.slice(0, 240),
+        content,
+        category,
+        image_url: imageUrl || null,
+        source_url: item.link?.trim() || null,
+        source_name: "CoinDesk",
+        author_name: authorName,
+        tags,
+        read_time: readTime,
+        published_at: pubDate,
+        featured: false,
+        trending: false,
+        date: pubDate,
+        author: { name: authorName, avatar: null },
+        full_content: content,
+      };
+    }).filter((a) => a.title && a.title.length >= 5);
+
+    // GET = return live RSS articles directly (no DB)
+    if (req.method === "GET") {
+      return new Response(JSON.stringify({ articles }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
+    // POST = insert into DB (cron/admin trigger)
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -69,69 +127,61 @@ serve(async (_req) => {
     );
 
     let inserted = 0;
-
-    for (const item of items) {
-      const url = item.link?.trim();
-      if (!url || existingUrls.has(url)) continue;
-
-      const title = extractText(item.title).trim();
-      if (!title || title.length < 5) continue;
-
-      const description = extractText(item.description).trim();
-      const contentRaw = extractText(item["content:encoded"]);
-
-      const imageUrl = extractImage(item["media:content"]);
-
-      const content = contentRaw
-        ? sanitizeHtml(contentRaw)
-        : `<p>${escapeHtml(description)}</p>`;
-
-      const cats = item.category;
-      const category = Array.isArray(cats) ? (cats[0] ?? "General") : (cats ?? "General");
-      const tags = Array.isArray(cats) ? cats.filter(Boolean) : (cats ? [cats] : []);
-
-      const pubDate = item.pubDate
-        ? new Date(item.pubDate).toISOString()
-        : new Date().toISOString();
-
-      const authorName = extractText(item["dc:creator"])?.trim() || "CoinDesk";
-
-      const wordCount = content.replace(/<[^>]+>/g, " ").trim().split(/\s+/).filter(Boolean).length;
-      const readTime = Math.max(1, Math.round(wordCount / 200));
+    for (const a of articles) {
+      if (!a.source_url || existingUrls.has(a.source_url)) continue;
 
       const { error } = await supabase.from("news").insert({
-        title,
-        summary: description.slice(0, 240),
-        content,
-        category,
-        image_url: imageUrl || null,
-        source_url: url,
+        title: a.title,
+        summary: a.summary,
+        content: a.content,
+        category: a.category,
+        image_url: a.image_url,
+        source_url: a.source_url,
         source_name: "CoinDesk",
-        author_name: authorName,
-        tags,
-        read_time: readTime,
-        published_at: pubDate,
+        author_name: a.author_name,
+        tags: a.tags,
+        read_time: a.read_time,
+        published_at: a.published_at,
       });
 
       if (error) {
         console.warn(`[fetch-news] insert failed: ${error.message}`);
         continue;
       }
-
-      existingUrls.add(url);
+      existingUrls.add(a.source_url);
       inserted++;
     }
 
-    return new Response(JSON.stringify({ inserted, total: items.length }), {
+    return new Response(JSON.stringify({ inserted, total: articles.length }), {
       status: 200,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("[fetch-news]", e);
     return new Response(JSON.stringify({ error: (e as Error).message }), {
       status: 500,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 });
+
+function normalizeCategory(cat: unknown): string | string[] {
+  if (!cat) return "General";
+  if (typeof cat === "string") return cat;
+  if (Array.isArray(cat)) {
+    return cat.map(normalizeCategory).flat().filter(Boolean) as string[];
+  }
+  const obj = cat as Record<string, unknown>;
+  if (typeof obj["#cdata"] === "string") return obj["#cdata"];
+  if (typeof obj["#text"] === "string") return obj["#text"];
+  return "General";
+}
+
+function urlToId(url?: string): string {
+  if (!url) return crypto.randomUUID();
+  const hash = Array.from(url).reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0);
+  return `rss-${Math.abs(hash).toString(36)}`;
+}
 
 function extractText(
   val: unknown,

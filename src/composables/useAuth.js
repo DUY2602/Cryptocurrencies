@@ -1,5 +1,6 @@
 import { ref, computed } from "vue";
 import { supabase } from "../../supabase/supabase.js";
+import bcrypt from "bcryptjs";
 
 export const user = ref(null);
 
@@ -29,6 +30,7 @@ async function upsertProfile(authUser, name) {
   const { error } = await supabase.from("profiles").upsert(
     {
       id: authUser.id,
+      email: authUser.email,
       name: profileName,
       role: "user",
     },
@@ -40,11 +42,25 @@ async function upsertProfile(authUser, name) {
   }
 }
 
+async function updatePasswordHash(password) {
+  if (!user.value) return;
+  const hash = await bcrypt.hash(password, 10);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ password: hash })
+    .eq("id", user.value.id);
+  if (error) {
+    console.warn("[auth] password hash update failed:", error.message);
+  }
+}
+
 supabase.auth.onAuthStateChange((_event, session) => {
   user.value = session?.user ? mapUser(session.user) : null;
 });
 
 loadUser();
+
+
 
 export function useAuth() {
   const isLoggedIn = computed(() => !!user.value);
@@ -77,46 +93,55 @@ export function useAuth() {
   }
 
   async function requestRegistration(email, name) {
-    const tempPassword =
-      Math.random().toString(36).slice(-10) +
-      Math.random().toString(36).slice(-10);
+    try {
+      const tempPassword =
+        Math.random().toString(36).slice(-10) +
+        Math.random().toString(36).slice(-10);
 
-    const displayName = name || email.split("@")[0] || "User";
+      const displayName = name || email.split("@")[0] || "User";
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password: tempPassword,
-      options: {
-        data: {
-          name: displayName,
-          tempPassword: tempPassword,
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: tempPassword,
+        options: {
+          data: {
+            name: displayName,
+            tempPassword: tempPassword,
+          },
+          emailRedirectTo: `${window.location.origin}/set-password`,
         },
-        emailRedirectTo: `${window.location.origin}/set-password`,
-      },
-    });
+      });
 
-    if (error) {
-      return { success: false, message: error.message };
-    }
+      if (error) {
+        return { success: false, message: error.message };
+      }
 
-    if (data.user) {
-      await upsertProfile(data.user, displayName);
-    }
+      if (data?.user) {
+        await upsertProfile(data.user, displayName);
+      }
 
-    if (data.user && !data.session) {
+      if (data?.user && !data?.session) {
+        return {
+          success: true,
+          message:
+            "Registration successful. Please check your email to verify your account.",
+        };
+      }
+
+      if (data?.user) {
+        user.value = mapUser(data.user);
+        return { success: true, message: "Registration successful" };
+      }
+
       return {
         success: true,
         message:
-          "Registration successful. Please check your email to verify your account.",
+          "Registration submitted. Please check your email to verify your account.",
       };
+    } catch (e) {
+      console.error("[auth] requestRegistration error:", e);
+      return { success: false, message: e.message || "Registration failed" };
     }
-
-    if (data.user) {
-      user.value = mapUser(data.user);
-      return { success: true, message: "Registration successful" };
-    }
-
-    return { success: false, message: "Registration failed" };
   }
 
   async function setPassword(password) {
@@ -130,6 +155,10 @@ export function useAuth() {
 
     if (data.user) {
       user.value = mapUser(data.user);
+      await Promise.all([
+        upsertProfile(data.user),
+        updatePasswordHash(password),
+      ]);
       return { success: true, message: "Password set successfully" };
     }
 
@@ -137,39 +166,44 @@ export function useAuth() {
   }
 
   async function signUp(email, password, name) {
-    const displayName = name || email.split("@")[0] || "User";
+    try {
+      const displayName = name || email.split("@")[0] || "User";
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name: displayName },
-        emailRedirectTo: `${window.location.origin}/`,
-      },
-    });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name: displayName },
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
 
-    if (error) {
-      return { success: false, message: error.message };
+      if (error) {
+        return { success: false, message: error.message };
+      }
+
+      if (data?.user) {
+        await upsertProfile(data.user, displayName);
+      }
+
+      if (data?.user && !data?.session) {
+        return {
+          success: true,
+          message:
+            "Registration successful. Please check your email to verify your account.",
+        };
+      }
+
+      if (data?.user) {
+        user.value = mapUser(data.user);
+        return { success: true, message: "Registration successful" };
+      }
+
+      return { success: false, message: "Registration failed" };
+    } catch (e) {
+      console.error("[auth] signUp error:", e);
+      return { success: false, message: e.message || "Registration failed" };
     }
-
-    if (data.user) {
-      await upsertProfile(data.user, displayName);
-    }
-
-    if (data.user && !data.session) {
-      return {
-        success: true,
-        message:
-          "Registration successful. Please check your email to verify your account.",
-      };
-    }
-
-    if (data.user) {
-      user.value = mapUser(data.user);
-      return { success: true, message: "Registration successful" };
-    }
-
-    return { success: false, message: "Registration failed" };
   }
 
   return {

@@ -10,6 +10,7 @@ export default {
     return {
       email: "",
       password: "",
+      showPassword: false,
       submitted: false,
       loading: false,
       message: "",
@@ -104,22 +105,33 @@ export default {
 
               <div class="mb-4">
                 <label for="loginPassword" class="form-label">Password</label>
-                <input
-                  id="loginPassword"
-                  v-model="password"
-                  type="password"
-                  class="form-control"
-                  :class="{
-                    'is-valid': submitted && passwordValid,
-                    'is-invalid': submitted && !passwordValid,
-                  }"
-                  placeholder="Your password"
-                  autocomplete="current-password"
-                  :disabled="loading"
-                />
+                <div class="input-group">
+                  <input
+                    id="loginPassword"
+                    v-model="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    class="form-control"
+                    :class="{
+                      'is-valid': submitted && passwordValid,
+                      'is-invalid': submitted && !passwordValid,
+                    }"
+                    placeholder="Your password"
+                    autocomplete="current-password"
+                    :disabled="loading"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-accent"
+                    @click="showPassword = !showPassword"
+                    :disabled="loading"
+                    tabindex="-1"
+                  >
+                    {{ showPassword ? '🙈' : '👁️' }}
+                  </button>
+                </div>
                 <div
                   v-if="submitted && !passwordValid"
-                  class="invalid-feedback"
+                  class="invalid-feedback d-block"
                 >
                   Please enter your password.
                 </div>

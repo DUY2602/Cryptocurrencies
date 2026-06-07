@@ -57,18 +57,21 @@ const showPreview = ref(false);
 const lastSavedAt = ref(null);
 const dirty = ref(false);
 
-const COMMON_CATEGORIES = [
-  "General",
-  "Bitcoin",
-  "Ethereum",
-  "DeFi",
-  "NFT",
-  "Regulation",
-  "Markets",
-  "Altcoins",
-  "Mining",
-  "Web3",
-];
+  const showMeta = ref(true);
+  const metaWidth = ref(360);
+
+  const COMMON_CATEGORIES = [
+    "General",
+    "Bitcoin",
+    "Ethereum",
+    "DeFi",
+    "NFT",
+    "Regulation",
+    "Markets",
+    "Altcoins",
+    "Mining",
+    "Web3",
+  ];
 
 async function loadArticle() {
   if (isNew.value) return;
@@ -267,436 +270,573 @@ function autoSummary() {
     plain.length > 180 ? plain.slice(0, 180).trim() + "..." : plain;
 }
 
-function onBeforeUnloadHandler(e) {
-  if (dirty.value) {
-    e.preventDefault();
-    e.returnValue = "";
+  function startResize(e) {
+    const startX = e.clientX;
+    const startW = metaWidth.value;
+    function onMove(ev) {
+      const diff = startX - ev.clientX;
+      metaWidth.value = Math.max(280, Math.min(600, startW + diff));
+    }
+    function onUp() {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    }
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
   }
-}
+
+  function onBeforeUnloadHandler(e) {
+    if (dirty.value) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  }
 </script>
 
 <template>
-  <section class="page-section admin-news-edit">
-    <div class="container-fluid container-xxl">
-      <!-- Header / toolbar -->
-      <header
-        class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
-      >
-        <div class="min-w-0">
-          <button
-            type="button"
-            class="btn btn-sm btn-link text-secondary p-0 mb-2"
-            @click="cancel"
-          >
-            ← Back to News CMS
-          </button>
-          <h1 class="page-title mb-1 d-flex align-items-center gap-2 flex-wrap">
-            <span>{{ isNew ? "New article" : `Edit article #${id}` }}</span>
-            <span
-              v-if="lastSavedAt"
-              class="badge bg-success-subtle text-success-emphasis"
-            >
-              ✓ Saved {{ lastSavedAt.toLocaleTimeString() }}
-            </span>
-            <span
-              v-else-if="dirty"
-              class="badge bg-warning-subtle text-warning-emphasis"
-            >
-              • Unsaved changes
-            </span>
-          </h1>
-          <p class="page-subtitle mb-0">
-            Use the toolbar to format the body. All HTML is sanitized
-            server-side before being stored.
-          </p>
+  <section class="admin-news-edit">
+    <!-- ═══════════ Top bar (GDocs-style) ═══════════ -->
+    <header class="editor-topbar">
+      <div class="topbar-left">
+        <button type="button" class="btn btn-sm btn-ghost" @click="cancel">
+          ← Back
+        </button>
+        <span class="topbar-divider" />
+        <span class="topbar-title">{{ isNew ? "New article" : "Edit article" }}</span>
+        <span v-if="lastSavedAt" class="save-badge saved">
+          ✓ Saved {{ lastSavedAt.toLocaleTimeString() }}
+        </span>
+        <span v-else-if="dirty" class="save-badge unsaved">
+          ● Unsaved
+        </span>
+      </div>
+      <div class="topbar-right">
+        <div class="body-stats" v-if="form.content">
+          {{ bodyStats.words }} words · {{ bodyStats.minutes }} min
         </div>
-
-        <div class="d-flex gap-2 flex-wrap">
-          <button
-            type="button"
-            class="btn btn-outline-accent"
-            :class="{ active: showPreview }"
-            @click="showPreview = !showPreview"
-          >
-            {{ showPreview ? "✕ Hide preview" : "👁 Preview" }}
-          </button>
-          <button
-            v-if="!isNew"
-            type="button"
-            class="btn btn-outline-accent"
-            @click="viewPublic"
-          >
-            ↗ Public page
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-accent"
-            :disabled="saving"
-            @click="cancel"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="btn btn-accent"
-            :disabled="!canSave"
-            @click="save"
-          >
-            <span v-if="saving" class="spinner-border spinner-border-sm me-2" />
-            {{ saving ? "Saving..." : isNew ? "Publish" : "Save changes" }}
-          </button>
-        </div>
-      </header>
-
-      <!-- Permission warnings -->
-      <div v-if="!roleLoading && !isAdmin" class="alert alert-warning small">
-        <strong>Read-only mode.</strong> You are signed in as
-        <em>{{ user?.email }}</em> but your account is not flagged as
-        <code>admin</code> in the <code>profiles</code> table. Run the SQL at
-        the bottom of <code>supabase/news_table.sql</code> to promote yourself.
-      </div>
-
-      <div
-        v-if="errorMsg"
-        class="alert alert-danger small d-flex align-items-start gap-2"
-      >
-        <span>⚠</span>
-        <span class="flex-grow-1">{{ errorMsg }}</span>
         <button
-          class="btn-close btn-close-white btn-sm"
-          @click="errorMsg = null"
-        />
-      </div>
-      <div
-        v-if="successMsg"
-        class="alert alert-success small d-flex align-items-center gap-2"
-      >
-        ✓ {{ successMsg }}
+          type="button"
+          class="btn btn-sm btn-ghost"
+          :class="{ active: showPreview }"
+          @click="showPreview = !showPreview"
+          title="Preview"
+        >
+          👁
+        </button>
         <button
-          class="btn-close btn-close-white btn-sm ms-auto"
-          @click="successMsg = null"
-        />
+          type="button"
+          class="btn btn-sm btn-ghost"
+          :class="{ active: showMeta }"
+          @click="showMeta = !showMeta"
+          title="Metadata"
+        >
+          ⚙
+        </button>
+        <button
+          v-if="!isNew"
+          type="button"
+          class="btn btn-sm btn-ghost"
+          @click="viewPublic"
+          title="View public page"
+        >
+          ↗
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-accent"
+          :disabled="!canSave"
+          @click="save"
+        >
+          <span v-if="saving" class="spinner-border spinner-border-sm me-1" />
+          {{ saving ? "Saving..." : isNew ? "Publish" : "Save" }}
+        </button>
       </div>
+    </header>
 
-      <LoadingSpinner v-if="loadingData" message="Loading article..." />
+    <!-- ═══════════ Permission + alerts ═══════════ -->
+    <div v-if="!roleLoading && !isAdmin" class="alert alert-warning small mx-3 mt-3">
+      <strong>Read-only.</strong> Signed in as <em>{{ user?.email }}</em> but not admin.
+    </div>
+    <div v-if="errorMsg" class="alert alert-danger small mx-3 mt-3 d-flex align-items-start gap-2">
+      <span>⚠</span>
+      <span class="flex-grow-1">{{ errorMsg }}</span>
+      <button class="btn-close btn-close-white btn-sm" @click="errorMsg = null" />
+    </div>
+    <div v-if="successMsg" class="alert alert-success small mx-3 mt-3 d-flex align-items-center gap-2">
+      ✓ {{ successMsg }}
+      <button class="btn-close btn-close-white btn-sm ms-auto" @click="successMsg = null" />
+    </div>
 
-      <div v-else class="row g-4">
-        <!-- ───────────── Main column: editor ───────────── -->
-        <div :class="showPreview ? 'col-lg-7' : 'col-lg-8'">
-          <div class="card-crypto p-3 p-md-4 mb-3">
-            <label class="form-label fw-semibold text-emphasis">Title</label>
+    <!-- ═══════════ Editor body ═══════════ -->
+    <LoadingSpinner v-if="loadingData" message="Loading article..." />
+
+    <div v-else class="editor-body">
+      <!-- ═══ Editor (full, hidden when preview is active) ═══ -->
+      <div v-show="!showPreview" class="editor-main">
+        <div class="editor-content">
+          <div class="doc-paper">
+            <!-- Title -->
             <input
               v-model="form.title"
               type="text"
-              class="form-control form-control-lg"
+              class="doc-title-input"
               :class="{ 'is-invalid': errors.title }"
-              placeholder="A great headline that hooks the reader..."
-              maxlength="200"
+              placeholder="Untitled"
             />
             <div v-if="errors.title" class="invalid-feedback d-block">
               {{ errors.title }}
             </div>
-            <div class="d-flex justify-content-between mt-1">
-              <small class="text-secondary">Required, 8–200 characters</small>
-              <small class="text-secondary">{{ form.title.length }}/200</small>
-            </div>
-          </div>
 
-          <div class="card-crypto p-3 p-md-4 mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <label class="form-label fw-semibold text-emphasis mb-0">
-                Summary
-              </label>
+            <!-- Summary -->
+            <div class="summary-wrap">
+              <textarea
+                v-model="form.summary"
+                class="doc-summary-input"
+                :class="{ 'is-invalid': errors.summary }"
+                rows="2"
+                placeholder="Add a summary (shown in cards & SEO)"
+                maxlength="240"
+              />
+              <div v-if="errors.summary" class="invalid-feedback d-block">
+                {{ errors.summary }}
+              </div>
+              <div class="d-flex justify-content-end">
+                <small v-if="form.summary" class="text-secondary">{{ form.summary.length }}/240</small>
+              </div>
               <button
+                v-if="!form.summary && form.content"
                 type="button"
-                class="btn btn-sm btn-outline-accent py-0 px-2"
-                :disabled="!form.content || !!form.summary"
-                title="Generate from the first 180 chars of the body"
+                class="btn btn-sm btn-ghost auto-summary-btn"
                 @click="autoSummary"
               >
-                ✨ Auto
+                ✨ Auto-generate summary
               </button>
             </div>
-            <textarea
-              v-model="form.summary"
-              class="form-control"
-              :class="{ 'is-invalid': errors.summary }"
-              rows="2"
-              placeholder="One or two sentences. Shown in cards & SEO."
-              maxlength="240"
-            />
-            <div v-if="errors.summary" class="invalid-feedback d-block">
-              {{ errors.summary }}
-            </div>
-            <div class="d-flex justify-content-between mt-1">
-              <small class="text-secondary">
-                Shown in news cards and meta description
-              </small>
-              <small class="text-secondary"
-                >{{ form.summary.length }}/240</small
-              >
-            </div>
-          </div>
 
-          <div class="card-crypto p-3 p-md-4">
-            <div
-              class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2"
-            >
-              <label class="form-label fw-semibold text-emphasis mb-0">
-                Body
-              </label>
-              <div class="small text-secondary d-flex gap-3 flex-wrap">
-                <span>📝 {{ bodyStats.words }} words</span>
-                <span>🔤 {{ bodyStats.chars }} chars</span>
-                <span>⏱ ~{{ bodyStats.minutes }} min read</span>
+            <!-- Body / RichTextEditor -->
+            <div class="doc-body">
+              <div class="body-stats-bar">
+                <label class="form-label fw-semibold text-emphasis mb-0">Body</label>
               </div>
-            </div>
-            <RichTextEditor
-              v-model="form.content"
-              placeholder="Start writing your article…"
-              :min-height="420"
-            />
-            <div v-if="errors.content" class="text-danger small mt-2">
-              {{ errors.content }}
+              <RichTextEditor
+                v-model="form.content"
+                placeholder="Start writing your article…"
+                :min-height="420"
+              />
+              <div v-if="errors.content" class="text-danger small mt-2">
+                {{ errors.content }}
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- ───────────── Sidebar: metadata ───────────── -->
-        <div :class="showPreview ? 'col-lg-5' : 'col-lg-4'">
-          <div class="card-crypto p-3 p-md-4 mb-3 sidebar-card">
-            <h6 class="text-emphasis mb-3 d-flex align-items-center gap-2">
-              🏷 Classification
-            </h6>
+      <!-- ═══ Preview (full, shown instead of editor) ═══ -->
+      <div v-show="showPreview" class="preview-panel">
+        <div class="preview-body">
+          <div v-if="form.image_url" class="preview-cover">
+            <img :src="form.image_url" alt="" />
+          </div>
+          <h2 class="preview-title">{{ form.title || "Untitled" }}</h2>
+          <div class="preview-meta">
+            <span>{{ form.category }}</span>
+            <span>·</span>
+            <span>{{ bodyStats.minutes }} min read</span>
+          </div>
+          <div v-if="form.summary" class="preview-summary">{{ form.summary }}</div>
+          <div class="preview-body-content" v-html="safePreview" />
+        </div>
+      </div>
 
-            <label class="form-label small text-secondary">Category</label>
-            <select
-              v-model="form.category"
-              class="form-select mb-1"
-              :class="{ 'is-invalid': errors.category }"
-            >
-              <option v-for="c in COMMON_CATEGORIES" :key="c" :value="c">
-                {{ c }}
-              </option>
+      <!-- ═══════════ Right metadata panel ═══════════ -->
+      <div v-if="showMeta" class="meta-panel" :style="{ width: metaWidth + 'px' }">
+        <div class="meta-resize-handle" @mousedown.prevent="startResize" />
+        <div class="meta-panel-inner">
+          <!-- Category -->
+          <div class="meta-section">
+            <label class="meta-label">Category</label>
+            <select v-model="form.category" class="form-select form-select-sm" :class="{ 'is-invalid': errors.category }">
+              <option v-for="c in COMMON_CATEGORIES" :key="c" :value="c">{{ c }}</option>
             </select>
-            <div v-if="errors.category" class="text-danger small mb-2">
-              {{ errors.category }}
-            </div>
+            <div v-if="errors.category" class="text-danger small">{{ errors.category }}</div>
+          </div>
 
-            <label class="form-label small text-secondary mt-2">Tags</label>
-            <div
-              class="tags-input form-control d-flex flex-wrap gap-1 align-items-center"
-            >
-              <span
-                v-for="t in form.tags"
-                :key="t"
-                class="tag-chip d-inline-flex align-items-center gap-1"
-              >
+          <!-- Tags -->
+          <div class="meta-section">
+            <label class="meta-label">Tags</label>
+            <div class="tags-input form-control d-flex flex-wrap gap-1 align-items-center">
+              <span v-for="t in form.tags" :key="t" class="tag-chip d-inline-flex align-items-center gap-1">
                 #{{ t }}
-                <button
-                  type="button"
-                  class="tag-remove"
-                  aria-label="Remove tag"
-                  @click="removeTag(t)"
-                >
-                  ×
-                </button>
+                <button type="button" class="tag-remove" aria-label="Remove" @click="removeTag(t)">×</button>
               </span>
               <input
                 v-model="tagInput"
                 type="text"
                 class="tag-text-input"
-                :placeholder="
-                  form.tags.length
-                    ? form.tags.length >= 12
-                      ? 'Max 12 tags'
-                      : 'Add tag…'
-                    : 'bitcoin, defi, …'
-                "
+                :placeholder="form.tags.length >= 12 ? 'Max 12' : 'Add tag…'"
                 :disabled="form.tags.length >= 12"
                 @keydown="handleTagKey"
                 @blur="syncTagsOnBlur"
               />
             </div>
-            <small class="text-secondary">
-              Press <kbd>Enter</kbd> or <kbd>,</kbd> to add. Max 12 tags.
-            </small>
           </div>
 
-          <div class="card-crypto p-3 p-md-4 mb-3 sidebar-card">
-            <h6 class="text-emphasis mb-3 d-flex align-items-center gap-2">
-              🖼 Cover image
-            </h6>
-            <input
-              v-model="form.image_url"
-              type="url"
-              class="form-control mb-2"
-              :class="{ 'is-invalid': errors.image_url }"
-              placeholder="https://…"
-            />
-            <div v-if="errors.image_url" class="text-danger small mb-2">
-              {{ errors.image_url }}
+          <!-- Cover image -->
+          <div class="meta-section">
+            <label class="meta-label">Cover image URL</label>
+            <input v-model="form.image_url" type="url" class="form-control form-control-sm" :class="{ 'is-invalid': errors.image_url }" placeholder="https://…" />
+            <div v-if="errors.image_url" class="text-danger small">{{ errors.image_url }}</div>
+            <div v-if="form.image_url" class="cover-preview-sm mt-1">
+              <img :src="form.image_url" alt="" />
             </div>
-            <div v-if="form.image_url" class="cover-preview mb-2">
-              <img :src="form.image_url" alt="Cover preview" />
-            </div>
-            <small class="text-secondary">
-              Recommended: 1200×630px (OpenGraph). Leave empty to use the
-              default hero.
-            </small>
           </div>
 
-          <div class="card-crypto p-3 p-md-4 mb-3 sidebar-card">
-            <h6 class="text-emphasis mb-3 d-flex align-items-center gap-2">
-              ✍ Author & source
-            </h6>
-            <label class="form-label small text-secondary">Author name</label>
-            <input
-              v-model="form.author_name"
-              type="text"
-              class="form-control mb-2"
-              placeholder="Jane Doe"
-            />
-            <label class="form-label small text-secondary"
-              >Author avatar URL</label
-            >
-            <input
-              v-model="form.author_avatar"
-              type="url"
-              class="form-control mb-2"
-              placeholder="https://…/avatar.png"
-            />
-            <div
-              v-if="form.author_avatar"
-              class="cover-preview mb-2 avatar-preview"
-            >
-              <img :src="form.author_avatar" alt="Author avatar" />
+          <!-- Author & source -->
+          <div class="meta-section">
+            <label class="meta-label">Author</label>
+            <input v-model="form.author_name" type="text" class="form-control form-control-sm mb-2" placeholder="Jane Doe" />
+            <label class="meta-label">Avatar URL</label>
+            <input v-model="form.author_avatar" type="url" class="form-control form-control-sm mb-2" placeholder="https://…" />
+            <div v-if="form.author_avatar" class="avatar-preview-sm">
+              <img :src="form.author_avatar" alt="" />
             </div>
-            <label class="form-label small text-secondary mt-2"
-              >Source name</label
-            >
-            <input
-              v-model="form.source_name"
-              type="text"
-              class="form-control mb-2"
-              placeholder="CoinDesk, The Block…"
-            />
-            <label class="form-label small text-secondary">Source URL</label>
-            <input
-              v-model="form.source_url"
-              type="url"
-              class="form-control"
-              placeholder="https://original-article.com"
-            />
           </div>
 
-          <div class="card-crypto p-3 p-md-4 mb-3 sidebar-card">
-            <h6 class="text-emphasis mb-3 d-flex align-items-center gap-2">
-              ⚑ Visibility
-            </h6>
+          <div class="meta-section">
+            <label class="meta-label">Source</label>
+            <input v-model="form.source_name" type="text" class="form-control form-control-sm mb-2" placeholder="CoinDesk" />
+            <input v-model="form.source_url" type="url" class="form-control form-control-sm" placeholder="https://…" />
+          </div>
+
+          <!-- Flags -->
+          <div class="meta-section">
+            <label class="meta-label">Visibility</label>
+            <div class="form-check form-switch mb-1">
+              <input id="featuredFlag" v-model="form.featured" class="form-check-input" type="checkbox" />
+              <label class="form-check-label small" for="featuredFlag">Featured</label>
+            </div>
             <div class="form-check form-switch mb-2">
-              <input
-                id="featuredFlag"
-                v-model="form.featured"
-                class="form-check-input"
-                type="checkbox"
-              />
-              <label class="form-check-label" for="featuredFlag">
-                <strong>Featured</strong>
-                <small class="d-block text-secondary">
-                  Pinned to the top of the news feed
-                </small>
-              </label>
+              <input id="trendingFlag" v-model="form.trending" class="form-check-input" type="checkbox" />
+              <label class="form-check-label small" for="trendingFlag">Trending</label>
             </div>
-            <div class="form-check form-switch mb-3">
-              <input
-                id="trendingFlag"
-                v-model="form.trending"
-                class="form-check-input"
-                type="checkbox"
-              />
-              <label class="form-check-label" for="trendingFlag">
-                <strong>Trending</strong>
-                <small class="d-block text-secondary">
-                  Highlighted in the Trending sidebar
-                </small>
-              </label>
-            </div>
-
-            <label class="form-label small text-secondary">
-              Estimated read time (minutes)
-            </label>
+            <label class="meta-label">Read time</label>
             <div class="d-flex align-items-center gap-2">
-              <input
-                v-model.number="form.read_time"
-                type="range"
-                class="form-range"
-                min="1"
-                max="30"
-                step="1"
-              />
-              <span
-                class="badge bg-secondary-subtle text-secondary"
-                style="min-width: 48px"
-              >
-                {{ form.read_time }} min
-              </span>
+              <input v-model.number="form.read_time" type="range" class="form-range" min="1" max="30" step="1" />
+              <span class="badge bg-secondary-subtle text-secondary" style="min-width: 40px">{{ form.read_time }}m</span>
             </div>
-            <small class="text-secondary">
-              Auto-calculated at ~{{ bodyStats.minutes }} min from body length
-            </small>
           </div>
 
-          <div v-if="!isNew" class="card-crypto p-3 p-md-4 sidebar-card">
-            <h6 class="text-emphasis mb-2">Article info</h6>
-            <div class="bin-stats-compact mt-0">
-              <div class="bin-stat">
-                <span class="bin-stat-lbl">ID</span>
-                <span class="bin-stat-val">#{{ id }}</span>
-              </div>
-              <div class="bin-stat">
-                <span class="bin-stat-lbl">Status</span>
-                <span class="bin-stat-val">
-                  <span class="badge bg-success-subtle text-success-emphasis">
-                    Published
-                  </span>
-                </span>
-              </div>
-              <div class="bin-stat">
-                <span class="bin-stat-lbl">Word count</span>
-                <span class="bin-stat-val">{{ bodyStats.words }}</span>
-              </div>
-            </div>
+          <!-- Article info -->
+          <div v-if="!isNew" class="meta-section">
+            <label class="meta-label">Info</label>
+            <div class="text-secondary small">ID: #{{ id }}</div>
+            <div class="text-secondary small">{{ bodyStats.words }} words</div>
           </div>
         </div>
       </div>
+
     </div>
   </section>
 </template>
 
 <style scoped>
+/* ─── Layout ─── */
 .admin-news-edit {
-  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
+  background: var(--bg-primary);
 }
 
-.min-w-0 {
+/* ─── Top bar (GDocs-style) ─── */
+.editor-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  gap: 0.5rem;
+  z-index: 100;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   min-width: 0;
 }
 
-.sidebar-card {
-  position: sticky;
-  position: -webkit-sticky;
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
-@media (min-width: 992px) {
-  .sidebar-card {
-    top: 90px;
-  }
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
 }
 
+.topbar-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-emphasis);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.save-badge {
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.save-badge.saved {
+  color: var(--positive);
+}
+
+.save-badge.unsaved {
+  color: var(--accent);
+}
+
+.body-stats {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  margin-right: 0.5rem;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  transition: all 0.15s ease;
+}
+
+.btn-ghost:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.btn-ghost.active {
+  background: rgba(240, 185, 11, 0.12);
+  color: var(--accent);
+  border-color: rgba(240, 185, 11, 0.3);
+}
+
+/* ─── Editor body ─── */
+.editor-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.editor-main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.editor-content {
+  padding: 2rem 2rem 4rem;
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ─── Document paper ─── */
+.doc-paper {
+  background: var(--bg-card);
+  border-radius: 4px;
+  padding: 2.5rem 2.5rem 3rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+}
+
+.doc-title-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-emphasis);
+  padding: 0;
+  margin-bottom: 1.5rem;
+  line-height: 1.3;
+}
+
+.doc-title-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.doc-title-input.is-invalid {
+  color: var(--negative);
+}
+
+/* ─── Summary ─── */
+.summary-wrap {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.doc-summary-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+  color: var(--text-primary);
+  padding: 0;
+  resize: none;
+  line-height: 1.6;
+}
+
+.doc-summary-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.doc-summary-input.is-invalid {
+  color: var(--negative);
+}
+
+.auto-summary-btn {
+  position: absolute;
+  right: 0;
+  bottom: -1.8rem;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+}
+
+/* ─── Body ─── */
+.doc-body {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.body-stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+/* ─── Preview panel ─── */
+.preview-panel {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  display: flex;
+  justify-content: center;
+}
+
+.preview-body {
+  padding: 2.5rem 2rem 4rem;
+  max-width: 780px;
+  width: 100%;
+}
+
+.preview-cover {
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.preview-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-emphasis);
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.preview-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.preview-summary {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.preview-body-content {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+/* ─── Metadata panel ─── */
+.meta-panel {
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  overflow-y: auto;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.meta-panel-inner {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.meta-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.meta-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 10;
+  transform: translateX(-50%);
+}
+
+.meta-resize-handle:hover {
+  background: var(--accent);
+  opacity: 0.3;
+}
+
+/* ─── Tags ─── */
 .tags-input {
-  min-height: 42px;
-  padding: 0.35rem 0.5rem;
+  min-height: 34px;
+  padding: 0.25rem 0.4rem;
   cursor: text;
 }
 
@@ -705,79 +845,104 @@ function onBeforeUnloadHandler(e) {
   color: var(--accent);
   border: 1px solid rgba(240, 185, 11, 0.35);
   border-radius: 999px;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.78rem;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  line-height: 1.4;
 }
 
 .tag-remove {
   background: transparent;
   border: none;
   color: var(--accent);
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1;
   padding: 0 0 0 0.15rem;
   cursor: pointer;
   opacity: 0.7;
 }
 
-.tag-remove:hover {
-  opacity: 1;
-}
+.tag-remove:hover { opacity: 1; }
 
 .tag-text-input {
   flex: 1;
-  min-width: 100px;
+  min-width: 80px;
   border: none;
   outline: none;
   background: transparent;
   color: var(--text-primary);
-  font-size: 0.9rem;
-  padding: 0.15rem 0.25rem;
+  font-size: 0.82rem;
+  padding: 0.1rem 0.2rem;
 }
 
 .tag-text-input::placeholder {
   color: var(--text-secondary);
 }
 
-.cover-preview {
+/* ─── Image previews ─── */
+.cover-preview-sm {
   width: 100%;
   aspect-ratio: 16/9;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 
-.cover-preview img {
+.cover-preview-sm img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.avatar-preview {
-  width: 72px;
-  height: 72px;
-  aspect-ratio: 1;
+.avatar-preview-sm {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
-.avatar-preview img {
+.avatar-preview-sm img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-kbd {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  border-radius: 4px;
-  padding: 0 0.35rem;
-  font-size: 0.7rem;
-  font-family: ui-monospace, monospace;
+/* ─── Responsive ─── */
+@media (max-width: 991px) {
+  .editor-content {
+    padding: 1rem;
+  }
+
+  .doc-paper {
+    padding: 1.5rem;
+  }
+
+  .doc-title-input {
+    font-size: 1.3rem;
+  }
+
+  .preview-body {
+    padding: 1.5rem 1rem;
+  }
+
+  .meta-panel {
+    position: fixed;
+    right: 0;
+    top: 60px;
+    bottom: 0;
+    z-index: 200;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .meta-resize-handle {
+    display: none;
+  }
+}
+
+.invalid-feedback {
+  font-size: 0.78rem;
 }
 
 .btn-close-white {

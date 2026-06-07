@@ -29,7 +29,7 @@ async function load() {
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, name, role, created_at, avatar_url")
+      .select("id, email, name, role, created_at")
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw error;
@@ -205,17 +205,11 @@ function formatDate(iso) {
           <tbody>
             <tr v-for="p in filtered" :key="p.id">
               <td>
-                <div class="d-flex gap-3 align-items-center">
-                  <img
-                    v-if="p.avatar_url"
-                    :src="p.avatar_url"
-                    :alt="p.name"
-                    class="user-avatar"
-                  />
-                  <div v-else class="user-avatar avatar-fallback">
-                    {{ initialOf(p.name) }}
-                  </div>
-                  <div class="min-w-0">
+                  <div class="d-flex gap-3 align-items-center">
+                    <div class="user-avatar avatar-fallback">
+                      {{ initialOf(p.name) }}
+                    </div>
+                    <div class="min-w-0">
                     <div
                       class="text-emphasis fw-semibold text-truncate"
                       style="max-width: 220px"
@@ -232,7 +226,7 @@ function formatDate(iso) {
                       class="text-secondary small text-truncate"
                       style="max-width: 220px"
                     >
-                      {{ p.id }}
+                      {{ p.email || p.id }}
                     </div>
                   </div>
                 </div>

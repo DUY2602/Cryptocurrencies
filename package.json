@@ -16,6 +16,7 @@
     "@tiptap/pm": "^3.26.0",
     "@tiptap/starter-kit": "^3.26.0",
     "@tiptap/vue-3": "^3.26.0",
+    "bcryptjs": "^3.0.3",
     "bootstrap": "^5.3.8",
     "dompurify": "^3.4.5",
     "lightweight-charts": "^5.2.0",

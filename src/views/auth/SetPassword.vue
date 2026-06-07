@@ -10,6 +10,8 @@ export default {
     return {
       password: "",
       confirmPassword: "",
+      showPassword: false,
+      showConfirm: false,
       submitted: false,
       loading: false,
       message: "",
@@ -88,22 +90,33 @@ export default {
             <form novalidate @submit="onSubmit">
               <div class="mb-3">
                 <label for="setPassword" class="form-label">Password</label>
-                <input
-                  id="setPassword"
-                  v-model="password"
-                  type="password"
-                  class="form-control"
-                  :class="{
-                    'is-valid': submitted && passwordValid,
-                    'is-invalid': submitted && !passwordValid,
-                  }"
-                  placeholder="At least 6 characters"
-                  autocomplete="new-password"
-                  :disabled="loading"
-                />
+                <div class="input-group">
+                  <input
+                    id="setPassword"
+                    v-model="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    class="form-control"
+                    :class="{
+                      'is-valid': submitted && passwordValid,
+                      'is-invalid': submitted && !passwordValid,
+                    }"
+                    placeholder="At least 6 characters"
+                    autocomplete="new-password"
+                    :disabled="loading"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-accent"
+                    @click="showPassword = !showPassword"
+                    :disabled="loading"
+                    tabindex="-1"
+                  >
+                    {{ showPassword ? '🙈' : '👁️' }}
+                  </button>
+                </div>
                 <div
                   v-if="submitted && !passwordValid"
-                  class="invalid-feedback"
+                  class="invalid-feedback d-block"
                 >
                   Password must be at least 6 characters.
                 </div>
@@ -113,20 +126,31 @@ export default {
                 <label for="setConfirm" class="form-label"
                   >Confirm password</label
                 >
-                <input
-                  id="setConfirm"
-                  v-model="confirmPassword"
-                  type="password"
-                  class="form-control"
-                  :class="{
-                    'is-valid': submitted && confirmValid,
-                    'is-invalid': submitted && !confirmValid,
-                  }"
-                  placeholder="Re-enter password"
-                  autocomplete="new-password"
-                  :disabled="loading"
-                />
-                <div v-if="submitted && !confirmValid" class="invalid-feedback">
+                <div class="input-group">
+                  <input
+                    id="setConfirm"
+                    v-model="confirmPassword"
+                    :type="showConfirm ? 'text' : 'password'"
+                    class="form-control"
+                    :class="{
+                      'is-valid': submitted && confirmValid,
+                      'is-invalid': submitted && !confirmValid,
+                    }"
+                    placeholder="Re-enter password"
+                    autocomplete="new-password"
+                    :disabled="loading"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-accent"
+                    @click="showConfirm = !showConfirm"
+                    :disabled="loading"
+                    tabindex="-1"
+                  >
+                    {{ showConfirm ? '🙈' : '👁️' }}
+                  </button>
+                </div>
+                <div v-if="submitted && !confirmValid" class="invalid-feedback d-block">
                   Passwords must match.
                 </div>
               </div>

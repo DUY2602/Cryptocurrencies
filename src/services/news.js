@@ -92,56 +92,74 @@ export function normalizeArticle(row) {
  *  - In offline / no-creds mode the data layer is read-only.
  */
 export async function fetchNews() {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-  if (!url || !key) {
-    return fallbackNews.map(normalizeArticle);
-  }
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   try {
-    const { data, error } = await supabase
-      .from("news")
-      .select("*")
-      .order("published_at", { ascending: false })
-      .limit(500);
-
-    if (error) throw error;
-    if (!Array.isArray(data) || data.length === 0) {
-      // Empty DB — keep the local fallback so the public site still has
-      // content to render before an admin seeds it.
-      return fallbackNews.map(normalizeArticle);
+    const res = await fetch(
+      `${supabaseUrl}/functions/v1/fetch-news`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${anonKey}` },
+      },
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { articles } = await res.json();
+    if (Array.isArray(articles) && articles.length > 0) {
+      return articles.map(normalizeArticle);
     }
-    return data.map(normalizeArticle);
   } catch (e) {
-    console.warn("[news] Supabase fetch failed, using local fallback:", e.message);
-    return fallbackNews.map(normalizeArticle);
+    console.warn("[news] Edge Function fetch failed:", e.message);
   }
+
+  // Fallback: try Supabase table
+  if (supabaseUrl && anonKey) {
+    try {
+      const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .order("published_at", { ascending: false })
+        .limit(500);
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data.map(normalizeArticle);
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  // Last fallback: local JSON
+  return fallbackNews.map(normalizeArticle);
 }
 
 export async function fetchNewsById(id) {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  if (!url || !key) {
-    const local = fallbackNews.find((a) => String(a.id) === String(id));
-    return local ? normalizeArticle(local) : null;
+  const strId = String(id);
+
+  // Try Edge Function for RSS articles
+  if (strId.startsWith("rss-")) {
+    try {
+      const all = await fetchNews();
+      return all.find((a) => String(a.id) === strId) || null;
+    } catch { /* fall through */ }
   }
 
-  try {
-    const { data, error } = await supabase
-      .from("news")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+  // Try Supabase for DB articles
+  if (supabaseUrl && anonKey) {
+    try {
+      const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
 
-    if (error) throw error;
-    if (data) return normalizeArticle(data);
-  } catch (e) {
-    console.warn("[news] Supabase fetchById failed:", e.message);
+      if (!error && data) return normalizeArticle(data);
+    } catch { /* ignore */ }
   }
 
-  const local = fallbackNews.find((a) => String(a.id) === String(id));
+  // Last fallback: local JSON
+  const local = fallbackNews.find((a) => String(a.id) === strId);
   return local ? normalizeArticle(local) : null;
 }
 

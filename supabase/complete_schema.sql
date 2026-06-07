@@ -1,6 +1,7 @@
 -- =============================================================================
 -- Complete Supabase Schema — Cryptocurrencies Dashboard
--- Includes: auth profiles, watchlist, news, comments, RAG documents
+-- Profiles stores all accounts with email + bcrypt password.
+-- FK to auth.users is kept so RLS auth.uid() still works.
 -- Idempotent: safe to run multiple times (uses IF NOT EXISTS / OR REPLACE)
 -- =============================================================================
 -- Run this in Supabase Studio > SQL Editor
@@ -11,9 +12,14 @@ create extension if not exists vector;
 
 -- 1) Tables -------------------------------------------------------------------
 
--- 1a) User profiles (auto-created via trigger on auth.users)
+-- 1a) User profiles — source of truth for all accounts
+--     id = auth.users.id (FK kept for RLS compatibility).
+--     email + password (bcrypt) stored directly so every account
+--     is visible as a profile record.
 create table if not exists public.profiles (
   id         uuid references auth.users(id) on delete cascade primary key,
+  email      text not null,
+  password   text,                     -- bcrypt hash (null until set)
   name       text,
   role       text not null default 'user',
   created_at timestamptz not null default now()
@@ -248,7 +254,22 @@ create index if not exists idx_documents_embedding
 alter publication supabase_realtime add table public.news;
 
 -- =============================================================================
--- 7) OPTIONAL: Schedule auto-fetch news from CoinDesk RSS (every hour)
+-- 7) Make a user an admin (run AFTER registering via the site)
+--    Replace 'admin@crypto.local' with the email you registered with.
+-- =============================================================================
+insert into public.profiles (id, email, password, name, role)
+select
+  id,
+  email,
+  null,         -- password already set via registration
+  split_part(email, '@', 1),
+  'admin'
+from auth.users
+where email = 'admin@crypto.local'
+on conflict (id) do update set role = 'admin';
+
+-- =============================================================================
+-- 8) OPTIONAL: Schedule auto-fetch news from CoinDesk RSS (every hour)
 -- Requires pg_cron extension (enable in Supabase Dashboard > Database > Extensions)
 -- =============================================================================
 -- -- Uncomment to enable:
@@ -267,14 +288,3 @@ alter publication supabase_realtime add table public.news;
 --   ) as request_id;
 --   $$
 -- );
-
--- =============================================================================
--- 8) OPTIONAL: Make your own account an admin
--- Run this AFTER registering on the site (replace email):
--- =============================================================================
--- insert into public.profiles (id, name, role)
--- select id, split_part(email, '@', 1), 'admin'
--- from auth.users
--- where email = 'your-email@example.com'
--- on conflict (id) do update set role = 'admin';
---
