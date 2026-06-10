@@ -184,6 +184,10 @@ export const livePrices = {
     refCount = 0;
     fullStop();
   },
+
+  getLatest() {
+    return { ...latestPrices };
+  },
 };
 
 export default livePrices;

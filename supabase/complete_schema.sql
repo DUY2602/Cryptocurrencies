@@ -76,7 +76,7 @@ create table if not exists public.comments (
 );
 
 -- 1f) RAG documents (vector embeddings for Gemini RAG pipeline)
---     embedding dimension = 768, matching Google text-embedding-004
+--     embedding dimension = 768, matching Google embedding-001 / text-embedding-004
 create table if not exists public.documents (
   id        bigint generated always as identity primary key,
   source    text not null,            -- 'coin' | 'news'
