@@ -1,5 +1,4 @@
 import { coinWebSocket } from "./websocket.js";
-import { coins as localCoins } from "../data/coins.js";
 
 const subscribers = new Set();
 let trackedIds = [];
@@ -30,25 +29,18 @@ function normalizeTrackedEntry(entry) {
       .trim()
       .toUpperCase();
     if (id && symbol) return { id, symbol };
-    if (!id) return null;
-    const local = localCoins.find(
-      (c) => String(c.id) === id || String(c.coingeckoId) === id,
-    );
-    if (local) {
-      return {
-        id: String(local.coingeckoId || local.id),
-        symbol: local.symbol,
-      };
+    if (id) {
+      const meta = trackedCoinsMeta.find((c) => c.id === id)
+      if (meta) return { id: meta.id, symbol: meta.symbol }
     }
     return null;
   }
 
   const id = String(entry).trim();
-  const local = localCoins.find(
-    (c) => String(c.id) === id || String(c.coingeckoId) === id,
-  );
-  if (!local) return null;
-  return { id: String(local.coingeckoId || local.id), symbol: local.symbol };
+  if (!id) return null
+  const meta = trackedCoinsMeta.find((c) => c.id === id)
+  if (meta) return { id: meta.id, symbol: meta.symbol }
+  return { id, symbol: id.toUpperCase() }
 }
 
 function resolveCoins(coinsOrIds) {
@@ -107,10 +99,6 @@ export function getLiveQuote(liveMap, coin) {
   );
 }
 
-/**
- * Arrow direction follows actual price ticks only (not 24h %).
- * Returns persistent directions + which ids changed this tick (for pulse).
- */
 export function applyLiveFlashes(stored, prevMap, nextMap) {
   const directions = { ...stored };
   const tick = {};
@@ -132,8 +120,6 @@ export function applyLiveFlashes(stored, prevMap, nextMap) {
 
   return { directions, tick };
 }
-
-// `hideArrowOnUnchanged` is always enabled; no runtime setter exposed.
 
 export const livePrices = {
   subscribe(callback) {

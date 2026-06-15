@@ -1,216 +1,84 @@
-import { coins as localCoins } from "../data/coins.js";
 import { fetchUsdtTickers, findUsdtTicker } from "./binance.js";
 
-const symbolToLocal = new Map(
-  localCoins.map((c) => [String(c.symbol).toUpperCase(), c]),
-);
+const COINGECKO_MARKETS = 'https://api.coingecko.com/api/v3/coins/markets'
+const COINGECKO_DETAIL = 'https://api.coingecko.com/api/v3/coins'
 
-const idToLocal = new Map(
-  localCoins.flatMap((c) => {
-    const keys = [String(c.id), String(c.coingeckoId || c.id)];
-    return keys.map((k) => [k, c]);
-  }),
-);
-
-const geckoIdToLocal = new Map(
-  localCoins.map((c) => [String(c.coingeckoId || c.id).toLowerCase(), c])
-)
-
-function mapMarketCoin(c) {
+function mapCoin(c) {
   return {
     id: c.id,
-    coingeckoId: c.coingeckoId || c.id,
+    coingeckoId: c.id,
     name: c.name,
-    symbol: (c.symbol || "").toUpperCase(),
+    symbol: (c.symbol || '').toUpperCase(),
     price: c.current_price ?? c.price ?? 0,
     marketCap: c.market_cap ?? c.marketCap ?? 0,
     volume24h: c.total_volume ?? c.volume24h ?? 0,
     change24h: c.price_change_percentage_24h ?? c.change24h ?? 0,
-    image: c.image,
-  };
-}
-
-function mapLocalCoin(c) {
-  return {
-    ...mapMarketCoin(c),
-    volume24h: c.volume24h ?? c.marketCap * 0.08,
-  };
-}
-
-function tickerToCoin(t) {
-  const local = symbolToLocal.get(t.symbol)
-  if (local) {
-    return mapLocalCoin({
-      ...local,
-      price: t.price,
-      change24h: t.change24h,
-      volume24h: t.volume24h,
-    })
-  }
-
-  const slug = t.symbol.toLowerCase()
-  return {
-    id: slug,
-    coingeckoId: slug,
-    name: t.symbol,
-    symbol: t.symbol,
-    price: t.price,
-    marketCap: 0,
-    volume24h: t.volume24h,
-    change24h: t.change24h,
-    image: null,
+    image: c.image || null,
   }
 }
 
-async function enrichWithMarketCaps(coins) {
-  if (!coins.length) return coins
-  const { fetchCoinMeta } = await import('./coingecko.js')
-  const idToGeckoId = new Map(
-    coins.map((c) => [String(c.coingeckoId || c.id), String(c.coingeckoId || c.id).toLowerCase()])
-  )
-  const uniqueIds = [...new Set(idToGeckoId.values())]
-  const meta = await fetchCoinMeta(uniqueIds)
-
-  return coins.map((c) => {
-    const gid = String(c.coingeckoId || c.id).toLowerCase()
-    const m = meta[gid] || {}
-    return {
-      ...c,
-      marketCap: m.marketCap ?? c.marketCap ?? 0,
-      image: c.image || m.image || null,
-    }
-  })
+async function fetchCoinGeckoMarkets(perPage = 100) {
+  const url = `${COINGECKO_MARKETS}?vs_currency=usd&order=volume_desc&per_page=${perPage}&page=1&sparkline=false&price_change_percentage=24h`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`CoinGecko ${res.status}`)
+  const json = await res.json()
+  if (!Array.isArray(json)) throw new Error('Invalid response')
+  return json.map(mapCoin)
 }
 
-async function getBinanceTopCoins(perPage = 50) {
-  const tickers = await fetchUsdtTickers()
-  const coins = [...tickers]
-    .sort((a, b) => b.volume24h - a.volume24h)
-    .slice(0, perPage)
-    .map(tickerToCoin)
-  return enrichWithMarketCaps(coins)
+async function fetchCoinGeckoById(id) {
+  const url = `${COINGECKO_DETAIL}/${encodeURIComponent(String(id).toLowerCase())}?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`CoinGecko ${res.status}`)
+  const c = await res.json()
+  return {
+    id: c.id,
+    coingeckoId: c.id,
+    name: c.name,
+    symbol: (c.symbol || '').toUpperCase(),
+    price: c.market_data?.current_price?.usd ?? 0,
+    marketCap: c.market_data?.market_cap?.usd ?? 0,
+    volume24h: c.market_data?.total_volume?.usd ?? 0,
+    change24h: c.market_data?.price_change_percentage_24h ?? 0,
+    high24h: c.market_data?.high_24h?.usd ?? 0,
+    low24h: c.market_data?.low_24h?.usd ?? 0,
+    ath: c.market_data?.ath?.usd ?? 0,
+    image: c.image?.large || c.image?.small || c.image?.thumb || null,
+    description: c.description?.en
+      ? c.description.en.replace(/<[^>]*>/g, '').slice(0, 1000)
+      : `${c.name} — live market data from CoinGecko.`,
+  }
 }
 
 export const api = {
   async getTopCoins(perPage = 50) {
-    // Always use local coins first (they have proper logos)
-    const localList = localCoins.slice(0, perPage).map(mapLocalCoin);
-
-    try {
-      const binanceCoins = await getBinanceTopCoins(perPage);
-      // Merge: keep local coins, add Binance data if available
-      const localIds = new Set(localList.map((c) => c.symbol.toUpperCase()));
-      const merged = [
-        ...localList.map((local) => {
-          const binance = binanceCoins.find(
-            (b) => b.symbol.toUpperCase() === local.symbol.toUpperCase(),
-          );
-          if (binance) {
-            return {
-              ...local,
-              price: binance.price,
-              change24h: binance.change24h,
-              volume24h: binance.volume24h,
-            };
-          }
-          return local;
-        }),
-        ...binanceCoins
-          .filter((b) => !localIds.has(b.symbol.toUpperCase()))
-          .slice(0, Math.max(0, perPage - localList.length)),
-      ];
-      return merged.slice(0, perPage);
-    } catch (err) {
-      console.warn(
-        "[api] Binance markets failed, using local only:",
-        err.message,
-      );
-    }
-    return enrichWithMarketCaps(localCoins.slice(0, perPage))
-  },
-
-  getAllLocalCoins() {
-    return enrichWithMarketCaps(localCoins)
+    return fetchCoinGeckoMarkets(perPage)
   },
 
   async getTrendingCoins() {
-    try {
-      const tickers = await fetchUsdtTickers();
-      const top = [...tickers]
-        .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
-        .slice(0, 6)
-        .map(tickerToCoin)
-      if (top.length) return enrichWithMarketCaps(top)
-    } catch (err) {
-      console.warn("[api] trending:", err.message);
-    }
-    return enrichWithMarketCaps(localCoins.slice(0, 6))
+    const coins = await fetchCoinGeckoMarkets(6)
+    return coins.sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
   },
 
   async getCoinById(id) {
-    const strId = String(id)
-    const local = idToLocal.get(strId) || geckoIdToLocal.get(strId.toLowerCase())
+    const coin = await fetchCoinGeckoById(id)
 
     try {
       const tickers = await fetchUsdtTickers({ useCache: false })
-      let ticker = null
-
-      if (local) {
-        ticker = findUsdtTicker(tickers, local.symbol)
-      }
-
-      if (!ticker) {
-        ticker = findUsdtTicker(tickers, strId)
-      }
-
-      if (!ticker && local?.coingeckoId) {
-        ticker = findUsdtTicker(tickers, local.coingeckoId)
-      }
-
+      const ticker = findUsdtTicker(tickers, coin.symbol)
       if (ticker) {
-        const base = local ? mapLocalCoin(local) : tickerToCoin(ticker)
-        const price = ticker.price
-        const geckoId = local
-          ? String(local.coingeckoId || local.id)
-          : ticker.symbol.toLowerCase()
-        const { fetchCoinMeta } = await import('./coingecko.js')
-        const meta = await fetchCoinMeta([geckoId])
-        const m = meta[geckoId.toLowerCase()] || {}
-        return {
-          ...base,
-          marketCap: m.marketCap ?? base.marketCap ?? 0,
-          image: base.image || m.image || null,
-          price,
-          change24h: ticker.change24h,
-          volume24h: ticker.volume24h,
-          high24h: price * (1 + Math.max(ticker.change24h, 0) / 200),
-          low24h: price * (1 - Math.max(-ticker.change24h, 0) / 200),
-          ath: local?.price ? local.price * 1.5 : price * 1.2,
-          description:
-            base.description ||
-            `${base.name} — live price from Binance (${base.symbol}/USDT).`,
-        };
+        coin.price = ticker.price
+        coin.change24h = ticker.change24h
+        coin.volume24h = ticker.volume24h
+        coin.high24h = ticker.price * (1 + Math.max(ticker.change24h, 0) / 200)
+        coin.low24h = ticker.price * (1 - Math.max(-ticker.change24h, 0) / 200)
       }
-    } catch (err) {
-      console.warn("[api] coin detail:", err.message);
+    } catch {
+      /* Binance is optional for detail */
     }
 
-    if (local) {
-      const { fetchCoinMeta } = await import('./coingecko.js')
-      const meta = await fetchCoinMeta([String(local.coingeckoId || local.id)])
-      const m = meta[String(local.coingeckoId || local.id).toLowerCase()] || {}
-      return {
-        ...mapLocalCoin(local),
-        marketCap: m.marketCap ?? local.marketCap ?? 0,
-        image: local.image || m.image || null,
-        high24h: local.price * 1.02,
-        low24h: local.price * 0.98,
-        ath: local.price * 1.5,
-        description: `${local.name} market data (offline fallback).`,
-      };
-    }
-    throw new Error("Coin not found");
+    return coin
   },
-};
+}
 
-export default api;
+export default api

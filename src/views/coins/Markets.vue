@@ -61,7 +61,9 @@ export default {
             c.symbol.toLowerCase().includes(q),
         );
       }
-      if (this.sortBy === "price") {
+      if (this.sortBy === "default") {
+        list.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+      } else if (this.sortBy === "price") {
         list.sort((a, b) => b.price - a.price);
       } else if (this.sortBy === "gainers") {
         list.sort((a, b) => b.change24h - a.change24h);
@@ -285,14 +287,7 @@ export default {
                 >
                   <span
                     class="price-value"
-                    :style="{
-                      color:
-                        coin._flash === 'up'
-                          ? '#0ecb81'
-                          : coin._flash === 'down'
-                            ? '#f6465d'
-                            : '#eaecef',
-                    }"
+                    :class="coin._flash === 'up' ? 'flash-up' : coin._flash === 'down' ? 'flash-down' : ''"
                   >
                     {{ formatPrice(coin.price)
                     }}<span
@@ -394,13 +389,13 @@ export default {
 
 <style scoped>
 .markets-page {
-  background: #0b0e11;
+  background: var(--markets-bg);
   padding-top: 1.5rem;
 }
 
 .markets-banner {
-  background: #141820;
-  border-bottom: 1px solid #2b3139;
+  background: var(--markets-banner-bg);
+  border-bottom: 1px solid var(--table-border);
   padding: 1rem 0;
   margin-bottom: 1rem;
 }
@@ -408,21 +403,21 @@ export default {
 .markets-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #eaecef;
+  color: var(--text-emphasis);
   margin: 0;
 }
 
 .markets-subtitle {
-  color: #848e9c;
+  color: var(--text-secondary);
   font-size: 0.82rem;
 }
 
 /* ── Table wrapper ─────────────────── */
 
 .table-crypto-wrap {
-  background: #1e2329;
-  border: 1px solid #2b3139;
-  border-radius: 8px;
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
@@ -434,9 +429,9 @@ export default {
   display: flex;
   align-items: center;
   padding: 0.55rem 0.75rem;
-  background: #1e2329;
-  border-bottom: 1px solid #2b3139;
-  color: #848e9c;
+  background: var(--table-header-bg);
+  border-bottom: 1px solid var(--table-border);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -500,12 +495,10 @@ export default {
   display: flex;
   align-items: center;
   padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid #2b3139;
-  color: #eaecef;
+  border-bottom: 1px solid var(--table-border);
+  color: var(--text-primary);
   font-size: 0.9rem;
-  transition:
-    background 0.1s ease,
-    box-shadow 0.1s ease;
+  transition: background 0.1s ease, box-shadow 0.1s ease;
 }
 
 .table-crypto-row:last-child {
@@ -513,16 +506,16 @@ export default {
 }
 
 .table-crypto-row.is-gainer {
-  border-left: 3px solid #0ecb81;
+  border-left: 3px solid var(--positive);
 }
 
 .table-crypto-row.is-loser {
-  border-left: 3px solid #f6465d;
+  border-left: 3px solid var(--negative);
 }
 
 .table-crypto-row:hover {
-  background: #252b33;
-  box-shadow: inset 3px 0 0 0 #f0b90b;
+  background: var(--table-bg-hover);
+  box-shadow: inset 3px 0 0 0 var(--accent);
 }
 
 .coin-link {
@@ -537,18 +530,18 @@ export default {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #141820;
+  background: var(--bg-secondary);
   object-fit: cover;
 }
 
 .coin-name-cell {
   font-weight: 600;
-  color: #f5f7fa;
+  color: var(--text-emphasis);
   font-size: 0.88rem;
 }
 
 .coin-name-cell small {
-  color: #848e9c;
+  color: var(--text-secondary);
   font-weight: 400;
   font-size: 0.78rem;
   margin-left: 0.1rem;
@@ -557,7 +550,7 @@ export default {
 .price-value {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #eaecef;
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   font-family: "Roboto Mono", SFMono-Regular, ui-monospace, monospace;
 }
@@ -577,7 +570,7 @@ export default {
 .btn-icon {
   background: transparent;
   border: none;
-  color: #848e9c;
+  color: var(--text-secondary);
   font-size: 1.1rem;
   cursor: pointer;
   padding: 0.2rem 0.3rem;
@@ -586,7 +579,7 @@ export default {
 }
 
 .btn-icon:hover {
-  color: #f0b90b;
+  color: var(--accent);
 }
 
 .star {
@@ -594,8 +587,8 @@ export default {
 }
 
 .btn-primary {
-  background: #f0b90b;
-  color: #0b0e11;
+  background: var(--accent);
+  color: var(--accent-text);
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -607,8 +600,8 @@ export default {
 }
 
 .btn-primary:hover {
-  background: #fcd535;
-  color: #0b0e11;
+  background: var(--accent-hover);
+  color: var(--accent-text);
 }
 
 .btn-xs {
@@ -620,28 +613,22 @@ export default {
 
 .flash-up {
   animation: flashGreen 0.55s ease;
+  color: var(--positive) !important;
 }
 
 .flash-down {
   animation: flashRed 0.55s ease;
+  color: var(--negative) !important;
 }
 
 @keyframes flashGreen {
-  0% {
-    background-color: rgba(14, 203, 129, 0.2);
-  }
-  100% {
-    background-color: transparent;
-  }
+  0% { background-color: rgba(14, 203, 129, 0.2); }
+  100% { background-color: transparent; }
 }
 
 @keyframes flashRed {
-  0% {
-    background-color: rgba(246, 70, 93, 0.2);
-  }
-  100% {
-    background-color: transparent;
-  }
+  0% { background-color: rgba(246, 70, 93, 0.2); }
+  100% { background-color: transparent; }
 }
 
 /* ── Pagination ──────────────────── */
@@ -655,9 +642,9 @@ export default {
   min-width: 34px;
   height: 34px;
   padding: 0 0.45rem;
-  border: 1px solid #2b3139;
-  background: #1e2329;
-  color: #eaecef;
+  border: 1px solid var(--table-border);
+  background: var(--table-bg);
+  color: var(--text-primary);
   border-radius: 6px;
   font-weight: 500;
   font-size: 0.82rem;
@@ -666,9 +653,9 @@ export default {
 }
 
 .page-btn:hover:not(:disabled) {
-  background: #252b33;
-  border-color: #f0b90b;
-  color: #f0b90b;
+  background: var(--table-bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .page-btn:disabled {
@@ -677,34 +664,22 @@ export default {
 }
 
 .page-btn.active {
-  background: #f0b90b;
-  border-color: #f0b90b;
-  color: #0b0e11;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
   font-weight: 700;
 }
 
 /* ── Responsive ──────────────────── */
 
 @media (max-width: 991px) {
-  .cell-volume,
-  .cell-cap {
-    display: none;
-  }
-  .table-crypto-row {
-    gap: 0.2rem;
-  }
-  .price-value {
-    font-size: 0.82rem;
-  }
+  .cell-volume, .cell-cap { display: none; }
+  .table-crypto-row { gap: 0.2rem; }
+  .price-value { font-size: 0.82rem; }
 }
 
 @media (max-width: 575px) {
-  .cell-spark {
-    display: none;
-  }
-  .cell-change {
-    width: auto;
-    flex: 1;
-  }
+  .cell-spark { display: none; }
+  .cell-change { width: auto; flex: 1; }
 }
 </style>

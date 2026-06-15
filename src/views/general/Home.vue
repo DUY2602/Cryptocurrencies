@@ -1,4 +1,5 @@
 <script>
+import { defineAsyncComponent } from "vue";
 import { RouterLink } from "vue-router";
 import HeroSection from "../../components/HeroSection.vue";
 import CoinCard from "../../components/CoinCard.vue";
@@ -11,7 +12,7 @@ import {
   applyLiveFlashes,
   getLiveQuote,
 } from "../../services/livePrices.js";
-import { coins as localCoins } from "../../data/coins.js";
+
 
 export default {
   components: {
@@ -21,6 +22,7 @@ export default {
     MarketOverviewCards,
     LoadingSpinner,
     LiveBadge,
+    AdoptionMap: defineAsyncComponent(() => import("../../components/geo/RadarMap.vue")),
   },
   data() {
     return {
@@ -72,9 +74,8 @@ export default {
       ]);
       this.trending = trending;
       this.allCoins = top;
-    } catch {
-      this.trending = localCoins.slice(0, 6);
-      this.allCoins = localCoins;
+    } catch (e) {
+      console.warn('[Home] failed to load coins:', e.message)
     } finally {
       this.loading = false;
       this.startLive();
@@ -182,27 +183,8 @@ export default {
           <MarketOverviewCards :coins="topGainers" title="Top gainers (24h)" />
           <MarketOverviewCards :coins="topLosers" title="Top losers (24h)" />
 
-          <div class="card card-crypto p-4">
-            <h3 class="h5 text-emphasis mb-2">Portfolio summary</h3>
-            <p class="text-secondary small mb-3">
-              UI preview — connect a wallet or exchange account in a later
-              stage.
-            </p>
-            <div class="row g-3">
-              <div class="col-sm-4">
-                <p class="stat-card-label mb-0">Holdings</p>
-                <p class="stat-card-value h5">—</p>
-              </div>
-              <div class="col-sm-4">
-                <p class="stat-card-label mb-0">Total value</p>
-                <p class="stat-card-value h5">—</p>
-              </div>
-              <div class="col-sm-4">
-                <p class="stat-card-label mb-0">P/L today</p>
-                <p class="stat-card-value h5">—</p>
-              </div>
-            </div>
-          </div>
+          <h2 class="section-heading mb-3">Global Crypto Adoption 2025</h2>
+          <AdoptionMap />
         </template>
       </div>
     </section>

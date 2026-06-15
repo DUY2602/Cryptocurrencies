@@ -643,32 +643,30 @@ export default {
 </template>
 
 <style scoped>
-/* Web3 Dashboard Base Styles */
 .web3-dashboard {
-  background: #141820 !important; /* Deep dark background */
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  border-radius: 12px;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #e6e8ea;
+  color: var(--text-primary);
 }
 
 .dashboard-header {
-  background: rgba(20, 24, 32, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 .symbol-badge {
-  background: rgba(240, 185, 11, 0.15);
-  color: #f0b90b;
-  border: 1px solid rgba(240, 185, 11, 0.3);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 0.9rem;
   letter-spacing: 0.5px;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(240, 185, 11, 0.2);
 }
 
 .price-display-wrapper {
@@ -679,20 +677,19 @@ export default {
 .price-val {
   font-size: 1.5rem;
   letter-spacing: -0.5px;
-  color: #ffffff;
+  color: var(--text-emphasis);
   transition: color 0.2s ease;
 }
 
-/* Timeframe Selector */
 .bg-secondary-custom {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .btn-tf {
   background: transparent;
   border: none;
-  color: #848e9c;
+  color: var(--text-secondary);
   padding: 6px 12px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -702,23 +699,21 @@ export default {
 }
 
 .btn-tf:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-emphasis);
+  background: var(--bg-card-hover);
 }
 
 .btn-tf.active {
-  background: #2b3139;
-  color: #ffffff;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
+  color: var(--text-emphasis);
 }
 
-/* Indicator Bar */
 .indicator-bar {
-  background: rgba(20, 24, 32, 0.5);
+  background: var(--bg-secondary);
 }
 
 .indicator-btn {
-  color: #848e9c;
+  color: var(--text-secondary);
   background: transparent;
   border: 1px solid transparent;
   font-size: 0.75rem;
@@ -728,22 +723,21 @@ export default {
 }
 
 .indicator-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-emphasis);
+  background: var(--bg-card-hover);
 }
 
 .indicator-btn.active {
-  color: #f0b90b;
-  background: rgba(240, 185, 11, 0.1);
-  border-color: rgba(240, 185, 11, 0.2);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
-/* Chart Area */
 .chart-area-wrapper {
   min-height: 400px;
   height: 400px;
   position: relative;
-  background: #141820;
+  background: var(--bg-secondary);
 }
 
 .chart-loading-overlay,
@@ -751,21 +745,8 @@ export default {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 10;
-  background: rgba(20, 24, 32, 0.8);
+  background: var(--bg-card);
   backdrop-filter: blur(4px);
-}
-
-.spinner-crypto {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(240, 185, 11, 0.3);
-  border-radius: 50%;
-  border-top-color: #f0b90b;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* Tooltip */
@@ -773,15 +754,15 @@ export default {
   position: absolute;
   display: none;
   padding: 12px;
-  background: rgba(20, 24, 32, 0.95);
+  background: var(--bg-card);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
   font-size: 12px;
-  color: #e6e8ea;
+  color: var(--text-primary);
   z-index: 100;
   pointer-events: none;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow);
   min-width: 180px;
 }
 
@@ -793,7 +774,7 @@ export default {
 
 :deep(.tooltip-divider) {
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
   margin: 8px 0;
 }
 
@@ -804,29 +785,30 @@ export default {
 }
 
 :deep(.tooltip-lbl) {
-  color: #848e9c;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 :deep(.tooltip-val) {
   font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
 }
 
 /* Stat Cards */
 .stat-cards-container {
-  background: rgba(20, 24, 32, 0.8);
+  background: var(--bg-secondary);
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 10px;
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .stat-card:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: var(--bg-card-hover) !important;
   transform: translateY(-2px);
 }
 
@@ -834,53 +816,50 @@ export default {
   opacity: 0.7;
 }
 
-/* Right Analytics Panel */
 .right-analytics-panel {
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--bg-card);
 }
 
 .panel-title {
   font-size: 0.75rem;
   letter-spacing: 1px;
-  color: #848e9c !important;
+  color: var(--text-secondary) !important;
 }
 
 .sentiment-progress {
   height: 8px;
-  background: #2b3139;
+  background: var(--border-color);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .bg-positive {
-  background-color: #0ecb81 !important;
+  background-color: var(--positive) !important;
 }
 
 .bg-negative {
-  background-color: #f6465d !important;
+  background-color: var(--negative) !important;
 }
 
 .text-positive {
-  color: #0ecb81 !important;
+  color: var(--positive) !important;
 }
 
 .text-negative {
-  color: #f6465d !important;
+  color: var(--negative) !important;
 }
 
-/* Utilities */
 .text-emphasis {
-  color: #ffffff;
+  color: var(--text-emphasis);
 }
 
-/* Flash Animations */
 @keyframes flashPulseGreen {
-  0%   { background-color: rgba(14, 203, 129, 0.35); }
+  0%   { background-color: color-mix(in srgb, var(--positive) 35%, transparent); }
   100% { background-color: transparent; }
 }
 
 @keyframes flashPulseRed {
-  0%   { background-color: rgba(246, 70, 93, 0.35); }
+  0%   { background-color: color-mix(in srgb, var(--negative) 35%, transparent); }
   100% { background-color: transparent; }
 }
 
