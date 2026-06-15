@@ -2,7 +2,7 @@
  * Binance public API — prices & 24h stats (no API key, browser-friendly).
  */
 
-const BINANCE_24H = 'https://api.binance.com/api/v3/ticker/24hr'
+const BINANCE_24H = '/api/binance'
 
 const STABLE_BASES = new Set([
   'USDC',

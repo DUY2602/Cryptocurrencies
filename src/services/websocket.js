@@ -3,7 +3,7 @@
  */
 
 const BINANCE_WS = 'wss://stream.binance.com:9443/ws/!miniTicker@arr'
-const BINANCE_REST = 'https://api.binance.com/api/v3/ticker/24hr'
+const BINANCE_REST = '/api/binance'
 const NOTIFY_MS = 500
 const REST_POLL_MS = 3000
 const MAX_RECONNECT = 8
