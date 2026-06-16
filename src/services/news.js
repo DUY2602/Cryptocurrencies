@@ -91,10 +91,29 @@ export function normalizeArticle(row) {
  *  - Falls back to local JSON if Supabase is missing creds or errors.
  *  - In offline / no-creds mode the data layer is read-only.
  */
-export async function fetchNews() {
+export async function fetchNews({ page = 1, pageSize = 12 } = {}) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  // Tier 1: Read from Supabase table (accumulated news persisted by Edge Function)
+  if (supabaseUrl && anonKey) {
+    try {
+      const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .order("published_at", { ascending: false })
+        .range(from, to);
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data.map(normalizeArticle);
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  // Tier 2: Call Edge Function GET (fetches live RSS + persists to DB)
   try {
     const res = await fetch(
       `${supabaseUrl}/functions/v1/fetch-news`,
@@ -112,23 +131,54 @@ export async function fetchNews() {
     console.warn("[news] Edge Function fetch failed:", e.message);
   }
 
-  // Fallback: try Supabase table
+  // Tier 3: local JSON
+  return fallbackNews.map(normalizeArticle);
+}
+
+export async function fetchNewsCount() {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  if (supabaseUrl && anonKey) {
+    try {
+      const { count, error } = await supabase
+        .from("news")
+        .select("*", { count: "exact", head: true });
+
+      if (!error && count !== null) return count;
+    } catch { /* ignore */ }
+  }
+
+  return null;
+}
+
+export async function fetchCategoryCounts() {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
   if (supabaseUrl && anonKey) {
     try {
       const { data, error } = await supabase
         .from("news")
-        .select("*")
-        .order("published_at", { ascending: false })
-        .limit(500);
+        .select("category");
 
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data.map(normalizeArticle);
+      if (!error && data) {
+        const counts = {};
+        data.forEach((row) => {
+          const cat = row.category || "General";
+          counts[cat] = (counts[cat] || 0) + 1;
+        });
+        return Object.entries(counts)
+          .map(([category, count]) => ({ category, count }))
+          .sort((a, b) => a.category.localeCompare(b.category));
       }
-    } catch (_) { /* ignore */ }
+    } catch { /* ignore */ }
   }
 
-  // Last fallback: local JSON
-  return fallbackNews.map(normalizeArticle);
+  const cats = new Set(fallbackNews.map((a) => a.category || "General"));
+  return Array.from(cats)
+    .map((category) => ({ category, count: 0 }))
+    .sort((a, b) => a.category.localeCompare(b.category));
 }
 
 export async function fetchNewsById(id) {
@@ -137,15 +187,7 @@ export async function fetchNewsById(id) {
 
   const strId = String(id);
 
-  // Try Edge Function for RSS articles
-  if (strId.startsWith("rss-")) {
-    try {
-      const all = await fetchNews();
-      return all.find((a) => String(a.id) === strId) || null;
-    } catch { /* fall through */ }
-  }
-
-  // Try Supabase for DB articles
+  // Tier 1: Try Supabase first (articles now persist in DB)
   if (supabaseUrl && anonKey) {
     try {
       const { data, error } = await supabase
@@ -158,7 +200,27 @@ export async function fetchNewsById(id) {
     } catch { /* ignore */ }
   }
 
-  // Last fallback: local JSON
+  // Tier 2: For RSS articles, fetch via Edge Function (get all live articles)
+  if (strId.startsWith("rss-")) {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-news`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        },
+      );
+      if (res.ok) {
+        const { articles } = await res.json();
+        if (Array.isArray(articles)) {
+          const found = articles.map(normalizeArticle).find((a) => String(a.id) === strId);
+          if (found) return found;
+        }
+      }
+    } catch { /* fall through */ }
+  }
+
+  // Tier 3: local JSON
   const local = fallbackNews.find((a) => String(a.id) === strId);
   return local ? normalizeArticle(local) : null;
 }

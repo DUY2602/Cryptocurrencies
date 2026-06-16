@@ -1,5 +1,8 @@
 <script>
+import PageHero from "../../components/PageHero.vue";
+
 export default {
+  components: { PageHero },
   data() {
     return {
       techStack: ['Vue 3', 'Vite', 'Vue Router', 'Bootstrap 5', 'JavaScript'],
@@ -40,15 +43,12 @@ export default {
 
 <template>
   <section class="page-section about-page">
-    <div class="container">
-      <header class="text-center mb-5">
-        <p class="unit-line mb-2 anim-fade-up">COS30043 — Swinburne University</p>
-        <h1 class="page-title anim-fade-up">About CryptoDash</h1>
-        <p class="about-intro mx-auto anim-fade-up-d1">
-          A real-time cryptocurrency dashboard tracking live prices, market caps, and news — built with Vue 3 and Bootstrap.
-        </p>
-      </header>
+    <PageHero
+      title="About CryptoDash"
+      subtitle="A real-time cryptocurrency dashboard tracking live prices, market caps, and news — built with Vue 3 and Bootstrap."
+    />
 
+    <div class="container">
       <div class="row justify-content-center">
         <div class="col-12 col-lg-8 col-xl-7">
 

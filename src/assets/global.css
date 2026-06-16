@@ -31,6 +31,9 @@
   --table-bg-hover: #252b33;
   --table-border: #2b3139;
   --table-header-bg: #1e2329;
+  --hero-overlay: linear-gradient(135deg, rgba(25, 20, 5, 0.92) 0%, rgba(55, 40, 8, 0.87) 50%, rgba(25, 20, 5, 0.92) 100%);
+  --hero-text: #ffffff;
+  --hero-text-secondary: rgba(255, 255, 255, 0.7);
   --markets-banner-bg: #141820;
   --markets-bg: #0b0e11;
   --transition-fast: 0.15s ease;
@@ -63,6 +66,9 @@
   --table-bg-hover: #f0f2f5;
   --table-border: #e6e8ea;
   --table-header-bg: #f8f9fb;
+  --hero-overlay: linear-gradient(135deg, rgba(40, 32, 12, 0.88) 0%, rgba(60, 45, 15, 0.82) 50%, rgba(40, 32, 12, 0.88) 100%);
+  --hero-text: #ffffff;
+  --hero-text-secondary: rgba(255, 255, 255, 0.72);
   --markets-banner-bg: #ffffff;
   --markets-bg: #f5f7fa;
 }

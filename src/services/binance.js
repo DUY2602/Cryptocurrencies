@@ -2,7 +2,10 @@
  * Binance public API — prices & 24h stats (no API key, browser-friendly).
  */
 
-const BINANCE_24H = '/api/binance'
+const isProd = import.meta.env.PROD
+const BINANCE_24H = isProd
+  ? 'https://api.binance.com/api/v3/ticker/24hr'
+  : '/api/binance'
 
 const STABLE_BASES = new Set([
   'USDC',

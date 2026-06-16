@@ -3,7 +3,6 @@ import { defineAsyncComponent } from "vue";
 import { RouterLink } from "vue-router";
 import HeroSection from "../../components/HeroSection.vue";
 import CoinCard from "../../components/CoinCard.vue";
-import MarketOverviewCards from "../../components/MarketOverviewCards.vue";
 import LoadingSpinner from "../../components/LoadingSpinner.vue";
 import LiveBadge from "../../components/LiveBadge.vue";
 import PriceWithArrow from "../../components/PriceWithArrow.vue";
@@ -13,6 +12,7 @@ import {
   applyLiveFlashes,
   getLiveQuote,
 } from "../../services/livePrices.js";
+import { fetchNews } from "../../services/news.js";
 
 
 export default {
@@ -21,7 +21,6 @@ export default {
     PriceWithArrow,
     HeroSection,
     CoinCard,
-    MarketOverviewCards,
     LoadingSpinner,
     LiveBadge,
     AdoptionMap: defineAsyncComponent(() => import("../../components/geo/RadarMap.vue")),
@@ -30,6 +29,7 @@ export default {
     return {
       trending: [],
       allCoins: [],
+      latestNews: [],
       loading: true,
       livePricesMap: {},
       liveFlashes: {},
@@ -47,15 +47,16 @@ export default {
         .map((c) => this.mergeLive(c))
         .sort((a, b) => b.change24h - a.change24h);
     },
-    topGainers() {
+    topVolume() {
       return [...this.liveAllCoins]
-        .sort((a, b) => b.change24h - a.change24h)
-        .slice(0, 6);
+        .sort((a, b) => (b.volume24h || 0) - (a.volume24h || 0))
+        .slice(0, 5);
     },
-    topLosers() {
-      return [...this.liveAllCoins]
-        .sort((a, b) => a.change24h - b.change24h)
-        .slice(0, 6);
+    btcDominance() {
+      const btc = this.liveAllCoins.find((c) => c.id === 'bitcoin');
+      if (!btc) return null;
+      const total = this.liveAllCoins.reduce((s, c) => s + (c.marketCap || 0), 0);
+      return total > 0 ? ((btc.marketCap / total) * 100).toFixed(1) : null;
     },
     marketStats() {
       const totalCap = this.liveAllCoins.reduce(
@@ -72,12 +73,14 @@ export default {
   },
   async mounted() {
     try {
-      const [trending, top] = await Promise.all([
+      const [trending, top, news] = await Promise.all([
         api.getTrendingCoins(),
         api.getTopCoins(50),
+        fetchNews({ page: 1, pageSize: 3 }).catch(() => []),
       ]);
       this.trending = trending;
       this.allCoins = top;
+      this.latestNews = Array.isArray(news) ? news : [];
     } catch (e) {
       console.warn('[Home] failed to load coins:', e.message)
     } finally {
@@ -122,6 +125,11 @@ export default {
         _flash: this.liveFlashes[id],
         _flashTick: !!this.liveFlashTick[id],
       };
+    },
+    formatDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString("en-AU", {
+        year: "numeric", month: "short", day: "numeric",
+      });
     },
   },
 };
@@ -215,8 +223,80 @@ export default {
             </TransitionGroup>
           </div>
 
-          <MarketOverviewCards :coins="topGainers" title="Top gainers (24h)" />
-          <MarketOverviewCards :coins="topLosers" title="Top losers (24h)" />
+          <div class="home-dashboard mb-5">
+            <div class="row g-3">
+              <div class="col-12 col-lg-4">
+                <div class="dash-card">
+                  <h3 class="dash-card-title">Market Stats</h3>
+                  <div class="dash-stats">
+                    <div class="dash-stat">
+                      <span class="dash-stat-label">Total Market Cap</span>
+                      <span class="dash-stat-value">${{ (marketStats.totalCap / 1e12).toFixed(2) }}T</span>
+                    </div>
+                    <div class="dash-stat">
+                      <span class="dash-stat-label">BTC Dominance</span>
+                      <span class="dash-stat-value">{{ btcDominance ?? '—' }}%</span>
+                    </div>
+                    <div class="dash-stat">
+                      <span class="dash-stat-label">Avg 24h Change</span>
+                      <span class="dash-stat-value" :class="marketStats.avgChange >= 0 ? 'text-positive' : 'text-negative'">
+                        {{ marketStats.avgChange >= 0 ? '+' : '' }}{{ marketStats.avgChange.toFixed(2) }}%
+                      </span>
+                    </div>
+                    <div class="dash-stat">
+                      <span class="dash-stat-label">Tracked Coins</span>
+                      <span class="dash-stat-value">{{ marketStats.count }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-lg-4">
+                <div class="dash-card">
+                  <h3 class="dash-card-title">Top by Volume (24h)</h3>
+                  <div class="dash-list">
+                    <RouterLink
+                      v-for="(coin, i) in topVolume"
+                      :key="coin.id"
+                      :to="{ name: 'CoinDetail', params: { id: coin.id } }"
+                      class="dash-list-item text-decoration-none"
+                    >
+                      <span class="dash-list-rank">{{ i + 1 }}</span>
+                      <img v-if="coin.image" :src="coin.image" :alt="coin.name" class="dash-list-icon rounded-circle" width="20" height="20" />
+                      <span class="dash-list-name">{{ coin.symbol }}</span>
+                      <span class="dash-list-price">
+                        <PriceWithArrow :price="coin.price" :flash="coin._flash" :pulse="!!coin._flashTick" size="sm" :inline="true" />
+                      </span>
+                      <span class="dash-list-change" :class="coin.change24h >= 0 ? 'text-positive' : 'text-negative'">
+                        {{ coin.change24h >= 0 ? '+' : '' }}{{ coin.change24h?.toFixed(2) }}%
+                      </span>
+                    </RouterLink>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-lg-4">
+                <div class="dash-card">
+                  <h3 class="dash-card-title">Latest News</h3>
+                  <div class="dash-list">
+                    <RouterLink
+                      v-for="article in latestNews"
+                      :key="article.id"
+                      :to="{ name: 'NewsDetail', params: { id: article.id } }"
+                      class="dash-list-item text-decoration-none"
+                    >
+                      <img v-if="article.image_url" :src="article.image_url" :alt="article.title" class="dash-news-img rounded" width="36" height="36" />
+                      <div class="dash-news-info">
+                        <span class="dash-news-title">{{ article.title }}</span>
+                        <span class="dash-news-meta">{{ article.source_name }} · {{ formatDate(article.date) }}</span>
+                      </div>
+                    </RouterLink>
+                    <p v-if="!latestNews.length" class="text-secondary small text-center py-3 mb-0">No news available</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <h2 class="section-heading mb-3">Global Crypto Adoption 2025</h2>
           <AdoptionMap />
@@ -265,4 +345,40 @@ export default {
 .flip-list-leave-active { transition: all 0.3s ease; position: absolute; }
 .flip-list-enter-from { opacity: 0; transform: translateX(-20px); }
 .flip-list-leave-to { opacity: 0; transform: translateX(20px); }
+
+.home-dashboard { }
+.dash-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 20px;
+  height: 100%;
+}
+.dash-card-title {
+  font-size: 14px; font-weight: 700; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 16px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+.dash-stats { display: flex; flex-direction: column; gap: 12px; }
+.dash-stat { display: flex; justify-content: space-between; align-items: center; }
+.dash-stat-label { font-size: 13px; color: var(--text-secondary); }
+.dash-stat-value { font-size: 15px; font-weight: 700; color: var(--text-emphasis); }
+.dash-list { display: flex; flex-direction: column; gap: 2px; }
+.dash-list-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 6px; border-radius: 8px;
+  transition: background 0.15s;
+  color: var(--text-emphasis);
+}
+.dash-list-item:hover { background: var(--bg-card-hover); }
+.dash-list-rank { font-size: 11px; font-weight: 700; color: var(--text-tertiary); min-width: 16px; }
+.dash-list-icon { flex-shrink: 0; }
+.dash-list-name { font-size: 13px; font-weight: 600; min-width: 32px; }
+.dash-list-price { margin-left: auto; font-size: 13px; font-weight: 600; }
+.dash-list-change { font-size: 11px; font-weight: 700; min-width: 48px; text-align: right; }
+.dash-news-img { flex-shrink: 0; object-fit: cover; }
+.dash-news-info { display: flex; flex-direction: column; min-width: 0; }
+.dash-news-title { font-size: 13px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dash-news-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 </style>

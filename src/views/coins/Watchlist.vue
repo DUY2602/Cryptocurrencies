@@ -10,9 +10,10 @@ import CoinTable from "../../components/CoinTable.vue";
 import LoadingSpinner from "../../components/LoadingSpinner.vue";
 import EmptyState from "../../components/EmptyState.vue";
 import LiveBadge from "../../components/LiveBadge.vue";
+import PageHero from "../../components/PageHero.vue";
 
 export default {
-  components: { CoinTable, LoadingSpinner, EmptyState, LiveBadge },
+  components: { CoinTable, LoadingSpinner, EmptyState, LiveBadge, PageHero },
   setup() {
     return useWatchlist();
   },
@@ -86,14 +87,10 @@ export default {
 </script>
 
 <template>
-  <section class="page-section">
-    <div class="container">
-      <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-        <h1 class="page-title mb-0">Watchlist</h1>
-        <LiveBadge v-if="isLive && !loading" label="Live" />
-      </div>
-      <p class="page-subtitle">Coins you saved — live prices via WebSocket.</p>
+  <section>
+    <PageHero title="Watchlist" subtitle="Coins you saved — live prices via WebSocket." />
 
+    <div class="container">
       <LoadingSpinner v-if="loading" />
 
       <EmptyState

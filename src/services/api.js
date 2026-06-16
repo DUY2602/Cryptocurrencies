@@ -1,7 +1,9 @@
 import { fetchUsdtTickers, findUsdtTicker } from "./binance.js";
 
-const COINGECKO_MARKETS = '/api/coingecko/coins/markets'
-const COINGECKO_DETAIL = '/api/coingecko/coins'
+const isProd = import.meta.env.PROD
+const COINGECKO_BASE = isProd ? 'https://api.coingecko.com/api/v3' : '/api/coingecko'
+const COINGECKO_MARKETS = `${COINGECKO_BASE}/coins/markets`
+const COINGECKO_DETAIL = `${COINGECKO_BASE}/coins`
 
 function mapCoin(c) {
   return {

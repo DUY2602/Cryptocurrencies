@@ -12,6 +12,7 @@ import BinanceSparkline from "../../components/BinanceSparkline.vue";
 import LoadingSpinner from "../../components/LoadingSpinner.vue";
 import EmptyState from "../../components/EmptyState.vue";
 import LiveBadge from "../../components/LiveBadge.vue";
+import PageHero from "../../components/PageHero.vue";
 import {
   formatPrice,
   formatMarketCap,
@@ -29,6 +30,7 @@ export default {
     LoadingSpinner,
     EmptyState,
     LiveBadge,
+    PageHero,
   },
   setup() {
     return useWatchlist();
@@ -185,28 +187,12 @@ export default {
 
 <template>
   <section class="page-section markets-page">
-    <div class="container-fluid px-0">
-      <div class="markets-banner">
-        <div class="container">
-          <div
-            class="d-flex flex-wrap align-items-center justify-content-between gap-3"
-          >
-            <div>
-              <h1 class="page-title markets-title mb-1">
-                Cryptocurrency Prices
-              </h1>
-              <p class="markets-subtitle text-secondary mb-0">
-                {{ marketStats.n }} coins &middot;
-                {{ marketStats.gainers }} gainers &middot;
-                {{ marketStats.losers }} losers
-              </p>
-            </div>
-            <LiveBadge v-if="isLive && !loading" label="Live" />
-          </div>
-        </div>
-      </div>
+    <PageHero
+      title="Cryptocurrency Prices"
+      :subtitle="`${marketStats.n} coins · ${marketStats.gainers} gainers · ${marketStats.losers} losers`"
+    />
 
-      <div class="container">
+    <div class="container">
         <div class="row g-2 mb-3 align-items-end">
           <div class="col-12 col-md-5 col-lg-4 col-xl-3">
             <SearchBar
@@ -383,33 +369,13 @@ export default {
           </div>
         </template>
       </div>
-    </div>
-  </section>
+    </section>
 </template>
 
 <style scoped>
 .markets-page {
   background: var(--markets-bg);
-  padding-top: 1.5rem;
-}
-
-.markets-banner {
-  background: var(--markets-banner-bg);
-  border-bottom: 1px solid var(--table-border);
-  padding: 1rem 0;
-  margin-bottom: 1rem;
-}
-
-.markets-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-emphasis);
-  margin: 0;
-}
-
-.markets-subtitle {
-  color: var(--text-secondary);
-  font-size: 0.82rem;
+  padding-top: 0;
 }
 
 /* ── Table wrapper ─────────────────── */

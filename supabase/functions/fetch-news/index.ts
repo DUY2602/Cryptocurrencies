@@ -105,15 +105,7 @@ serve(async (req) => {
       };
     }).filter((a) => a.title && a.title.length >= 5);
 
-    // GET = return live RSS articles directly (no DB)
-    if (req.method === "GET") {
-      return new Response(JSON.stringify({ articles }), {
-        status: 200,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      });
-    }
-
-    // POST = insert into DB (cron/admin trigger)
+    // Save to DB (common logic for both GET and POST)
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -152,6 +144,19 @@ serve(async (req) => {
       inserted++;
     }
 
+    if (inserted > 0) {
+      console.log(`[fetch-news] inserted ${inserted} new articles`);
+    }
+
+    // GET = return live RSS articles (also persists to DB for accumulation)
+    if (req.method === "GET") {
+      return new Response(JSON.stringify({ articles }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
+    // POST = return summary (cron/admin trigger)
     return new Response(JSON.stringify({ inserted, total: articles.length }), {
       status: 200,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },

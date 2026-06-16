@@ -1,16 +1,14 @@
 <script>
-import { fetchNews } from "../../services/news.js";
+import { fetchNews, fetchNewsCount, fetchCategoryCounts } from "../../services/news.js";
 import SearchBar from "../../components/SearchBar.vue";
-import Pagination from "../../components/Pagination.vue";
 import NewsLikeButton from "../../components/NewsLikeButton.vue";
 import LoadingSpinner from "../../components/LoadingSpinner.vue";
 
-const ITEMS_PER_PAGE = 6;
+const PAGE_SIZE = 9;
 
 export default {
   components: {
     SearchBar,
-    Pagination,
     NewsLikeButton,
     LoadingSpinner,
   },
@@ -18,17 +16,18 @@ export default {
     return {
       articles: [],
       searchQuery: "",
-      currentPage: 1,
-      itemsPerPage: ITEMS_PER_PAGE,
+      page: 1,
+      totalPages: 1,
       loading: true,
+      pageLoading: false,
       loadError: null,
       selectedCategory: null,
+      categoryCounts: [],
     };
   },
   computed: {
     categories() {
-      const cats = new Set(this.articles.map((a) => a.category));
-      return Array.from(cats).sort();
+      return this.categoryCounts;
     },
     featuredArticle() {
       return this.articles.find((a) => a.featured);
@@ -37,7 +36,9 @@ export default {
       return this.articles.filter((a) => a.trending).slice(0, 5);
     },
     filteredArticles() {
-      let articles = this.articles.filter((a) => !a.featured);
+      let articles = this.searchQuery
+        ? this.articles
+        : this.articles.filter((a) => !a.featured);
 
       if (this.selectedCategory) {
         articles = articles.filter((a) => a.category === this.selectedCategory);
@@ -65,45 +66,79 @@ export default {
         );
       });
     },
-    totalPages() {
-      return Math.max(
-        1,
-        Math.ceil(this.filteredArticles.length / this.itemsPerPage),
-      );
-    },
-    paginatedArticles() {
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      return this.filteredArticles.slice(start, start + this.itemsPerPage);
+    visiblePages() {
+      const pages = [];
+      const total = this.totalPages;
+      const current = this.page;
+      if (total <= 7) {
+        for (let i = 1; i <= total; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        if (current > 3) pages.push("...");
+        const start = Math.max(2, current - 1);
+        const end = Math.min(total - 1, current + 1);
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (current < total - 2) pages.push("...");
+        pages.push(total);
+      }
+      return pages;
     },
   },
   watch: {
     searchQuery() {
-      this.currentPage = 1;
+      this.page = 1;
+      this.fetchPage(1);
     },
     selectedCategory() {
-      this.currentPage = 1;
-    },
-    filteredArticles() {
-      if (this.currentPage > this.totalPages) {
-        this.currentPage = this.totalPages;
-      }
+      this.page = 1;
+      this.fetchPage(1);
     },
   },
   async mounted() {
-    try {
-      this.articles = await fetchNews();
-      if (this.$route.query.q) {
-        this.searchQuery = this.$route.query.q;
-      }
-    } catch (e) {
-      this.loadError = e.message;
-    } finally {
-      this.loading = false;
+    if (this.$route.query.q) {
+      this.searchQuery = this.$route.query.q;
     }
+    await this.initLoad();
   },
   methods: {
-    onPageChange(page) {
-      this.currentPage = page;
+    async initLoad() {
+      this.loading = true;
+      this.loadError = null;
+      try {
+        const [count, cats] = await Promise.all([
+          fetchNewsCount(),
+          fetchCategoryCounts(),
+        ]);
+        if (count !== null) {
+          this.totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+        }
+        if (cats) this.categoryCounts = cats;
+        const articles = await fetchNews({ page: 1, pageSize: PAGE_SIZE });
+        this.articles = articles;
+      } catch (e) {
+        this.loadError = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchPage(page) {
+      if (this.pageLoading) return;
+      this.pageLoading = true;
+      this.page = page;
+      try {
+        const pageSize = this.selectedCategory || this.searchQuery ? 500 : PAGE_SIZE;
+        const articles = await fetchNews({ page, pageSize });
+        this.articles = articles;
+      } catch (e) {
+        console.warn("[news] fetch page failed:", e.message);
+      } finally {
+        this.pageLoading = false;
+      }
+    },
+    goTo(page) {
+      if (page < 1 || page > this.totalPages || page === this.page) return;
+      this.fetchPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     },
     selectCategory(category) {
       this.selectedCategory =
@@ -131,14 +166,17 @@ export default {
 
 <template>
   <section class="page-section news-page">
-    <div class="container">
-      <div class="page-header mb-4">
-        <h1 class="page-title">Crypto News</h1>
-        <p class="page-subtitle">
+    <div class="news-hero" :style="{ backgroundImage: `url(/hero.jpg)` }">
+      <div class="news-hero-overlay"></div>
+      <div class="news-hero-content">
+        <h1 class="news-hero-title">Crypto News</h1>
+        <p class="news-hero-subtitle">
           Stay informed with the latest updates from the crypto world
         </p>
       </div>
+    </div>
 
+    <div class="container">
       <div v-if="loadError" class="alert alert-theme small mb-3" role="alert">
         {{ loadError }}
       </div>
@@ -157,7 +195,7 @@ export default {
         </div>
 
         <div class="row g-4">
-          <div class="col-12 col-lg-8">
+          <div class="col-12">
             <div
               v-if="featuredArticle && !searchQuery && !selectedCategory"
               class="mb-4"
@@ -223,20 +261,21 @@ export default {
             <div class="category-filters d-flex flex-wrap gap-2 mb-4">
               <button
                 v-for="cat in categories"
-                :key="cat"
+                :key="cat.category"
                 type="button"
                 class="btn btn-sm"
                 :class="
-                  selectedCategory === cat ? 'btn-accent' : 'btn-outline-accent'
+                  selectedCategory === cat.category ? 'btn-accent' : 'btn-outline-accent'
                 "
-                @click="selectCategory(cat)"
+                @click="selectCategory(cat.category)"
               >
-                {{ cat }}
+                {{ cat.category }}
+                <span class="category-count">{{ cat.count }}</span>
               </button>
             </div>
 
             <div
-              v-if="paginatedArticles.length === 0"
+              v-if="filteredArticles.length === 0"
               class="text-center text-secondary py-5"
             >
               No articles match your search.
@@ -244,7 +283,7 @@ export default {
 
             <div class="row g-4 mb-4">
               <div
-                v-for="article in paginatedArticles"
+                v-for="article in filteredArticles"
                 :key="article.id"
                 class="col-12 col-md-6 col-lg-4"
               >
@@ -308,48 +347,41 @@ export default {
               </div>
             </div>
 
-            <Pagination
-              :current-page="currentPage"
-              :total-pages="totalPages"
-              @page-change="onPageChange"
-            />
-          </div>
-
-          <div class="col-12 col-lg-4">
-            <aside class="sidebar">
-              <div
-                v-if="trendingArticles.length"
-                class="sidebar-card card-crypto mb-4"
-              >
-                <div
-                  class="sidebar-header p-3 border-bottom border-secondary border-opacity-25"
+            <nav
+              v-if="!searchQuery && !selectedCategory"
+              class="pagination-wrap mt-4"
+              aria-label="News pagination"
+            >
+              <ul class="pagination justify-content-center mb-0">
+                <li class="page-item" :class="{ disabled: page <= 1 || pageLoading }">
+                  <button class="page-link page-prev" type="button" :disabled="pageLoading" @click="goTo(page - 1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    Prev
+                  </button>
+                </li>
+                <li
+                  v-for="(p, i) in visiblePages"
+                  :key="i"
+                  class="page-item"
+                  :class="{ active: p === page, disabled: p === '...' }"
                 >
-                  <h4 class="sidebar-title mb-0">
-                    <span class="trending-icon">🔥</span> Trending Now
-                  </h4>
-                </div>
-                <div class="sidebar-body p-3">
-                  <div class="trending-list">
-                    <RouterLink
-                      v-for="(article, index) in trendingArticles"
-                      :key="article.id"
-                      :to="{ name: 'NewsDetail', params: { id: article.id } }"
-                      class="trending-item d-flex gap-3 text-decoration-none mb-3"
-                    >
-                      <span class="trending-number">{{ index + 1 }}</span>
-                      <div class="trending-content flex-grow-1">
-                        <h5 class="trending-title small mb-1">
-                          {{ article.title }}
-                        </h5>
-                        <span class="trending-meta text-secondary small">{{
-                          formatDate(article.date)
-                        }}</span>
-                      </div>
-                    </RouterLink>
-                  </div>
-                </div>
-              </div>
-            </aside>
+                  <button
+                    v-if="p !== '...'"
+                    class="page-link"
+                    type="button"
+                    :disabled="pageLoading"
+                    @click="goTo(p)"
+                  >{{ p }}</button>
+                  <span v-else class="page-link page-dots">···</span>
+                </li>
+                <li class="page-item" :class="{ disabled: page >= totalPages || pageLoading }">
+                  <button class="page-link page-next" type="button" :disabled="pageLoading" @click="goTo(page + 1)">
+                    Next
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
       </template>
@@ -358,8 +390,48 @@ export default {
 </template>
 
 <style scoped>
-.news-page { padding-top: 40px; }
-.page-header { text-align: center; }
+.news-page { padding-top: 0; }
+
+.news-hero {
+  position: relative; width: 100%; min-height: 140px;
+  background-size: cover; background-position: center;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.news-hero::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.4;
+  z-index: 2;
+}
+.news-hero-overlay {
+  position: absolute; inset: 0;
+  background: var(--hero-overlay);
+  transition: background var(--transition);
+}
+.news-hero-content {
+  position: relative; z-index: 1;
+  text-align: center; padding: 50px 20px 40px;
+}
+.news-hero-title {
+  font-size: 42px; font-weight: 800; color: var(--hero-text);
+  margin-bottom: 12px; letter-spacing: -0.5px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  transition: color var(--transition);
+}
+.news-hero-subtitle {
+  font-size: 18px; color: var(--hero-text-secondary);
+  max-width: 560px; margin: 0 auto;
+  line-height: 1.5;
+  transition: color var(--transition);
+}
+@media (max-width: 767.98px) {
+  .news-hero { min-height: 100px; }
+  .news-hero-content { padding: 30px 16px 24px; }
+  .news-hero-title { font-size: 22px; }
+  .news-hero-subtitle { font-size: 13px; }
+}
 
 .featured-article { border-radius: 16px; overflow: hidden; transition: all 0.3s ease; }
 .featured-article:hover { transform: translateY(-4px); box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4); }
@@ -404,29 +476,34 @@ export default {
 .blog-card-link { color: inherit; }
 
 .blog-img {
-  height: 150px; object-fit: cover;
+  height: 200px; object-fit: cover;
   border-bottom: 1px solid var(--border-color);
+  transition: transform 0.3s ease;
 }
+.blog-card:hover .blog-img { transform: scale(1.03); }
+.blog-card-body { padding: 1rem !important; }
 .blog-card-header { margin-bottom: 12px; }
 
 .blog-category {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 4px 12px; border-radius: 20px;
-  font-size: 11px; font-weight: 600;
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 
-.blog-date { color: var(--text-secondary); font-size: 12px; }
+.blog-date { color: var(--text-secondary); font-size: 13px; }
 .blog-title {
   color: var(--text-emphasis);
-  font-weight: 700; margin-bottom: 8px; line-height: 1.4;
+  font-size: 1.05rem;
+  font-weight: 700; margin-bottom: 10px; line-height: 1.4;
   transition: color 0.3s ease;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .blog-card:hover .blog-title { color: #667eea; }
-.blog-meta { color: var(--text-secondary); font-style: italic; }
-.blog-excerpt { color: var(--text-primary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.blog-footer { border-top: 1px solid var(--border-color); padding-top: 12px; }
+.blog-meta { color: var(--text-secondary); font-style: italic; font-size: 13px; }
+.blog-excerpt { color: var(--text-primary); font-size: 14px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.blog-footer { border-top: 1px solid var(--border-color); padding: 14px 1rem; }
 
 .tag-badge { opacity: 0.7; transition: opacity 0.2s ease; }
 .tag-badge:hover { opacity: 1; }
@@ -461,8 +538,51 @@ export default {
 .trending-item:hover .trending-title { color: #667eea; }
 .trending-meta { font-size: 12px; }
 
-.category-filters .btn { transition: all 0.2s ease; }
+.category-filters .btn { transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; }
+.category-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 10px; font-size: 11px; font-weight: 700;
+  background: rgba(255,255,255,0.15); color: inherit;
+}
+.btn-accent .category-count { background: rgba(255,255,255,0.25); }
 
+.pagination-wrap { display: flex; justify-content: center; }
+.pagination { gap: 4px; }
+.page-item { list-style: none; }
+.page-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 14px; border-radius: 10px !important;
+  background: var(--bg-card); color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  font-size: 14px; font-weight: 600;
+  transition: all 0.25s ease; cursor: pointer;
+  text-decoration: none; outline: none;
+}
+.page-link:hover {
+  background: rgba(102, 126, 234, 0.12);
+  border-color: #667eea; color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+}
+.page-item.active .page-link {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-color: transparent; color: white;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.35);
+  transform: translateY(-2px);
+}
+.page-item.disabled .page-link {
+  opacity: 0.4; cursor: not-allowed; pointer-events: none;
+  transform: none; box-shadow: none;
+}
+.page-dots { letter-spacing: 2px; background: transparent !important; border-color: transparent !important; cursor: default; }
+.page-prev:hover svg, .page-next:hover svg { transform: scale(1.15); transition: transform 0.2s ease; }
+.page-prev svg, .page-next svg { transition: transform 0.2s ease; }
+
+@media (max-width: 575.98px) {
+  .page-link { padding: 6px 10px; font-size: 12px; }
+  .page-next span, .page-prev span { display: none; }
+}
 @media (max-width: 991.98px) {
   .featured-img { min-height: 220px; }
   .featured-title { font-size: 20px; }
