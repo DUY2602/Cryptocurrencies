@@ -6,6 +6,7 @@ import CoinCard from "../../components/CoinCard.vue";
 import MarketOverviewCards from "../../components/MarketOverviewCards.vue";
 import LoadingSpinner from "../../components/LoadingSpinner.vue";
 import LiveBadge from "../../components/LiveBadge.vue";
+import PriceWithArrow from "../../components/PriceWithArrow.vue";
 import { api } from "../../services/api.js";
 import {
   livePrices,
@@ -17,6 +18,7 @@ import {
 export default {
   components: {
     RouterLink,
+    PriceWithArrow,
     HeroSection,
     CoinCard,
     MarketOverviewCards,
@@ -41,7 +43,9 @@ export default {
       return this.allCoins.map((c) => this.mergeLive(c));
     },
     liveTrending() {
-      return this.trending.map((c) => this.mergeLive(c));
+      return [...this.trending]
+        .map((c) => this.mergeLive(c))
+        .sort((a, b) => b.change24h - a.change24h);
     },
     topGainers() {
       return [...this.liveAllCoins]
@@ -107,10 +111,14 @@ export default {
       const id = String(coin.coingeckoId || coin.id);
       const live = getLiveQuote(this.livePricesMap, coin);
       if (live?.usd == null) return coin;
+      const liveMarketCap = coin.circulatingSupply > 0
+        ? coin.circulatingSupply * live.usd
+        : coin.marketCap;
       return {
         ...coin,
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
+        marketCap: liveMarketCap,
         _flash: this.liveFlashes[id],
         _flashTick: !!this.liveFlashTick[id],
       };
@@ -165,19 +173,46 @@ export default {
 
         <template v-else>
           <h2 class="section-heading mb-3">Trending</h2>
-          <div class="row g-4 mb-5">
-            <div
-              v-for="coin in liveTrending"
-              :key="coin.id"
-              class="col-6 col-md-4 col-lg-2"
-            >
+          <div class="trending-ranking mb-5">
+            <TransitionGroup name="flip-list" tag="div" class="ranking-list">
               <RouterLink
+                v-for="(coin, i) in liveTrending"
+                :key="coin.id"
                 :to="{ name: 'CoinDetail', params: { id: coin.id } }"
-                class="text-decoration-none"
+                class="ranking-item text-decoration-none"
               >
-                <CoinCard :coin="coin" />
+                <span class="rank-num">#{{ i + 1 }}</span>
+                <img
+                  v-if="coin.image"
+                  :src="coin.image"
+                  :alt="coin.name"
+                  class="rank-icon rounded-circle"
+                  width="28"
+                  height="28"
+                />
+                <span class="rank-name">{{ coin.name }}</span>
+                <span class="rank-symbol">{{ coin.symbol }}</span>
+                <span class="rank-price">
+                  <PriceWithArrow
+                    :price="coin.price"
+                    :flash="coin._flash"
+                    :pulse="!!coin._flashTick"
+                    size="sm"
+                    :inline="true"
+                  />
+                </span>
+                <span
+                  class="rank-change"
+                  :class="coin._flash === 'up' ? 'text-positive' : coin._flash === 'down' ? 'text-negative' : coin.change24h >= 0 ? 'text-positive' : 'text-negative'"
+                >
+                  {{ coin.change24h >= 0 ? '+' : '' }}{{ coin.change24h?.toFixed(2) }}%
+                </span>
+                <span class="rank-move">
+                  <span v-if="coin._flash === 'up'" class="text-positive">&#9650;</span>
+                  <span v-else-if="coin._flash === 'down'" class="text-negative">&#9660;</span>
+                </span>
               </RouterLink>
-            </div>
+            </TransitionGroup>
           </div>
 
           <MarketOverviewCards :coins="topGainers" title="Top gainers (24h)" />
@@ -190,3 +225,44 @@ export default {
     </section>
   </div>
 </template>
+
+<style scoped>
+.trending-ranking {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.ranking-list { position: relative; }
+.ranking-item {
+  display: grid;
+  grid-template-columns: 28px 28px 1fr 48px 95px 70px 14px;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+  color: var(--text-emphasis);
+}
+.ranking-item:last-child { border-bottom: none; }
+.ranking-item:hover { background: rgba(255,255,255,0.06); }
+.rank-num {
+  width: 28px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+}
+.rank-icon { flex-shrink: 0; border-radius: 50%; }
+.rank-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-symbol { font-size: 11px; color: var(--text-secondary); }
+.rank-price { font-size: 13px; font-weight: 700; text-align: right; }
+.rank-change { font-size: 12px; font-weight: 700; text-align: right; }
+.rank-move { width: 14px; text-align: center; font-size: 10px; flex-shrink: 0; }
+
+.flip-list-move { transition: transform 0.5s ease; }
+.flip-list-enter-active { transition: all 0.4s ease; }
+.flip-list-leave-active { transition: all 0.3s ease; position: absolute; }
+.flip-list-enter-from { opacity: 0; transform: translateX(-20px); }
+.flip-list-leave-to { opacity: 0; transform: translateX(20px); }
+</style>

@@ -8,6 +8,14 @@ const NOTIFY_MS = 500
 const REST_POLL_MS = 3000
 const MAX_RECONNECT = 8
 
+const STABLE_BASES = new Set([
+  'USDC', 'USDT', 'BUSD', 'DAI', 'TUSD', 'FDUSD', 'USDP', 'USDS', 'USD1',
+  'PYUSD', 'USDE', 'USDG', 'USDD', 'USDON', 'USDCV', 'USDV',
+  'EURI', 'EURC',
+  'USTC', 'TERRAUSD',
+])
+const LEVERAGE_PATTERN = /(UP|DOWN|BULL|BEAR|\d+L|\d+S)$/i
+
 const SYMBOL_TO_BINANCE = {
   MATIC: 'POLUSDT',
 }
@@ -31,6 +39,8 @@ class LivePriceWebSocket {
     if (!symbol) return null
     const upper = String(symbol).toUpperCase()
     if (SYMBOL_TO_BINANCE[upper]) return SYMBOL_TO_BINANCE[upper]
+    if (STABLE_BASES.has(upper)) return null
+    if (LEVERAGE_PATTERN.test(upper)) return null
     return `${upper}USDT`
   }
 
@@ -135,6 +145,7 @@ class LivePriceWebSocket {
 
   async fetchBinanceRest() {
     if (!this.symbolToLocalId.size) return false
+    if (this.wsConnected) return false
 
     const symbols = [...this.symbolToLocalId.keys()]
     const chunkSize = 100
@@ -180,7 +191,6 @@ class LivePriceWebSocket {
 
   startRestPoll() {
     if (this.restPollTimer) return
-    this.fetchBinanceRest()
     this.restPollTimer = setInterval(() => this.fetchBinanceRest(), REST_POLL_MS)
   }
 

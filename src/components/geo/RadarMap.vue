@@ -9,13 +9,13 @@
       <div class="tip-bar"><div class="tip-fill" :style="{width:(tip.score*100)+'%',background:tip.color}" /></div>
     </div>
     <div class="legend">
-      <span class="legend-item"><span class="swatch" style="background:#e03131" /> Very Low</span>
-      <span class="legend-item"><span class="swatch" style="background:#ff6b35" /> Low</span>
-      <span class="legend-item"><span class="swatch" style="background:#ffd43b" /> Low-Med</span>
-      <span class="legend-item"><span class="swatch" style="background:#a8e36d" /> Medium</span>
-      <span class="legend-item"><span class="swatch" style="background:#57e389" /> Med-High</span>
-      <span class="legend-item"><span class="swatch" style="background:#2b9348" /> High</span>
-      <span class="legend-item"><span class="swatch" style="background:#0b5e2e" /> Very High</span>
+      <span class="legend-item"><span class="swatch" style="background:#d32f2f" /> Very Low</span>
+      <span class="legend-item"><span class="swatch" style="background:#f57c00" /> Low</span>
+      <span class="legend-item"><span class="swatch" style="background:#fbc02d" /> Low-Med</span>
+      <span class="legend-item"><span class="swatch" style="background:#9ccc65" /> Medium</span>
+      <span class="legend-item"><span class="swatch" style="background:#4caf50" /> Med-High</span>
+      <span class="legend-item"><span class="swatch" style="background:#2e7d32" /> High</span>
+      <span class="legend-item"><span class="swatch" style="background:#1b5e20" /> Very High</span>
     </div>
     <div class="map-note">
       Based on Chainalysis 2025 Global Crypto Adoption Index &mdash; measures how widely ordinary people use cryptocurrency in each country, adjusted for population size and economic power. Green = crypto is commonly used in daily life; Red = crypto usage is still rare.
@@ -60,26 +60,26 @@ function norm(name) {
   return NAME_MAP[name] || name
 }
 
-const COLORS = ['#e03131','#ff6b35','#ffd43b','#a8e36d','#57e389','#2b9348','#0b5e2e']
+const COLORS = ['#d32f2f','#f57c00','#fbc02d','#9ccc65','#4caf50','#2e7d32','#1b5e20']
 const LEVELS = ['Very Low','Low','Low-Med','Medium','Med-High','High','Very High']
 
 function scoreColor(s) {
-  if (s >= 0.92) return COLORS[6]
-  if (s >= 0.75) return COLORS[5]
-  if (s >= 0.55) return COLORS[4]
-  if (s >= 0.35) return COLORS[3]
-  if (s >= 0.15) return COLORS[2]
-  if (s >= 0.04) return COLORS[1]
+  if (s >= 0.95) return COLORS[6]
+  if (s >= 0.85) return COLORS[5]
+  if (s >= 0.70) return COLORS[4]
+  if (s >= 0.50) return COLORS[3]
+  if (s >= 0.30) return COLORS[2]
+  if (s >= 0.10) return COLORS[1]
   return COLORS[0]
 }
 
 function scoreLevel(s) {
-  if (s >= 0.92) return LEVELS[6]
-  if (s >= 0.75) return LEVELS[5]
-  if (s >= 0.55) return LEVELS[4]
-  if (s >= 0.35) return LEVELS[3]
-  if (s >= 0.15) return LEVELS[2]
-  if (s >= 0.04) return LEVELS[1]
+  if (s >= 0.95) return LEVELS[6]
+  if (s >= 0.85) return LEVELS[5]
+  if (s >= 0.70) return LEVELS[4]
+  if (s >= 0.50) return LEVELS[3]
+  if (s >= 0.30) return LEVELS[2]
+  if (s >= 0.10) return LEVELS[1]
   return LEVELS[0]
 }
 

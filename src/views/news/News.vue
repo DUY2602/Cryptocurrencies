@@ -246,7 +246,7 @@ export default {
               <div
                 v-for="article in paginatedArticles"
                 :key="article.id"
-                class="col-12 col-md-6"
+                class="col-12 col-md-6 col-lg-4"
               >
                 <article
                   class="blog-card card-crypto card-hover-lift h-100 overflow-hidden d-flex flex-column"
@@ -261,7 +261,7 @@ export default {
                       class="blog-img w-100"
                       loading="lazy"
                     />
-                    <div class="blog-card-body p-3 flex-grow-1">
+                    <div class="blog-card-body p-2 flex-grow-1">
                       <div
                         class="blog-card-header d-flex justify-content-between align-items-center gap-2 mb-2"
                       >
@@ -349,31 +349,6 @@ export default {
                   </div>
                 </div>
               </div>
-
-              <div class="sidebar-card card-crypto">
-                <div
-                  class="sidebar-header p-3 border-bottom border-secondary border-opacity-25"
-                >
-                  <h4 class="sidebar-title mb-0">Categories</h4>
-                </div>
-                <div class="sidebar-body p-3">
-                  <div class="category-list d-grid gap-2">
-                    <button
-                      v-for="cat in categories"
-                      :key="cat"
-                      type="button"
-                      class="category-item btn btn-outline-accent btn-sm text-start"
-                      :class="{ active: selectedCategory === cat }"
-                      @click="selectCategory(cat)"
-                    >
-                      {{ cat }}
-                      <span class="category-count ms-auto">
-                        {{ articles.filter((a) => a.category === cat).length }}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
             </aside>
           </div>
         </div>
@@ -429,7 +404,7 @@ export default {
 .blog-card-link { color: inherit; }
 
 .blog-img {
-  height: 180px; object-fit: cover;
+  height: 150px; object-fit: cover;
   border-bottom: 1px solid var(--border-color);
 }
 .blog-card-header { margin-bottom: 12px; }
@@ -450,7 +425,7 @@ export default {
 }
 .blog-card:hover .blog-title { color: #667eea; }
 .blog-meta { color: var(--text-secondary); font-style: italic; }
-.blog-excerpt { color: var(--text-primary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.blog-excerpt { color: var(--text-primary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .blog-footer { border-top: 1px solid var(--border-color); padding-top: 12px; }
 
 .tag-badge { opacity: 0.7; transition: opacity 0.2s ease; }
@@ -486,18 +461,6 @@ export default {
 .trending-item:hover .trending-title { color: #667eea; }
 .trending-meta { font-size: 12px; }
 
-.category-list { display: grid; gap: 8px; }
-.category-item {
-  display: flex; justify-content: space-between; align-items: center;
-  border-color: rgba(102, 126, 234, 0.3);
-}
-.category-item.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: transparent;
-  color: white;
-}
-.category-count { background: var(--bg-card-hover); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; color: var(--text-secondary); }
-.category-item.active .category-count { background: rgba(255, 255, 255, 0.2); color: white; }
 .category-filters .btn { transition: all 0.2s ease; }
 
 @media (max-width: 991.98px) {

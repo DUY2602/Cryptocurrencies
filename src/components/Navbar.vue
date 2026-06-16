@@ -1,17 +1,42 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { RouterLink } from "vue-router";
+import { useRouter, RouterLink } from "vue-router";
 import ThemeToggle from "./ThemeToggle.vue";
 import { useTheme } from "../composables/useTheme.js";
 import { useAuth } from "../composables/useAuth.js";
 import { useAdmin } from "../composables/useAdmin.js";
 import { supabase } from "../../supabase/supabase.js";
+import { Collapse } from "bootstrap";
 
 const { isDark } = useTheme();
 const { isLoggedIn, logout, user } = useAuth();
 const { isAdmin, profile, refresh } = useAdmin();
+const router = useRouter();
 
 const showAdminMenu = ref(false);
+const navbarCollapse = ref(null);
+let bsCollapse = null;
+
+onMounted(() => {
+  if (navbarCollapse.value) {
+    bsCollapse = new Collapse(navbarCollapse.value, { toggle: false });
+  }
+  refresh();
+  supabase.auth.onAuthStateChange((_e, session) => {
+    if (session?.user) refresh();
+  });
+  document.addEventListener("click", onDocClick);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener("click", onDocClick);
+  if (bsCollapse) bsCollapse.dispose();
+});
+
+function closeNav() {
+  if (bsCollapse) bsCollapse.hide();
+}
+
+router.afterEach(() => closeNav());
 
 const userName = computed(
   () => profile.value?.name || user.value?.name || user.value?.email?.split("@")[0] || "Account"
@@ -21,16 +46,6 @@ function onLogout() {
   logout();
   showAdminMenu.value = false;
 }
-
-// Refresh role when the user logs in
-onMounted(() => {
-  refresh();
-  supabase.auth.onAuthStateChange((_e, session) => {
-    if (session?.user) refresh();
-  });
-  document.addEventListener("click", onDocClick);
-});
-onBeforeUnmount(() => document.removeEventListener("click", onDocClick));
 
 function onDocClick(e) {
   if (!e.target.closest(".user-menu-toggle, .user-menu")) {
@@ -68,7 +83,7 @@ function onDocClick(e) {
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="mainNavbar">
+      <div ref="navbarCollapse" class="collapse navbar-collapse" id="mainNavbar">
         <ul
           class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-2"
         >

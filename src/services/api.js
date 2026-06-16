@@ -1,7 +1,7 @@
 import { fetchUsdtTickers, findUsdtTicker } from "./binance.js";
 
-const COINGECKO_MARKETS = 'https://api.coingecko.com/api/v3/coins/markets'
-const COINGECKO_DETAIL = 'https://api.coingecko.com/api/v3/coins'
+const COINGECKO_MARKETS = '/api/coingecko/coins/markets'
+const COINGECKO_DETAIL = '/api/coingecko/coins'
 
 function mapCoin(c) {
   return {
@@ -14,6 +14,7 @@ function mapCoin(c) {
     volume24h: c.total_volume ?? c.volume24h ?? 0,
     change24h: c.price_change_percentage_24h ?? c.change24h ?? 0,
     image: c.image || null,
+    circulatingSupply: c.circulating_supply ?? null,
   }
 }
 
@@ -41,8 +42,8 @@ async function fetchCoinGeckoById(id) {
     volume24h: c.market_data?.total_volume?.usd ?? 0,
     change24h: c.market_data?.price_change_percentage_24h ?? 0,
     high24h: c.market_data?.high_24h?.usd ?? 0,
-    low24h: c.market_data?.low_24h?.usd ?? 0,
     ath: c.market_data?.ath?.usd ?? 0,
+    circulatingSupply: c.market_data?.circulating_supply ?? null,
     image: c.image?.large || c.image?.small || c.image?.thumb || null,
     description: c.description?.en
       ? c.description.en.replace(/<[^>]*>/g, '').slice(0, 1000)
