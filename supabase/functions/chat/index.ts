@@ -14,32 +14,62 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "*",
 };
 
+const RRF_K = 60;
+const HYBRID_TOP_K = 20;
+const FINAL_TOP_K = 5;
+
+async function callGemini(contents: any[], temperature = 0.7, maxTokens = 2048) {
+  const res = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+      body: JSON.stringify({
+        contents,
+        generationConfig: { temperature, maxOutputTokens: maxTokens },
+      }),
+    },
+  );
+  if (!res.ok) throw new Error(`Gemini API error: ${await res.text()}`);
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+}
+
 async function embed(text: string): Promise<number[]> {
   const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
     body: JSON.stringify({ content: { parts: [{ text }] } }),
   });
-  if (!res.ok) throw new Error(`embedding failed: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Embedding error: ${await res.text()}`);
   const data = await res.json();
   return data.embedding.values;
 }
 
-async function geminiChat(prompt: string): Promise<string> {
-  const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
-      }),
-    },
-  );
-  if (!res.ok) throw new Error(`gemini failed: ${await res.text()}`);
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+function reciprocalRankFusion(vecDocs: any[], ftsDocs: any[]): any[] {
+  const vecMap = new Map(vecDocs.map((d: any, i: number) => [d.id, { ...d, vecRank: i }]));
+  const ftsMap = new Map(ftsDocs.map((d: any, i: number) => [d.id, { ...d, ftsRank: i }]));
+
+  const allIds = new Set([...vecMap.keys(), ...ftsMap.keys()]);
+  const scored: { doc: any; rrfScore: number }[] = [];
+
+  for (const id of allIds) {
+    const v = vecMap.get(id);
+    const f = ftsMap.get(id);
+    const score = (v ? 1 / (RRF_K + v.vecRank) : 0) + (f ? 1 / (RRF_K + f.ftsRank) : 0);
+    scored.push({ doc: v || f, rrfScore: score });
+  }
+
+  return scored.sort((a, b) => b.rrfScore - a.rrfScore).slice(0, FINAL_TOP_K).map((s) => s.doc);
+}
+
+async function rewriteQuery(history: { role: string; text: string }[], query: string): Promise<string> {
+  const context = history.slice(-4).map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.text}`).join("\n");
+  const rewritePrompt = [
+    { role: "user", parts: [{ text: `Given this conversation and the latest user question, generate a concise standalone search query that captures the key entities and intent. Focus on specific terms that would match documentation. Output ONLY the search query, no explanation.\n\n${context ? `Recent conversation:\n${context}\n\n` : ""}Latest question: ${query}` }] },
+  ];
+  const result = await callGemini(rewritePrompt, 0.3, 256);
+  return result.trim() || query;
 }
 
 serve(async (req) => {
@@ -48,54 +78,81 @@ serve(async (req) => {
   }
 
   try {
-    const { query, livePrices, role, currentView } = await req.json();
+    const { query, livePrices, role, currentView, history } = await req.json();
     if (!query) throw new Error("Missing query");
 
-    const embedding = await embed(query);
+    const isAdmin = role === "admin";
 
-    const { data: docs } = await supabase.rpc("match_documents", {
-      query_embedding: embedding,
-      match_count: 5,
+    // --- Step 1: Query rewriting ---
+    const searchQuery = await rewriteQuery(history || [], query);
+
+    // --- Step 2: Hybrid retrieval (vector + FTS, merged via RRF) ---
+    const [queryEmbedding, ftsRaw] = await Promise.all([
+      embed(searchQuery),
+      supabase.rpc("match_documents_fts", { query_text: searchQuery, match_count: HYBRID_TOP_K }),
+    ]);
+
+    const { data: vecRaw } = await supabase.rpc("match_documents", {
+      query_embedding: queryEmbedding,
+      match_count: HYBRID_TOP_K,
     });
 
-    const isAdmin = role === "admin";
-    const filteredDocs = (docs || []).filter((d: any) => {
-      if (d.source === "guide" && (d.id?.startsWith("admin-") || d.title?.includes("Admin"))) {
+    const merged = reciprocalRankFusion(vecRaw || [], ftsRaw.data || []);
+
+    // --- Step 3: Admin filtering ---
+    const filteredDocs = merged.filter((d: any) => {
+      if (d.source === "guide" && (d.source_id?.startsWith("admin-") || d.title?.includes("Admin"))) {
         return isAdmin;
       }
       return true;
     });
 
-    const context = filteredDocs.length
-      ? filteredDocs.map((d: any) => `[${d.source}] ${d.title}: ${d.content}`).join("\n\n")
-      : "No relevant documents found.";
+    // --- Step 4: Context assembly ---
+    const contextBlock = filteredDocs.length
+      ? filteredDocs.map((d: any, i: number) =>
+          `[${i + 1}] Source: ${d.source} · ${d.title}\n${d.content.slice(0, 1500)}`
+        ).join("\n\n---\n\n")
+      : "";
 
-    const pricesContext = livePrices && Object.keys(livePrices).length
+    const pricesBlock = livePrices && Object.keys(livePrices).length
       ? `Current live prices:\n${Object.entries(livePrices).map(([k, v]) => `  ${k}: $${(v as any).usd ?? v}`).join("\n")}`
       : "";
 
-    const userContext = [
-      role ? `User role: ${role}` : "",
-      currentView ? `User is currently viewing: ${currentView}` : "",
-    ].filter(Boolean).join("\n");
-
-    const systemPrompt = `You are a knowledgeable crypto market assistant for the CryptoDash app. Answer questions thoroughly and informatively based on the provided documents, live prices, and user context. Provide explanation, context, and data to support your answers. Use markdown formatting (**bold**, lists, headings, \`code\`) for readability.${isAdmin ? " The user is an admin — you can refer them to the admin panel for managing content. You can reveal admin-specific features and workflows." : " The user is a regular user or guest — do NOT reveal admin-specific features, internal workflows, or configuration details. Keep answers focused on public features."}`;
-
-    const prompt = [
-      systemPrompt,
-      userContext && `---\n${userContext}`,
-      "---\nDocuments:",
-      context,
-      pricesContext && `---\n${pricesContext}`,
-      `---\nQuestion: ${query}`,
+    const systemContext = [
+      `You are a knowledgeable crypto market assistant for the CryptoDash app. Answer naturally and thoroughly. When referring to information from the documentation, cite the source by number like [1], [2] etc. If no documentation is available, rely on live prices and your own knowledge.`,
+      isAdmin ? "The user is an admin — you can discuss admin panel features." : "The user is a regular user or guest — do not reveal admin-specific features.",
+      currentView ? `The user is currently on: ${currentView}` : "",
+      contextBlock ? `Use these documents to answer. Cite them as [1], [2] etc:\n\n${contextBlock}` : "",
+      pricesBlock,
     ].filter(Boolean).join("\n\n");
 
-    const answer = await geminiChat(prompt);
+    // --- Step 5: Generate answer with conversation history ---
+    const contents = [
+      { role: "user", parts: [{ text: systemContext }] },
+      ...(history || []).slice(-8).map((m: any) => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.text }],
+      })),
+      { role: "user", parts: [{ text: query }] },
+    ];
 
-    const sources = filteredDocs.map((d: any) => ({
+    const answer = await callGemini(contents, 0.8, 2048);
+
+    // --- Step 6: Parse citations for source display ---
+    const citedIndices = new Set<number>();
+    if (filteredDocs.length) {
+      const citePattern = /\[(\d+)\]/g;
+      let match;
+      while ((match = citePattern.exec(answer)) !== null) {
+        citedIndices.add(parseInt(match[1], 10));
+      }
+    }
+
+    const sources = filteredDocs.map((d: any, i: number) => ({
       source: d.source,
       title: d.title,
-      similarity: Math.round(d.similarity * 100),
+      similarity: d.similarity,
+      cited: citedIndices.has(i + 1),
     }));
 
     return new Response(JSON.stringify({ answer, sources }), {

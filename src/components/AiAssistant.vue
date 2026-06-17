@@ -38,9 +38,13 @@ async function send() {
 
   try {
     const prices = livePrices.getLatest()
+    const chatHistory = messages.value
+      .slice(-12, -1)
+      .map(m => ({ role: m.role, text: m.text }))
     const { data, error } = await supabase.functions.invoke('chat', {
       body: {
         query: text,
+        history: chatHistory,
         livePrices: prices,
         role: role.value,
         currentView: route.name || route.path,
@@ -81,9 +85,10 @@ function quickPrompt(prompt) {
           :class="msg.role === 'user' ? 'text-end' : ''"
         >
           <div class="d-inline-block text-start" :style="{ maxWidth: '90%' }">
-            <div v-if="msg.sources" class="text-secondary small opacity-50 mb-1" style="font-size: 0.65rem; line-height: 1.2">
-              <div v-for="(s, si) in msg.sources" :key="si">
-                {{ s.source }} · {{ s.title }} ({{ s.similarity }}%)
+            <div v-if="msg.sources" class="text-secondary small opacity-75 mb-1" style="font-size: 0.65rem; line-height: 1.3">
+              <div v-for="(s, si) in msg.sources" :key="si" :style="{ opacity: s.cited ? 1 : 0.5 }">
+                {{ s.cited ? '✓' : '·' }} {{ s.source }} · {{ s.title }}
+                <span v-if="s.similarity">({{ (s.similarity * 100).toFixed(0) }}%)</span>
               </div>
             </div>
             <span
