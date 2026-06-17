@@ -113,25 +113,7 @@ export async function fetchNews({ page = 1, pageSize = 12 } = {}) {
     } catch (_) { /* ignore */ }
   }
 
-  // Tier 2: Call Edge Function GET (fetches live RSS + persists to DB)
-  try {
-    const res = await fetch(
-      `${supabaseUrl}/functions/v1/fetch-news`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${anonKey}` },
-      },
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const { articles } = await res.json();
-    if (Array.isArray(articles) && articles.length > 0) {
-      return articles.map(normalizeArticle);
-    }
-  } catch (e) {
-    console.warn("[news] Edge Function fetch failed:", e.message);
-  }
-
-  // Tier 3: local JSON
+  // Tier 2: local JSON
   return fallbackNews.map(normalizeArticle);
 }
 
@@ -200,27 +182,7 @@ export async function fetchNewsById(id) {
     } catch { /* ignore */ }
   }
 
-  // Tier 2: For RSS articles, fetch via Edge Function (get all live articles)
-  if (strId.startsWith("rss-")) {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-news`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
-        },
-      );
-      if (res.ok) {
-        const { articles } = await res.json();
-        if (Array.isArray(articles)) {
-          const found = articles.map(normalizeArticle).find((a) => String(a.id) === strId);
-          if (found) return found;
-        }
-      }
-    } catch { /* fall through */ }
-  }
-
-  // Tier 3: local JSON
+  // Tier 2: local JSON
   const local = fallbackNews.find((a) => String(a.id) === strId);
   return local ? normalizeArticle(local) : null;
 }

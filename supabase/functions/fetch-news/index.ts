@@ -2,18 +2,13 @@
  * fetch-news — Supabase Edge Function
  *
  * Fetches CoinDesk RSS every hour via Supabase Cron and inserts
- * new articles into the `news` table.
+ * new articles into the `news` table. Short descriptions from RSS
+ * are expanded into fuller articles using Gemini 2.0 Flash.
  *
- * Deploy:
- *   1. Go to Supabase Dashboard > Edge Functions > Create Function
- *   2. Paste this code, name it "fetch-news"
- *   3. Go to Edge Functions > Triggers > Create Trigger
- *      - Cron: 0 * * * *  (every hour)
- *      - HTTP method: POST
- *
- * Environment variables (auto-injected by Supabase):
- *   SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY
+ * Environment variables:
+ *   SUPABASE_URL              (auto-injected)
+ *   SUPABASE_SERVICE_ROLE_KEY (auto-injected)
+ *   GEMINI_API_KEY            (must be set as Edge Function secret)
  */
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
@@ -21,6 +16,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { XMLParser } from "npm:fast-xml-parser@4.5.0";
 
 const COINDESK_RSS = "https://www.coindesk.com/arc/outboundfeeds/rss/";
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 
 interface RssItem {
   title?: string | { "#cdata"?: string; "#text"?: string };
@@ -122,10 +118,13 @@ serve(async (req) => {
     for (const a of articles) {
       if (!a.source_url || existingUrls.has(a.source_url)) continue;
 
+      const expanded = await expandContent(a.title, a.summary);
+      const finalContent = expanded || a.content;
+
       const { error } = await supabase.from("news").insert({
         title: a.title,
         summary: a.summary,
-        content: a.content,
+        content: finalContent,
         category: a.category,
         image_url: a.image_url,
         source_url: a.source_url,
@@ -169,6 +168,40 @@ serve(async (req) => {
     });
   }
 });
+
+async function expandContent(title: string, summary: string): Promise<string> {
+  const plain = summary.replace(/<[^>]+>/g, "").trim();
+  const wordCount = plain.split(/\s+/).filter(Boolean).length;
+  if (wordCount >= 60 || !GEMINI_API_KEY) return `<p>${escapeHtml(plain)}</p>`;
+
+  const prompt = `You are a crypto news writer. Expand this short news snippet into a 2-3 paragraph article with analysis and context. Include relevant market implications. Keep it factual and concise.
+
+Title: ${title}
+Summary: ${plain}
+
+Write the article body in plain text (no markdown, no HTML).`;
+
+  try {
+    const res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 400 },
+        }),
+      },
+    );
+    if (!res.ok) return `<p>${escapeHtml(plain)}</p>`;
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    const paragraphs = text.split(/\n\n+/).map((p: string) => `<p>${escapeHtml(p.trim())}</p>`).filter(Boolean).join("");
+    return paragraphs || `<p>${escapeHtml(plain)}</p>`;
+  } catch {
+    return `<p>${escapeHtml(plain)}</p>`;
+  }
+}
 
 function normalizeCategory(cat: unknown): string | string[] {
   if (!cat) return "General";

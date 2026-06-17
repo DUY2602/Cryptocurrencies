@@ -4,6 +4,14 @@ import { useRoute } from 'vue-router'
 import { supabase } from '../../supabase/supabase'
 import { livePrices } from '../services/livePrices'
 import { useAdmin } from '../composables/useAdmin'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+
+marked.setOptions({ breaks: true, gfm: true })
+
+function renderMarkdown(text) {
+  return DOMPurify.sanitize(marked.parse(text || ''))
+}
 
 const { role } = useAdmin()
 const route = useRoute()
@@ -85,7 +93,7 @@ function quickPrompt(prompt) {
                 color: 'var(--text-primary)',
               }"
             >
-              {{ msg.text }}
+              <span v-html="renderMarkdown(msg.text)"></span>
             </span>
           </div>
         </div>

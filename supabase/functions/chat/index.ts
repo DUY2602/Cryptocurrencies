@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY")!;
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 
 const supabase = createClient(
@@ -26,18 +25,21 @@ async function embed(text: string): Promise<number[]> {
   return data.embedding.values;
 }
 
-async function groqChat(prompt: string): Promise<string> {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_API_KEY}` },
-    body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  if (!res.ok) throw new Error(`groq failed: ${await res.text()}`);
+async function geminiChat(prompt: string): Promise<string> {
+  const res = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+      }),
+    },
+  );
+  if (!res.ok) throw new Error(`gemini failed: ${await res.text()}`);
   const data = await res.json();
-  return data.choices[0].message.content;
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 serve(async (req) => {
@@ -56,8 +58,16 @@ serve(async (req) => {
       match_count: 5,
     });
 
-    const context = docs?.length
-      ? docs.map((d: any) => `[${d.source}] ${d.title}: ${d.content}`).join("\n\n")
+    const isAdmin = role === "admin";
+    const filteredDocs = (docs || []).filter((d: any) => {
+      if (d.source === "guide" && (d.id?.startsWith("admin-") || d.title?.includes("Admin"))) {
+        return isAdmin;
+      }
+      return true;
+    });
+
+    const context = filteredDocs.length
+      ? filteredDocs.map((d: any) => `[${d.source}] ${d.title}: ${d.content}`).join("\n\n")
       : "No relevant documents found.";
 
     const pricesContext = livePrices && Object.keys(livePrices).length
@@ -69,7 +79,7 @@ serve(async (req) => {
       currentView ? `User is currently viewing: ${currentView}` : "",
     ].filter(Boolean).join("\n");
 
-    const systemPrompt = `You are a helpful crypto market assistant for the CryptoDash app. Answer based on the provided documents, live prices, and user context. Be concise and practical.${role === "admin" ? " The user is an admin — you can refer them to the admin panel for managing content." : ""}`;
+    const systemPrompt = `You are a knowledgeable crypto market assistant for the CryptoDash app. Answer questions thoroughly and informatively based on the provided documents, live prices, and user context. Provide explanation, context, and data to support your answers. Use markdown formatting (**bold**, lists, headings, \`code\`) for readability.${isAdmin ? " The user is an admin — you can refer them to the admin panel for managing content. You can reveal admin-specific features and workflows." : " The user is a regular user or guest — do NOT reveal admin-specific features, internal workflows, or configuration details. Keep answers focused on public features."}`;
 
     const prompt = [
       systemPrompt,
@@ -80,9 +90,9 @@ serve(async (req) => {
       `---\nQuestion: ${query}`,
     ].filter(Boolean).join("\n\n");
 
-    const answer = await groqChat(prompt);
+    const answer = await geminiChat(prompt);
 
-    const sources = (docs || []).map((d: any) => ({
+    const sources = filteredDocs.map((d: any) => ({
       source: d.source,
       title: d.title,
       similarity: Math.round(d.similarity * 100),
