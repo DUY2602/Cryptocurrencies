@@ -12,7 +12,8 @@ create table if not exists public.guides (
   updated_at timestamptz not null default now()
 );
 
--- Insert all guides (idempotent — ON CONFLICT DO NOTHING preserves manual edits)
+-- Overwrite all guides (DELETE + INSERT for full replacement)
+delete from public.guides;
 insert into public.guides (id, title, content, category) values
 
 ('app-overview', 'CryptoDash App Overview',
@@ -25,6 +26,10 @@ insert into public.guides (id, title, content, category) values
 
 ('nav-routes', 'All Routes & Pages',
 'Public: / (Home), /markets (Markets), /coin/:id (CoinDetail), /news (News), /news/:id (NewsDetail), /about (About), /set-password (SetPassword). Guest-only: /login, /register. Auth-required: /profile, /watchlist. Admin-required: /admin (Dashboard), /admin/news (CMS), /admin/news/:id (Editor), /admin/users (Users), /admin/settings (Settings). Navigation guard: requiresAuth redirects to /login?redirect=, guestOnly redirects to /, requiresAdmin renders locked screen.',
+'navigation'),
+
+('nav-footer', 'Footer',
+'Footer at the bottom of every page shows: CryptoDash brand name, university credit "COS30043 · Swinburne University", and dynamic copyright year.',
 'navigation'),
 
 ('page-home', 'Home Page /',
@@ -99,12 +104,12 @@ insert into public.guides (id, title, content, category) values
 'CoinTable.vue - sortable coin table. Columns: rank, coin+image+name+symbol, price with flash, 24h change arrow, sparkline, volume, market cap, star+Trade. Sorting: market cap/price/gainers/losers. Search filtering via SearchBar. Props: coins array. Live price merge applied. File: src/components/CoinTable.vue',
 'components'),
 
-('comp-coincard', 'CoinCard Component',
-'CoinCard.vue - compact card. Shows image, name, symbol, price with arrow, 24h change. Clickable → /coin/:id. Hover lift effect. Used on Home trending section.',
-'components'),
-
 ('comp-coindashboard', 'CoinDashboard Chart Component',
 'CoinDashboard.vue - OHLCV chart using Lightweight Charts. Timeframes: 1s,1m,5m,15m,1h,4h,12h,1d,1w. Indicators: Price, MA, EMA, Vol. Crosshair tooltip. Responsive. Real-time WebSocket stream. Bottom: StatCards (Market Cap, Volume, High, Low) + sentiment bar 68/32. Data: Binance klines API + WebSocket. Error: overlay with retry.',
+'components'),
+
+('comp-livebadge', 'LiveBadge Component',
+'LiveBadge.vue - animated pulsing green dot with "Live" text. Displayed when WebSocket connection to Binance is active. Used on CoinDetail page next to coin name and Admin topbar.',
 'components'),
 
 ('comp-favoritebutton', 'FavoriteButton Component',
@@ -155,36 +160,8 @@ insert into public.guides (id, title, content, category) values
 'RadarMap.vue (components/geo/) - world map canvas with GeoJSON. Colors by Chainalysis 2025 adoption level. Hover tooltip: country, rank, score, level. Legend. Data: src/data/adoptionIndex.json. Used on Home page.',
 'components'),
 
-('composable-liveprices', 'useLivePrices Composable',
-'useLivePrices.js - component-level composable. Exports: liveData ref, isLive ref, applyLive(coin). Calls livePrices.start() on mount, stop() on unmount. Used by Home, Markets, CoinDetail, Watchlist.',
-'composables'),
-
-('composable-useauth', 'useAuth Composable',
-'useAuth.js (src/composables/useAuth.js) — authentication state and methods, module-level singleton. Exports: user (ref — Supabase User object {id,email,user_metadata?.name} or null), isLoggedIn (computed — !!user.value). Methods: login(email,password) → supabase.auth.signInWithPassword({email,password}), on success sets user ref, on failure throws. logout() → supabase.auth.signOut(), sets user.value=null. requestRegistration(email,name) → generates 20-char temp password, calls supabase.auth.signUp({email, tempPassword, options:{data:{name,tempPassword}, emailRedirectTo:origin+/set-password}}), upserts profiles(id,email,name,role:"user"). setPassword(password) → supabase.auth.updateUser({password}), upserts profiles row, bcrypt hash stored in profiles.password. On init: supabase.auth.getSession(). Listens to onAuthStateChange.',
-'composables'),
-
-('composable-useadmin', 'useAdmin Composable',
-'useAdmin.js - admin role management. Module-level refs: profile (user profile from profiles table), loading. Computed: role - profile?.role || null. isAdmin - role === "admin". Methods: refresh() - reloads profile from Supabase. Watches user.id to auto-load profile on auth change. Used by admin layout for permission gating.',
-'composables'),
-
-('composable-usewatchlist', 'useWatchlist Composable',
-'useWatchlist.js - watchlist state management. Module-level ref: ids (array of coin IDs). Computed: watchlistIds (sorted). Methods: isFavorite(coinId), toggleFavorite(coinId), removeFavorite(coinId). Watches user ref: when logged in, loads from Supabase watchlist table. When guest, uses localStorage key "watchlist_ids".',
-'composables'),
-
-('composable-usereactions', 'useReactions Composable',
-'useReactions.js - likes and votes. Module-level ref: state { newsLikes, coinVotes }. Methods: isNewsLiked(articleId), toggleNewsLike(articleId), getNewsLikeCount(articleId), getCoinVote(coinId), setCoinVote(coinId, vote). News likes: Supabase news_likes (auth) or localStorage (guests). Coin votes: localStorage only.',
-'composables'),
-
-('composable-usecomments', 'useComments Composable',
-'useComments.js - comment CRUD. Module-level ref: cache (localStorage). Methods: getComments(articleId) - fetches from Supabase comments table ordered by created_at asc, caches in localStorage. postComment(articleId, text, currentUser) - inserts to Supabase. removeComment(commentId, currentUser) - deletes if userId matches.',
-'composables'),
-
-('composable-usetheme', 'useTheme Composable',
-'useTheme.js - dark/light theme. Module-level ref: theme ("dark"|"light"), persisted in localStorage key "theme". Computed: isDark (boolean). Methods: setTheme(value), toggleTheme(), initTheme(). Default: "dark". Sets data-theme attribute on <html>. Used by ThemeToggle component and globally in App.vue.',
-'composables'),
-
 ('ai-assistant', 'AI Assistant (Chatbot)',
-'To use the AI assistant: click the 💬 button at the bottom-right corner of any page. Panel titled "Crypto Assistant" with message area, quick prompt buttons ("Market summary", "Explain BTC"), and text input at bottom. Type question and press Enter. The AI answers using RAG (vector search of guides + live prices). Answers include markdown formatting (**bold**, lists, code). After each answer, source documents are shown with ✓ for cited ones. Welcome message: "Hi — I can explain coins, summarise markets, or suggest what to check on the dashboard." Quick prompts: "Market summary" for market overview, "Explain BTC" for Bitcoin details. Powered by Google Gemini 2.5 Flash Lite via Supabase Edge Function. Role-aware: extra features for admin users. Conversation history is remembered within the chat window.',
+'To use the AI assistant: click the 💬 button at the bottom-right corner of any page. Panel titled "Crypto Assistant" with message area, quick prompt buttons ("Market summary", "Explain BTC"), and text input at bottom. Type question and press Enter. The AI uses RAG: (1) query rewriting via Gemini 1.5 Flash, (2) hybrid retrieval (vector similarity + full-text search, merged via Reciprocal Rank Fusion), (3) context assembly with matched documents, live prices, page context, (4) answer generation via Gemini 1.5 Flash. Answers include markdown formatting and cited sources [1],[2] etc. After each answer, source documents are shown with ✓ for cited ones. Welcome message: "Hi — I can explain coins, summarise markets, or suggest what to check on the dashboard." Quick prompts: "Market summary" for market overview, "Explain BTC" for Bitcoin details. Powered by Gemini 1.5 Flash via Supabase Edge Function. Role-aware: extra features for admin users. Conversation history is remembered within the chat window. Backend: supabase/functions/chat/index.ts.',
 'ai'),
 
 ('workflow-auth', 'Authentication Workflow',
@@ -225,6 +202,34 @@ insert into public.guides (id, title, content, category) values
 
 ('faq-general', 'FAQ - General',
 'Q: Add to watchlist? A: Click star ★ on any coin in /markets, home, or coin detail. Q: AI Assistant? A: 💬 button bottom-right. Q: Switch theme? A: Sun/moon toggle in top navbar. Q: Mobile? A: Responsive Bootstrap 5. Q: Share articles? A: Copy URL from browser at /news/:id. Q: Built by? A: COS30043 Swinburne University. Q: Navigate? A: Top navbar: Home, Markets, News, About, Watchlist. Admin users see Admin link.',
-'faq')
+'faq'),
 
-on conflict (id) do nothing;
+-- =============================================================================
+-- Edge Functions (user-facing summary)
+-- =============================================================================
+
+('edge-fetchnews', 'News Import (fetch-news)',
+'News articles are automatically imported from CoinDesk RSS every hour. This keeps the news feed up to date with the latest crypto news. Short news snippets are expanded into full articles for a better reading experience. Admin users can also manually trigger an import via the "Import from CoinDesk" button in the Admin panel.',
+'edge-functions'),
+
+('edge-chat', 'AI Assistant (chat)',
+'The AI Assistant (chatbot) uses Google Gemini 1.5 Flash with RAG to answer your questions about crypto coins, markets, and the CryptoDash app itself. It searches through documentation, coin data, and news articles to provide accurate, cited answers. The assistant also has access to live prices and knows which page you are on for context-aware responses.',
+'edge-functions'),
+
+('edge-syncguides', 'Guide Sync (sync-guides)',
+'This process syncs the app documentation from the guides table into the vector database so the AI Assistant can search and retrieve relevant information to answer your questions.',
+'edge-functions'),
+
+('comp-chartplaceholder', 'Chart Placeholder',
+'When chart data is temporarily unavailable, a placeholder with the text "Price chart — coming soon" is shown on the Coin Detail page.',
+'components'),
+
+('comp-marketoverviewcards', 'Market Overview Cards',
+'Compact coin cards shown on the Home page "Top by Volume" section. Each card shows coin image, name, symbol, price, 24h change, and market cap. Click any card to view the coin detail page.',
+'components'),
+
+('comp-coincard', 'Trending Coin Cards',
+'Trending coin cards on the Home page show the 6 most volatile coins with image, name, symbol, price with directional arrow, and 24h change percentage. Click any card to view the coin detail page.',
+'components')
+
+;

@@ -10,10 +10,10 @@ const supabase = createClient(
 
 async function embed(text: string, retries = 5): Promise<number[]> {
   for (let attempt = 0; attempt <= retries; attempt++) {
-    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent", {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-      body: JSON.stringify({ content: { parts: [{ text }] } }),
+      body: JSON.stringify({ content: { parts: [{ text }] }, outputDimensionality: 768 }),
     });
     if (res.ok) {
       const data = await res.json();

@@ -55,7 +55,6 @@ async function send() {
     messages.value.push({
       role: 'assistant',
       text: reply,
-      sources: data?.sources || null,
     })
   } catch (e) {
     messages.value.push({ role: 'assistant', text: `Error: ${e.message}` })
@@ -75,7 +74,7 @@ function quickPrompt(prompt) {
     <div v-if="open" class="ai-panel">
       <div class="p-3 border-bottom" style="border-color: var(--border-color) !important">
         <strong class="text-emphasis">Crypto Assistant</strong>
-        <p class="small text-secondary mb-0">Powered by Gemini + live prices</p>
+        <p class="small text-secondary mb-0">Powered by Groq + live prices</p>
       </div>
       <div class="flex-grow-1 overflow-auto p-3" style="max-height: 240px">
         <div
@@ -85,12 +84,7 @@ function quickPrompt(prompt) {
           :class="msg.role === 'user' ? 'text-end' : ''"
         >
           <div class="d-inline-block text-start" :style="{ maxWidth: '90%' }">
-            <div v-if="msg.sources" class="text-secondary small opacity-75 mb-1" style="font-size: 0.65rem; line-height: 1.3">
-              <div v-for="(s, si) in msg.sources" :key="si" :style="{ opacity: s.cited ? 1 : 0.5 }">
-                {{ s.cited ? '✓' : '·' }} {{ s.source }} · {{ s.title }}
-                <span v-if="s.similarity">({{ (s.similarity * 100).toFixed(0) }}%)</span>
-              </div>
-            </div>
+
             <span
               class="d-inline-block p-2 rounded"
               :style="{

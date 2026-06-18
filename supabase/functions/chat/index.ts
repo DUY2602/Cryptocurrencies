@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
+const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY")!;
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -18,32 +19,60 @@ const RRF_K = 60;
 const HYBRID_TOP_K = 20;
 const FINAL_TOP_K = 5;
 
-async function callGemini(contents: any[], temperature = 0.7, maxTokens = 2048) {
-  const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-    {
+async function callLLM(messages: { role: string; parts: { text: string }[] }[], temperature = 0.7, maxTokens = 2048, retries = 3) {
+  const groqMessages = messages.map((m) => ({
+    role: m.role === "model" ? "assistant" : m.role,
+    content: m.parts.map((p) => p.text).join("\n"),
+  }));
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+      },
       body: JSON.stringify({
-        contents,
-        generationConfig: { temperature, maxOutputTokens: maxTokens },
+        model: "llama-3.1-8b-instant",
+        messages: groqMessages,
+        temperature,
+        max_tokens: maxTokens,
       }),
-    },
-  );
-  if (!res.ok) throw new Error(`Gemini API error: ${await res.text()}`);
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content ?? "";
+    }
+    if (res.status === 429 || res.status === 503) {
+      const delay = Math.min(1000 * Math.pow(2, attempt) + Math.random() * 1000, 10000);
+      console.log(`callLLM ${res.status}, retry ${attempt + 1}/${retries} in ${delay}ms`);
+      await new Promise((r) => setTimeout(r, delay));
+      continue;
+    }
+    throw new Error(`LLM API error: ${await res.text()}`);
+  }
+  throw new Error("LLM API retries exhausted");
 }
 
-async function embed(text: string): Promise<number[]> {
-  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-    body: JSON.stringify({ content: { parts: [{ text }] } }),
-  });
-  if (!res.ok) throw new Error(`Embedding error: ${await res.text()}`);
-  const data = await res.json();
-  return data.embedding.values;
+async function embed(text: string, retries = 3): Promise<number[]> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+      body: JSON.stringify({ content: { parts: [{ text }] }, outputDimensionality: 768 }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.embedding.values;
+    }
+    if (res.status === 429 || res.status === 503) {
+      const delay = Math.min(1000 * Math.pow(2, attempt) + Math.random() * 1000, 10000);
+      console.log(`embed ${res.status}, retry ${attempt + 1}/${retries} in ${delay}ms`);
+      await new Promise((r) => setTimeout(r, delay));
+      continue;
+    }
+    throw new Error(`Embedding error: ${await res.text()}`);
+  }
+  throw new Error("Embedding retries exhausted");
 }
 
 function reciprocalRankFusion(vecDocs: any[], ftsDocs: any[]): any[] {
@@ -68,7 +97,7 @@ async function rewriteQuery(history: { role: string; text: string }[], query: st
   const rewritePrompt = [
     { role: "user", parts: [{ text: `Given this conversation and the latest user question, generate a concise standalone search query that captures the key entities and intent. Focus on specific terms that would match documentation. Output ONLY the search query, no explanation.\n\n${context ? `Recent conversation:\n${context}\n\n` : ""}Latest question: ${query}` }] },
   ];
-  const result = await callGemini(rewritePrompt, 0.3, 256);
+  const result = await callLLM(rewritePrompt, 0.3, 256);
   return result.trim() || query;
 }
 
@@ -136,7 +165,7 @@ serve(async (req) => {
       { role: "user", parts: [{ text: query }] },
     ];
 
-    const answer = await callGemini(contents, 0.8, 2048);
+    const answer = await callLLM(contents, 0.8, 2048);
 
     // --- Step 6: Parse citations for source display ---
     const citedIndices = new Set<number>();
