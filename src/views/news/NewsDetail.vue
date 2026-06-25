@@ -1,6 +1,6 @@
 <script>
 import { fetchNews, fetchNewsById } from "../../services/news.js";
-import NewsLikeButton from "../../components/NewsLikeButton.vue";
+import NewsReactions from "../../components/NewsReactions.vue";
 import LoadingSpinner from "../../components/LoadingSpinner.vue";
 import EmptyState from "../../components/EmptyState.vue";
 import {
@@ -9,9 +9,16 @@ import {
   removeComment,
 } from "../../composables/useComments.js";
 import { user } from "../../composables/useAuth.js";
+import {
+  fetchReactionCounts,
+  loadUserReactions,
+} from "../../composables/useReactions.js";
 
 export default {
-  components: { NewsLikeButton, LoadingSpinner, EmptyState },
+  components: { NewsReactions, LoadingSpinner, EmptyState },
+  setup() {
+    return { user };
+  },
   data() {
     return {
       article: null,
@@ -21,6 +28,7 @@ export default {
       newComment: "",
       submitting: false,
       comments: [],
+      commentCount: 0,
     };
   },
   computed: {
@@ -55,6 +63,11 @@ export default {
           this.error = "Article not found";
         } else {
           this.comments = await getComments(this.article.id);
+          this.commentCount = this.comments.length;
+          await Promise.all([
+            fetchReactionCounts([this.article.id]),
+            loadUserReactions(),
+          ]);
         }
       } catch (e) {
         this.error = e.message;
@@ -71,17 +84,19 @@ export default {
           if (comment) {
             this.newComment = "";
             this.comments = [...this.comments, comment];
+            this.commentCount++;
           }
         },
       );
     },
-    removeComment(comment) {
-      removeComment(comment.id, this.user).then((ok) => {
-        if (ok) {
-          this.comments = this.comments.filter((c) => c.id !== comment.id);
-        }
-      });
-    },
+      removeComment(comment) {
+        removeComment(comment.id, this.user).then((ok) => {
+          if (ok) {
+            this.comments = this.comments.filter((c) => c.id !== comment.id);
+            this.commentCount--;
+          }
+        });
+      },
     formatDate(dateStr) {
       return new Date(dateStr).toLocaleDateString("en-AU", {
         year: "numeric",
@@ -205,7 +220,7 @@ export default {
         <footer
           class="d-flex flex-wrap gap-3 align-items-center mt-4 pt-4 border-top border-secondary border-opacity-25"
         >
-          <NewsLikeButton :article-id="article.id" />
+          <NewsReactions :article-id="article.id" />
           <a
             v-if="article.source_url"
             :href="article.source_url"
@@ -221,7 +236,10 @@ export default {
           class="comments-section mt-5"
           aria-labelledby="commentsHeading"
         >
-          <h2 id="commentsHeading" class="h4 mb-3">Comments</h2>
+          <h2 id="commentsHeading" class="h4 mb-3">
+            Comments
+            <span class="text-secondary small fw-normal ms-1">({{ commentCount }})</span>
+          </h2>
 
           <div v-if="comments.length === 0" class="text-secondary small mb-4">
             No comments yet.

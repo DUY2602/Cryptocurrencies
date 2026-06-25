@@ -1,10 +1,10 @@
 /**
- * News service — Stage 3
+ * News service — Stage 4
  *
  * Strategy:
- *  - Reads: try Supabase first, fall back to local data/news.json
- *           so the public site still works even before the table is
- *           seeded.
+ *  - Reads: Supabase table (accumulated news persisted by Edge Function).
+ *           Articles with short content (< 60 words) are auto-expanded
+ *           via Gemini through the fetch-news Edge Function.
  *  - Writes (create / update / delete): only allowed for users with
  *           role='admin' (enforced by RLS policies on the server).
  *  - HTML coming from TipTap is sanitized through DOMPurify before
@@ -12,8 +12,13 @@
  */
 
 import DOMPurify from "dompurify";
-import fallbackNews from "../data/news.json";
 import { supabase } from "../../supabase/supabase.js";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const EDGE_FUNCTION_URL = SUPABASE_URL
+  ? `${SUPABASE_URL.replace(/\/+$/, "")}/functions/v1/fetch-news`
+  : null;
 
 const DEFAULT_IMAGE = "/hero.jpg";
 const SANITIZE_CONFIG = {
@@ -83,108 +88,102 @@ export function normalizeArticle(row) {
   };
 }
 
+/* ----------------------------- helpers -------------------------------- */
+
+function getWordCount(html) {
+  const text = String(html || "").replace(/<[^>]+>/g, " ").trim();
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+function isShortContent(article) {
+  const wc = getWordCount(article.full_content || article.content);
+  return wc > 0 && wc < 60;
+}
+
 /* ----------------------------- reads ---------------------------------- */
 
-/**
- * Fetch news list.
- *  - Tries Supabase first.
- *  - Falls back to local JSON if Supabase is missing creds or errors.
- *  - In offline / no-creds mode the data layer is read-only.
- */
 export async function fetchNews({ page = 1, pageSize = 12 } = {}) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  // Tier 1: Read from Supabase table (accumulated news persisted by Edge Function)
-  if (supabaseUrl && anonKey) {
-    try {
-      const { data, error } = await supabase
-        .from("news")
-        .select("*")
-        .order("published_at", { ascending: false })
-        .range(from, to);
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .range(from, to);
 
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data.map(normalizeArticle);
-      }
-    } catch (_) { /* ignore */ }
+  if (error) throw error;
+  if (!data?.length) return [];
+
+  const articles = data.map(normalizeArticle);
+
+  for (const article of articles) {
+    if (isShortContent(article)) {
+      expandArticleContent(article.id);
+    }
   }
 
-  // Tier 2: local JSON
-  return fallbackNews.map(normalizeArticle);
+  return articles;
 }
 
 export async function fetchNewsCount() {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const { count, error } = await supabase
+    .from("news")
+    .select("*", { count: "exact", head: true });
 
-  if (supabaseUrl && anonKey) {
-    try {
-      const { count, error } = await supabase
-        .from("news")
-        .select("*", { count: "exact", head: true });
-
-      if (!error && count !== null) return count;
-    } catch { /* ignore */ }
-  }
-
-  return null;
+  if (error) return null;
+  return count;
 }
 
 export async function fetchCategoryCounts() {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const { data, error } = await supabase
+    .from("news")
+    .select("category");
 
-  if (supabaseUrl && anonKey) {
-    try {
-      const { data, error } = await supabase
-        .from("news")
-        .select("category");
+  if (error) return [];
 
-      if (!error && data) {
-        const counts = {};
-        data.forEach((row) => {
-          const cat = row.category || "General";
-          counts[cat] = (counts[cat] || 0) + 1;
-        });
-        return Object.entries(counts)
-          .map(([category, count]) => ({ category, count }))
-          .sort((a, b) => a.category.localeCompare(b.category));
-      }
-    } catch { /* ignore */ }
-  }
-
-  const cats = new Set(fallbackNews.map((a) => a.category || "General"));
-  return Array.from(cats)
-    .map((category) => ({ category, count: 0 }))
+  const counts = {};
+  data.forEach((row) => {
+    const cat = row.category || "General";
+    counts[cat] = (counts[cat] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([category, count]) => ({ category, count }))
     .sort((a, b) => a.category.localeCompare(b.category));
 }
 
 export async function fetchNewsById(id) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
 
-  const strId = String(id);
+  if (error) throw error;
+  if (!data) return null;
 
-  // Tier 1: Try Supabase first (articles now persist in DB)
-  if (supabaseUrl && anonKey) {
-    try {
-      const { data, error } = await supabase
-        .from("news")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
+  const article = normalizeArticle(data);
 
-      if (!error && data) return normalizeArticle(data);
-    } catch { /* ignore */ }
+  if (isShortContent(article)) {
+    expandArticleContent(article.id);
   }
 
-  // Tier 2: local JSON
-  const local = fallbackNews.find((a) => String(a.id) === strId);
-  return local ? normalizeArticle(local) : null;
+  return article;
+}
+
+export async function expandArticleContent(id) {
+  if (!EDGE_FUNCTION_URL) return;
+
+  try {
+    await fetch(EDGE_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ action: "expand", id }),
+    });
+  } catch { /* fire-and-forget */ }
 }
 
 /* ----------------------------- writes (admin) ------------------------- */

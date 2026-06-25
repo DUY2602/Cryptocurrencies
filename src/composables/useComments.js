@@ -19,6 +19,19 @@ function saveCache() {
 
 loadCache()
 
+export async function getCommentCount(articleId) {
+  const { count, error } = await supabase
+    .from("comments")
+    .select("*", { count: "exact", head: true })
+    .eq("article_id", Number(articleId));
+
+  if (error) {
+    console.warn("[comments] count failed:", error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
 export async function getComments(articleId) {
   const key = String(articleId)
   if (cache.value[key]) return cache.value[key]

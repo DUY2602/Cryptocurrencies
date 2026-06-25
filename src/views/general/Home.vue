@@ -73,12 +73,11 @@ export default {
   },
   async mounted() {
     try {
-      const [trending, top, news] = await Promise.all([
-        api.getTrendingCoins(),
+      const [top, news] = await Promise.all([
         api.getTopCoins(50),
         fetchNews({ page: 1, pageSize: 3 }).catch(() => []),
       ]);
-      this.trending = trending;
+      this.trending = [...top].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h));
       this.allCoins = top;
       this.latestNews = Array.isArray(news) ? news : [];
     } catch (e) {

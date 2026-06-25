@@ -61,6 +61,7 @@ create table if not exists public.news_likes (
   id         uuid default gen_random_uuid() primary key,
   user_id    uuid not null references auth.users(id) on delete cascade,
   article_id bigint not null references public.news(id) on delete cascade,
+  type       text not null default 'like' check (type in ('like', 'dislike')),
   created_at timestamptz not null default now(),
   unique(user_id, article_id)
 );
@@ -199,6 +200,12 @@ create policy "Users can insert own likes"
   on public.news_likes for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update own likes" on public.news_likes;
+create policy "Users can update own likes"
+  on public.news_likes for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 drop policy if exists "Users can delete own likes" on public.news_likes;
 create policy "Users can delete own likes"
   on public.news_likes for delete
@@ -269,20 +276,19 @@ where email = 'admin@crypto.local'
 on conflict (id) do update set role = 'admin';
 
 -- =============================================================================
--- 8) OPTIONAL: Schedule auto-fetch news from CoinDesk RSS (every hour)
+-- 8) Schedule auto-fetch news from CoinDesk RSS (every hour)
 -- Requires pg_cron extension (enable in Supabase Dashboard > Database > Extensions)
 -- =============================================================================
--- -- Uncomment to enable:
--- create extension if not exists pg_cron;
+-- Đã bật. Vào Supabase Dashboard > SQL Editor chạy lệnh sau (thay YOUR_SERVICE_ROLE_KEY):
 -- select cron.schedule(
 --   'fetch-news-hourly',
---   '0 * * * *',  -- every hour
+--   '0 * * * *',
 --   $$
 --   select net.http_post(
---     url := 'https://<project>.supabase.co/functions/v1/fetch-news',
+--     url := 'https://zahkrafltxhvttoxhars.supabase.co/functions/v1/fetch-news',
 --     headers := jsonb_build_object(
 --       'Content-Type', 'application/json',
---       'Authorization', 'Bearer <service-role-key>'
+--       'Authorization', 'Bearer YOUR_SERVICE_ROLE_KEY'
 --     ),
 --     body := '{}'::jsonb
 --   ) as request_id;

@@ -1,7 +1,11 @@
 <script>
 import { fetchNews, fetchNewsCount, fetchCategoryCounts } from "../../services/news.js";
+import {
+  fetchReactionCounts,
+  loadUserReactions,
+} from "../../composables/useReactions.js";
 import SearchBar from "../../components/SearchBar.vue";
-import NewsLikeButton from "../../components/NewsLikeButton.vue";
+import NewsReactions from "../../components/NewsReactions.vue";
 import LoadingSpinner from "../../components/LoadingSpinner.vue";
 
 const PAGE_SIZE = 9;
@@ -9,7 +13,7 @@ const PAGE_SIZE = 9;
 export default {
   components: {
     SearchBar,
-    NewsLikeButton,
+    NewsReactions,
     LoadingSpinner,
   },
   data() {
@@ -115,6 +119,7 @@ export default {
         if (cats) this.categoryCounts = cats;
         const articles = await fetchNews({ page: 1, pageSize: PAGE_SIZE });
         this.articles = articles;
+        await this.loadReactions();
       } catch (e) {
         this.loadError = e.message;
       } finally {
@@ -129,6 +134,7 @@ export default {
         const pageSize = this.selectedCategory || this.searchQuery ? 500 : PAGE_SIZE;
         const articles = await fetchNews({ page, pageSize });
         this.articles = articles;
+        await this.loadReactions();
       } catch (e) {
         console.warn("[news] fetch page failed:", e.message);
       } finally {
@@ -143,6 +149,15 @@ export default {
     selectCategory(category) {
       this.selectedCategory =
         this.selectedCategory === category ? null : category;
+    },
+    async loadReactions() {
+      const ids = this.articles.map((a) => a.id);
+      if (ids.length) {
+        await Promise.all([
+          fetchReactionCounts(ids),
+          loadUserReactions(),
+        ]);
+      }
     },
     formatDate(dateStr) {
       return new Date(dateStr).toLocaleDateString("en-AU", {
@@ -329,19 +344,7 @@ export default {
                   <div
                     class="blog-footer px-3 pb-3 d-flex justify-content-between align-items-center"
                   >
-                    <NewsLikeButton :article-id="article.id" />
-                    <div
-                      v-if="article.tags && article.tags.length"
-                      class="article-tags d-flex gap-1 flex-wrap"
-                    >
-                      <span
-                        v-for="tag in article.tags.slice(0, 2)"
-                        :key="tag"
-                        class="tag-badge small text-secondary"
-                      >
-                        #{{ tag }}
-                      </span>
-                    </div>
+                    <NewsReactions :article-id="article.id" />
                   </div>
                 </article>
               </div>

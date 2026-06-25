@@ -3,12 +3,14 @@
  *
  * Fetches CoinDesk RSS every hour via Supabase Cron and inserts
  * new articles into the `news` table. Short descriptions from RSS
- * are expanded into fuller articles using Gemini 2.0 Flash.
+ * are expanded into fuller articles using Groq (Llama 3.1-8B)
+ * or Gemini (fallback).
  *
  * Environment variables:
  *   SUPABASE_URL              (auto-injected)
  *   SUPABASE_SERVICE_ROLE_KEY (auto-injected)
- *   GEMINI_API_KEY            (must be set as Edge Function secret)
+ *   GROQ_API_KEY              (recommended, faster & cheaper)
+ *   GEMINI_API_KEY            (optional fallback)
  */
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
@@ -16,7 +18,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { XMLParser } from "npm:fast-xml-parser@4.5.0";
 
 const COINDESK_RSS = "https://www.coindesk.com/arc/outboundfeeds/rss/";
+const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const MAX_ORIGINAL_CHARS = 30_000;
+const MIN_CONTENT_WORDS = 60;
+const MAX_BATCH_EXPAND = 30;
+const LLM_DELAY_MS = 400;
+
+async function delay(ms: number) {
+  await new Promise((r) => setTimeout(r, ms));
+}
 
 interface RssItem {
   title?: string | { "#cdata"?: string; "#text"?: string };
@@ -40,8 +51,26 @@ serve(async (req) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
+  // POST action handler (expand single article or batch-expand)
+  if (req.method === "POST") {
+    try {
+      const body = await req.json();
+      if (body?.action === "expand") {
+        return await handleExpand(body.id);
+      }
+      if (body?.action === "batch-expand") {
+        return await handleBatchExpand();
+      }
+    } catch { /* not JSON or unknown action — fall through to RSS fetch */ }
+  }
+
   try {
-    const rssRes = await fetch(COINDESK_RSS);
+    const rssRes = await fetch(COINDESK_RSS, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; CryptocurrenciesBot/1.0; +https://github.com/your-repo)",
+        "Accept": "application/rss+xml, application/xml, text/xml, */*",
+      },
+    });
     if (!rssRes.ok) throw new Error(`RSS fetch failed: ${rssRes.status}`);
     const xml = await rssRes.text();
 
@@ -115,10 +144,17 @@ serve(async (req) => {
     );
 
     let inserted = 0;
+    let sourceFetched = 0;
     for (const a of articles) {
       if (!a.source_url || existingUrls.has(a.source_url)) continue;
 
-      const expanded = await expandContent(a.title, a.summary);
+      // Only fetch original for first 5 articles per cron run to avoid rate-limiting
+      const useSource = sourceFetched < 5 && a.source_url;
+      const { content: expanded } = useSource
+        ? await expandContent(a.title, a.summary, a.source_url)
+        : await expandContent(a.title, a.summary);
+      if (useSource) sourceFetched++;
+      await delay(LLM_DELAY_MS);
       const finalContent = expanded || a.content;
 
       const { error } = await supabase.from("news").insert({
@@ -169,17 +205,60 @@ serve(async (req) => {
   }
 });
 
-async function expandContent(title: string, summary: string): Promise<string> {
-  const plain = summary.replace(/<[^>]+>/g, "").trim();
-  const wordCount = plain.split(/\s+/).filter(Boolean).length;
-  if (wordCount >= 60 || !GEMINI_API_KEY) return `<p>${escapeHtml(plain)}</p>`;
+async function fetchOriginalContent(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; CryptocurrenciesBot/1.0; +https://github.com/your-repo)",
+        "Accept": "text/html, */*",
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<nav[\s\S]*?<\/nav>/gi, "")
+      .replace(/<header[\s\S]*?<\/header>/gi, "")
+      .replace(/<footer[\s\S]*?<\/footer>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&[^;]+;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return text.slice(0, MAX_ORIGINAL_CHARS) || null;
+  } catch {
+    return null;
+  }
+}
 
-  const prompt = `You are a crypto news writer. Expand this short news snippet into a 2-3 paragraph article with analysis and context. Include relevant market implications. Keep it factual and concise.
+async function generateWithGroq(prompt: string, maxTokens = 600): Promise<string> {
+  if (!GROQ_API_KEY) return "";
 
-Title: ${title}
-Summary: ${plain}
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: maxTokens,
+      }),
+    });
+    if (!res.ok) return "";
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() ?? "";
+  } catch {
+    return "";
+  }
+}
 
-Write the article body in plain text (no markdown, no HTML).`;
+async function generateWithGemini(prompt: string, maxTokens = 400): Promise<string> {
+  if (!GEMINI_API_KEY) return "";
 
   try {
     const res = await fetch(
@@ -189,18 +268,69 @@ Write the article body in plain text (no markdown, no HTML).`;
         headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 400 },
+          generationConfig: { temperature: 0.7, maxOutputTokens: maxTokens },
         }),
       },
     );
-    if (!res.ok) return `<p>${escapeHtml(plain)}</p>`;
+    if (!res.ok) return "";
     const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    const paragraphs = text.split(/\n\n+/).map((p: string) => `<p>${escapeHtml(p.trim())}</p>`).filter(Boolean).join("");
-    return paragraphs || `<p>${escapeHtml(plain)}</p>`;
+    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
   } catch {
-    return `<p>${escapeHtml(plain)}</p>`;
+    return "";
   }
+}
+
+async function generateContent(prompt: string, maxTokens = 600): Promise<string> {
+  const groq = await generateWithGroq(prompt, maxTokens);
+  if (groq) return groq;
+  return generateWithGemini(prompt, maxTokens);
+}
+
+interface ExpandResult {
+  content: string;
+  fromSource: boolean;
+}
+
+async function expandContent(title: string, summary: string, sourceUrl?: string | null): Promise<ExpandResult> {
+  // Tier 1: fetch original article and have AI read & rewrite it
+  if (sourceUrl) {
+    const originalText = await fetchOriginalContent(sourceUrl);
+    if (originalText) {
+      const wc = getWordCount(originalText);
+      if (wc >= MIN_CONTENT_WORDS) {
+        const prompt = `You are a crypto news writer. Read the following original article and rewrite it into a comprehensive 2-3 paragraph news article.
+
+Original Title: ${title}
+Original Article:
+${originalText.slice(0, 25000)}
+
+Write a well-structured article in plain text (no markdown, no HTML). Keep all key facts, data, quotes, and market implications. Use a clear journalistic style.`;
+        const text = await generateContent(prompt, 800);
+        if (text) {
+          const paragraphs = text.split(/\n\n+/).map((p: string) => `<p>${escapeHtml(p.trim())}</p>`).filter(Boolean).join("");
+          if (paragraphs) return { content: paragraphs, fromSource: true };
+        }
+      }
+    }
+  }
+
+  // Tier 2: fall back to summary-based expansion
+  const plain = summary.replace(/<[^>]+>/g, "").trim();
+  if (!GROQ_API_KEY && !GEMINI_API_KEY) return { content: `<p>${escapeHtml(plain)}</p>`, fromSource: false };
+
+  const prompt = `You are a crypto news writer. Expand this short news snippet into a 2-3 paragraph article with analysis and context. Include relevant market implications. Keep it factual and concise.
+
+Title: ${title}
+Summary: ${plain}
+
+Write the article body in plain text (no markdown, no HTML).`;
+
+  const text = await generateContent(prompt, 400);
+  if (text) {
+    const paragraphs = text.split(/\n\n+/).map((p: string) => `<p>${escapeHtml(p.trim())}</p>`).filter(Boolean).join("");
+    if (paragraphs) return { content: paragraphs, fromSource: false };
+  }
+  return { content: `<p>${escapeHtml(plain)}</p>`, fromSource: false };
 }
 
 function normalizeCategory(cat: unknown): string | string[] {
@@ -259,4 +389,103 @@ function escapeHtml(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function getWordCount(html: string): number {
+  return html.replace(/<[^>]+>/g, " ").trim().split(/\s+/).filter(Boolean).length;
+}
+
+async function handleExpand(id: number): Promise<Response> {
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const { data: article, error } = await supabase
+      .from("news")
+      .select("id, title, summary, content, source_url")
+      .eq("id", id)
+      .single();
+
+    if (error || !article) {
+      return new Response(JSON.stringify({ error: "Article not found" }), {
+        status: 404,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
+    const plain = (article.content || article.summary || "").replace(/<[^>]+>/g, "").trim();
+    const wordCount = plain.split(/\s+/).filter(Boolean).length;
+
+    if (wordCount >= MIN_CONTENT_WORDS) {
+      return new Response(JSON.stringify({ expanded: false, reason: "already long enough" }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
+    const { content: newContent } = await expandContent(article.title, article.summary || plain);
+    if (newContent && getWordCount(newContent) > wordCount) {
+      await supabase.from("news").update({ content: newContent }).eq("id", article.id);
+    }
+
+    return new Response(JSON.stringify({ expanded: true, content: newContent }), {
+      status: 200,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: (e as Error).message }), {
+      status: 500,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
+  }
+}
+
+async function handleBatchExpand(): Promise<Response> {
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const { data: articles, error } = await supabase
+      .from("news")
+      .select("id, title, summary, content");
+
+    if (error) throw error;
+    if (!articles?.length) {
+      return new Response(JSON.stringify({ expanded: 0 }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
+    let expanded = 0;
+    for (const article of articles) {
+      if (!GROQ_API_KEY && !GEMINI_API_KEY) break;
+      if (expanded >= MAX_BATCH_EXPAND) break;
+
+      const plain = (article.content || article.summary || "").replace(/<[^>]+>/g, "").trim();
+      const wordCount = plain.split(/\s+/).filter(Boolean).length;
+      if (wordCount >= MIN_CONTENT_WORDS) continue;
+
+      const { content: newContent } = await expandContent(article.title, article.summary || plain);
+      await delay(LLM_DELAY_MS);
+      if (newContent && getWordCount(newContent) > wordCount) {
+        await supabase.from("news").update({ content: newContent }).eq("id", article.id);
+        expanded++;
+      }
+    }
+
+    return new Response(JSON.stringify({ expanded }), {
+      status: 200,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: (e as Error).message }), {
+      status: 500,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
+  }
 }
