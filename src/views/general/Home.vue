@@ -187,6 +187,7 @@ export default {
                 :key="coin.id"
                 :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                 class="ranking-item text-decoration-none"
+                :class="{ 'opacity-50 pe-none': coin._hasBinanceChart === false }"
               >
                 <span class="rank-num">#{{ i + 1 }}</span>
                 <img
@@ -259,6 +260,7 @@ export default {
                       :key="coin.id"
                       :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                       class="dash-list-item text-decoration-none"
+                      :class="{ 'opacity-50 pe-none': coin._hasBinanceChart === false }"
                     >
                       <span class="dash-list-rank">{{ i + 1 }}</span>
                       <img v-if="coin.image" :src="coin.image" :alt="coin.name" class="dash-list-icon rounded-circle" width="20" height="20" />

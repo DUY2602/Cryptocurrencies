@@ -242,7 +242,7 @@ export default {
                 v-for="(coin, idx) in paginatedCoins"
                 :key="coin.id"
                 class="table-crypto-row"
-                :class="coin.change24h >= 0 ? 'is-gainer' : 'is-loser'"
+                :class="[coin.change24h >= 0 ? 'is-gainer' : 'is-loser', { 'row-disabled': coin._hasBinanceChart === false }]"
               >
                 <div class="cell-rank text-secondary">
                   {{ (currentPage - 1) * itemsPerPage + idx + 1 }}
@@ -250,8 +250,9 @@ export default {
 
                 <div class="cell-name">
                   <RouterLink
-                    :to="{ name: 'CoinDetail', params: { id: coin.id } }"
-                    class="coin-link"
+                :to="{ name: 'CoinDetail', params: { id: coin.id } }"
+                class="coin-link"
+                :class="{ 'text-muted opacity-50': coin._hasBinanceChart === false }"
                   >
                     <img
                       v-if="coin.image"
@@ -331,6 +332,7 @@ export default {
                     <RouterLink
                       :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                       class="btn btn-xs btn-primary"
+                      :class="{ disabled: coin._hasBinanceChart === false }"
                     >
                       Trade
                     </RouterLink>
@@ -642,6 +644,14 @@ export default {
   .cell-volume, .cell-cap { display: none; }
   .table-crypto-row { gap: 0.2rem; }
   .price-value { font-size: 0.82rem; }
+}
+
+.row-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.row-disabled .coin-link {
+  cursor: not-allowed;
 }
 
 @media (max-width: 575px) {

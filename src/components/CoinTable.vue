@@ -54,7 +54,7 @@ export default {
           v-for="(coin, index) in coins"
           :key="coin.id"
           class="table-row-link"
-          :class="rowClass(coin)"
+          :class="[rowClass(coin), { 'opacity-50 pe-none': coin._hasBinanceChart === false }]"
         >
           <td v-if="showRank" class="text-secondary d-none d-sm-table-cell">{{ startRank + index }}</td>
           <td>
@@ -110,6 +110,7 @@ export default {
               <RouterLink
                 :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                 class="btn btn-sm btn-outline-accent"
+                :class="{ disabled: coin._hasBinanceChart === false }"
               >
                 Details
               </RouterLink>
