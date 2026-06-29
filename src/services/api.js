@@ -74,28 +74,48 @@ async function fetchCoinGeckoById(id) {
   return result
 }
 
+async function checkBinanceChart(coins) {
+  if (!coins?.length) return
+
+  try {
+    const tickers = await fetchUsdtTickers()
+    for (const coin of coins) {
+      coin._hasBinanceChart = !!findUsdtTicker(tickers, coin.symbol)
+    }
+  } catch {
+    for (const coin of coins) {
+      coin._hasBinanceChart = false
+    }
+  }
+}
+
 export const api = {
   async getTopCoins(perPage = 50) {
-    return fetchCoinGeckoMarkets(perPage)
+    const coins = await fetchCoinGeckoMarkets(perPage)
+    await checkBinanceChart(coins)
+    return coins
   },
 
   async getTrendingCoins() {
     const coins = await fetchCoinGeckoMarkets(6)
+    await checkBinanceChart(coins)
     return coins.sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
   },
 
   async getCoinById(id) {
     const coin = await fetchCoinGeckoById(id)
+    coin._hasBinanceChart = false
 
     try {
       const tickers = await fetchUsdtTickers({ useCache: false })
       const ticker = findUsdtTicker(tickers, coin.symbol)
       if (ticker) {
+        coin._hasBinanceChart = true
         coin.price = ticker.price
         coin.change24h = ticker.change24h
         coin.volume24h = ticker.volume24h
         coin.high24h = ticker.price * (1 + Math.max(ticker.change24h, 0) / 200)
-        coin.low24h = ticker.price * (1 - Math.max(-ticker.change24h, 0) / 200)
+        coin.low24h = Math.max(0, ticker.price * (1 - Math.max(-ticker.change24h, 0) / 200))
       }
     } catch {
       /* Binance is optional for detail */

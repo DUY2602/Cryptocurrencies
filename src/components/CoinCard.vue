@@ -29,8 +29,9 @@ export default {
   <RouterLink
     :to="{ name: 'CoinDetail', params: { id: coin.id } }"
     class="text-decoration-none coin-card-link"
+    :class="{ 'pe-none': coin._hasBinanceChart === false }"
   >
-    <div class="card card-crypto coin-card h-100 anim-fade-slide">
+    <div class="card card-crypto coin-card h-100 anim-fade-slide" :class="{ 'opacity-50': coin._hasBinanceChart === false }">
       <div class="card-body p-3">
         <div class="d-flex align-items-center gap-2 mb-3">
           <img

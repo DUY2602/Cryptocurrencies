@@ -81,6 +81,7 @@ export default {
       timeframes: ['1s', '1m', '5m', '15m', '1h', '4h', '12h', '1d', '1w'],
       loading: true,
       error: null,
+      noChart: false,
       flashDirection: '',
       flashKey: 0,
       chart: null,
@@ -146,9 +147,10 @@ export default {
     async resetDashboard() {
       this.loading = true
       this.error = null
-      this.currentPrice = this.coin.price || null
-      this.change24h   = this.coin.change24h || null
-      this.volume24h   = this.coin.volume24h || null
+      this.noChart = false
+      this.currentPrice = this.coin.price ?? null
+      this.change24h   = this.coin.change24h ?? null
+      this.volume24h   = this.coin.volume24h ?? null
       this.cleanupChart()
       await this.loadHistoricalData()
     },
@@ -162,6 +164,12 @@ export default {
       if (!pair) {
         this.error = 'Invalid coin symbol'
         this.loading = false
+        return
+      }
+      if (this.coin._hasBinanceChart === false) {
+        this.error = null
+        this.loading = false
+        this.noChart = true
         return
       }
 
@@ -221,7 +229,12 @@ export default {
           }
         }
 
-        this.$nextTick(() => { this.initChart() })
+        this.$nextTick(() => {
+          try { this.initChart() } catch (e) {
+            console.error('[CoinDashboard] initChart error:', e)
+            this.error = e.message || 'Error rendering chart'
+          }
+        })
       } catch (err) {
         console.error('[CoinDashboard]', err)
         this.error = err.message || 'Error loading chart data'
@@ -571,7 +584,12 @@ export default {
             <button class="btn btn-sm btn-outline-accent" @click="loadHistoricalData">Retry</button>
           </div>
 
-          <div class="chart-outer-container w-100 h-100" v-show="!loading && !error">
+          <div v-else-if="noChart" class="chart-error-overlay d-flex flex-column align-items-center justify-content-center text-center p-3">
+            <span class="fs-4 mb-2">📊</span>
+            <span class="text-secondary fw-semibold mb-2">Chart not available for this coin</span>
+          </div>
+
+          <div class="chart-outer-container w-100 h-100" v-show="!loading && !error && !noChart">
             <div ref="chartContainer" class="chart-container-el w-100 h-100"></div>
             <div ref="tooltip" class="chart-tooltip"></div>
           </div>

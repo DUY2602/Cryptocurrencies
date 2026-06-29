@@ -1,9 +1,10 @@
 export function formatPrice(value) {
-  if (value == null || Number.isNaN(value)) return '—'
+  if (value == null || Number.isNaN(value) || value <= 0) return '—'
   if (value >= 1) {
     return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
-  return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 })
+  const maxDecimals = Math.min(8, Math.max(4, Math.ceil(-Math.log10(value)) + 2))
+  return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: maxDecimals })
 }
 
 export function formatMarketCap(value) {
