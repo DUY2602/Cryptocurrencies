@@ -92,6 +92,7 @@ a { color: var(--accent); text-decoration: none; transition: color var(--transit
 a:hover { color: var(--accent-hover); }
 
 .page-section { padding: 2rem 0 3rem; }
+.page-section.admin-news { padding-top: 0; }
 .page-title { font-size: clamp(1.5rem, 3vw, 1.75rem); font-weight: 700; margin-bottom: 0.5rem; color: var(--text-emphasis); }
 .page-subtitle { color: var(--text-secondary); margin-bottom: 1.5rem; }
 .section-heading { font-size: 1.35rem; font-weight: 700; color: var(--text-emphasis); }
@@ -296,4 +297,4 @@ a:hover { color: var(--accent-hover); }
 .bin-stat:last-child { border-bottom: none; }
 .bin-stat-lbl { color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.75rem; }
 .bin-stat-val { font-weight: 600; color: var(--text-emphasis); font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, 'Roboto Mono', monospace; text-align: right; }
-.bin-stats-compact { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 0.5rem 0.75rem; margin-top: 0.75rem; }
+.bin-stats-compact { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 0.75rem; }

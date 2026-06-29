@@ -108,7 +108,7 @@ function go(to) {
       class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4"
     >
       <div>
-        <h1 class="page-title mb-1">Welcome back, {{ user?.name }} 👋</h1>
+        <h1 class="page-title mb-1">Welcome back, {{ user?.name }}</h1>
         <p class="page-subtitle mb-0">
           Here's a quick look at your content library.
         </p>
@@ -118,13 +118,15 @@ function go(to) {
           class="btn btn-outline-accent"
           @click="go({ name: 'AdminNews' })"
         >
-          📰 All articles
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          All articles
         </button>
         <button
           class="btn btn-accent"
           @click="go({ name: 'AdminNewsEdit', params: { id: 'new' } })"
         >
-          + New article
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New article
         </button>
       </div>
     </header>
@@ -135,57 +137,47 @@ function go(to) {
       <!-- KPI cards -->
       <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-          <div class="kpi-card card-crypto p-3">
-            <div
-              class="kpi-icon"
-              style="background: rgba(240, 185, 11, 0.15); color: var(--accent)"
-            >
-              📰
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <div class="kpi-value">{{ kpis.total }}</div>
+              <div class="kpi-label">Total articles</div>
             </div>
-            <div class="kpi-label">Total articles</div>
-            <div class="kpi-value">{{ kpis.total }}</div>
+            <div class="kpi-icon-wrap" style="background: linear-gradient(135deg, rgba(240,185,11,0.15), rgba(240,185,11,0.05)); color: var(--accent);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="kpi-card card-crypto p-3">
-            <div
-              class="kpi-icon"
-              style="background: rgba(102, 126, 234, 0.15); color: #667eea"
-            >
-              ⭐
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <div class="kpi-value">{{ kpis.featured }}</div>
+              <div class="kpi-label">Featured</div>
             </div>
-            <div class="kpi-label">Featured</div>
-            <div class="kpi-value">{{ kpis.featured }}</div>
+            <div class="kpi-icon-wrap" style="background: linear-gradient(135deg, rgba(102,126,234,0.15), rgba(102,126,234,0.05)); color: #667eea;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="kpi-card card-crypto p-3">
-            <div
-              class="kpi-icon"
-              style="
-                background: rgba(14, 203, 129, 0.15);
-                color: var(--positive);
-              "
-            >
-              🔥
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <div class="kpi-value">{{ kpis.trending }}</div>
+              <div class="kpi-label">Trending</div>
             </div>
-            <div class="kpi-label">Trending</div>
-            <div class="kpi-value">{{ kpis.trending }}</div>
+            <div class="kpi-icon-wrap" style="background: linear-gradient(135deg, rgba(14,203,129,0.15), rgba(14,203,129,0.05)); color: var(--positive);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="kpi-card card-crypto p-3">
-            <div
-              class="kpi-icon"
-              style="
-                background: rgba(246, 70, 93, 0.15);
-                color: var(--negative);
-              "
-            >
-              📅
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <div class="kpi-value">{{ kpis.thisWeek }}</div>
+              <div class="kpi-label">This week</div>
             </div>
-            <div class="kpi-label">This week</div>
-            <div class="kpi-value">{{ kpis.thisWeek }}</div>
+            <div class="kpi-icon-wrap" style="background: linear-gradient(135deg, rgba(246,70,93,0.15), rgba(246,70,93,0.05)); color: var(--negative);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+            </div>
           </div>
         </div>
       </div>
@@ -194,7 +186,10 @@ function go(to) {
         <!-- Category breakdown -->
         <div class="col-lg-6">
           <div class="card-crypto p-3 p-md-4 h-100">
-            <h6 class="text-emphasis mb-3">📊 Articles by category</h6>
+            <h6 class="text-emphasis mb-3 d-flex align-items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Articles by category
+            </h6>
             <div v-if="!categoryBreakdown.length" class="text-secondary small">
               No articles yet.
             </div>
@@ -220,10 +215,13 @@ function go(to) {
         <!-- Top authors -->
         <div class="col-lg-6">
           <div class="card-crypto p-3 p-md-4 h-100">
-            <h6 class="text-emphasis mb-3">✍ Top authors</h6>
+            <h6 class="text-emphasis mb-3 d-flex align-items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Top authors
+            </h6>
             <EmptyState
               v-if="!topAuthors.length"
-              icon="✍"
+              icon="U"
               title="No author data"
               message="Add author names to your articles to see stats."
             />
@@ -261,7 +259,10 @@ function go(to) {
       <!-- Recent articles -->
       <div class="card-crypto p-3 p-md-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="text-emphasis mb-0">🕒 Recent articles</h6>
+          <h6 class="text-emphasis mb-0 d-flex align-items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Recent articles
+          </h6>
           <button
             class="btn btn-sm btn-link text-secondary p-0"
             @click="go({ name: 'AdminNews' })"
@@ -356,24 +357,33 @@ function go(to) {
 <style scoped>
 .kpi-card {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   height: 100%;
-  position: relative;
-  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.kpi-icon {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+.kpi-card:hover {
+  border-color: rgba(240, 185, 11, 0.3);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.kpi-content {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.05rem;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-emphasis);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
 .kpi-label {
@@ -384,12 +394,14 @@ function go(to) {
   font-weight: 600;
 }
 
-.kpi-value {
-  font-size: 1.85rem;
-  font-weight: 700;
-  color: var(--text-emphasis);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+.kpi-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .cat-row {
@@ -432,6 +444,7 @@ function go(to) {
   height: 32px;
   object-fit: cover;
   flex-shrink: 0;
+  border: 1px solid var(--border-color);
 }
 
 .avatar-fallback {
@@ -441,35 +454,39 @@ function go(to) {
   background: linear-gradient(135deg, var(--accent), #d9a60a);
   color: var(--accent-text);
   font-weight: 700;
+  font-size: 0.8rem;
 }
 
 .author-row {
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--border-color);
+  transition: padding-left 0.15s ease;
+}
+.author-row:hover {
+  padding-left: 0.35rem;
 }
 .author-row:last-child {
   border-bottom: none;
 }
 
 .recent-row {
-  padding: 0.65rem 0;
+  padding: 0.65rem 0.5rem;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
-  transition: background 0.15s ease;
-  border-radius: 6px;
+  transition: background 0.15s ease, padding 0.15s ease;
+  border-radius: 8px;
+  margin: 0 -0.5rem;
 }
 .recent-row:hover {
   background: var(--bg-card-hover);
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
 }
 .recent-row:last-child {
   border-bottom: none;
 }
 
 .recent-thumb {
-  width: 64px;
-  height: 48px;
+  width: 56px;
+  height: 42px;
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid var(--border-color);

@@ -27,6 +27,7 @@ export default {
             name: 'Bitcoin',
             heroEmoji: '₿',
             color: '#f7931a',
+            image: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=600&h=400&fit=crop',
             description: 'The original cryptocurrency. Digital gold, store of value, and the backbone of the crypto market.',
           }
         : {
@@ -34,6 +35,7 @@ export default {
             name: 'Ethereum',
             heroEmoji: 'Ξ',
             color: '#627eea',
+            image: 'https://images.unsplash.com/photo-1622630998477-20aa696fab60?w=600&h=400&fit=crop',
             description: 'The world computer. Smart contracts, DeFi, NFTs, and the foundation of Web3 applications.',
           }
     },
@@ -48,7 +50,7 @@ export default {
       subtitle="A real-time cryptocurrency dashboard tracking live prices, market caps, and news — built with Vue 3 and Bootstrap."
     />
 
-    <div class="container">
+    <div class="container pt-4">
       <div class="row justify-content-center">
         <div class="col-12 col-lg-8 col-xl-7">
 
@@ -108,37 +110,37 @@ export default {
                 </div>
 
                 <div class="col-12">
-                  <label class="form-label fw-semibold mb-2">Preferred coin</label>
-                  <div class="coin-selector d-flex gap-3">
-                    <button
-                      type="button"
-                      class="coin-option flex-grow-1"
-                      :class="preferredCoin === 'btc' ? 'coin-active' : ''"
-                      :style="{
-                        '--coin-color': '#f7931a',
-                        '--coin-glow': preferredCoin === 'btc' ? 'rgba(247,147,26,0.4)' : 'transparent'
-                      }"
-                      @click="preferredCoin = 'btc'"
-                    >
-                      <span class="coin-emoji anim-float">₿</span>
-                      <span class="coin-name">Bitcoin</span>
-                      <span class="coin-symbol">BTC</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="coin-option flex-grow-1"
-                      :class="preferredCoin === 'eth' ? 'coin-active' : ''"
-                      :style="{
-                        '--coin-color': '#627eea',
-                        '--coin-glow': preferredCoin === 'eth' ? 'rgba(98,126,234,0.4)' : 'transparent'
-                      }"
-                      @click="preferredCoin = 'eth'"
-                    >
-                      <span class="coin-emoji anim-float" style="animation-delay: 0.4s">Ξ</span>
-                      <span class="coin-name">Ethereum</span>
-                      <span class="coin-symbol">ETH</span>
-                    </button>
-                  </div>
+                  <fieldset>
+                    <legend class="form-label fw-semibold mb-2 p-0">Preferred coin</legend>
+                    <div class="coin-selector d-flex gap-3">
+                      <label
+                        class="coin-option flex-grow-1"
+                        :class="preferredCoin === 'btc' ? 'coin-active' : ''"
+                        :style="{
+                          '--coin-color': '#f7931a',
+                          '--coin-glow': preferredCoin === 'btc' ? 'rgba(247,147,26,0.4)' : 'transparent'
+                        }"
+                      >
+                        <input type="radio" id="coinBtc" v-model="preferredCoin" value="btc" class="visually-hidden" />
+                        <span class="coin-emoji anim-float">₿</span>
+                        <span class="coin-name">Bitcoin</span>
+                        <span class="coin-symbol">BTC</span>
+                      </label>
+                      <label
+                        class="coin-option flex-grow-1"
+                        :class="preferredCoin === 'eth' ? 'coin-active' : ''"
+                        :style="{
+                          '--coin-color': '#627eea',
+                          '--coin-glow': preferredCoin === 'eth' ? 'rgba(98,126,234,0.4)' : 'transparent'
+                        }"
+                      >
+                        <input type="radio" id="coinEth" v-model="preferredCoin" value="eth" class="visually-hidden" />
+                        <span class="coin-emoji anim-float" style="animation-delay: 0.4s">Ξ</span>
+                        <span class="coin-name">Ethereum</span>
+                        <span class="coin-symbol">ETH</span>
+                      </label>
+                    </div>
+                  </fieldset>
                 </div>
               </form>
 
@@ -180,6 +182,7 @@ export default {
 </template>
 
 <style scoped>
+.about-page { padding-top: 0; }
 .unit-line {
   font-size: 0.9rem;
   color: var(--text-secondary);

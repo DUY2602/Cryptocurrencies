@@ -7,7 +7,7 @@
  *  - User card + role badge in the sidebar footer
  */
 
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 import { useAdmin } from "../../composables/useAdmin.js";
 import { user, useAuth } from "../../composables/useAuth.js";
@@ -51,16 +51,22 @@ onMounted(async () => {
   window.addEventListener("resize", handleResize);
 });
 
+onBeforeUnmount(() => {
+  if (channel) {
+    supabase.removeChannel(channel);
+    channel = null;
+  }
+});
+
 function handleResize() {
   isMobile.value = window.innerWidth < 992;
   if (!isMobile.value) sidebarOpen.value = true;
 }
 
 const navItems = [
-  { to: { name: "AdminDashboard" }, icon: "📊", label: "Dashboard" },
-  { to: { name: "AdminNews" }, icon: "📰", label: "News CMS" },
-  { to: { name: "AdminUsers" }, icon: "👥", label: "Users" },
-  { to: { name: "AdminSettings" }, icon: "⚙️", label: "Settings" },
+  { to: { name: "AdminDashboard" }, icon: "D", label: "Dashboard" },
+  { to: { name: "AdminNews" }, icon: "N", label: "News CMS" },
+  { to: { name: "AdminUsers" }, icon: "U", label: "Users" },
 ];
 
 const isActive = (name) =>
@@ -82,7 +88,6 @@ const pageTitle = computed(() => {
     AdminNews: "News CMS",
     AdminNewsEdit: "News editor",
     AdminUsers: "Users",
-    AdminSettings: "Settings",
   };
   return titles[route.name] || "Admin";
 });
@@ -171,8 +176,11 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
           </div>
         </div>
         <div class="d-flex gap-2 mt-2">
+          <RouterLink to="/profile" class="btn btn-sm btn-outline-accent flex-grow-1">
+            Profile
+          </RouterLink>
           <RouterLink to="/" class="btn btn-sm btn-outline-accent flex-grow-1">
-            ↗ Site
+            Site
           </RouterLink>
           <button
             class="btn btn-sm btn-outline-accent flex-grow-1"
@@ -244,7 +252,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 }
 
 .admin-sidebar {
-  width: 240px;
+  width: 260px;
   flex-shrink: 0;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
@@ -261,38 +269,55 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 1rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar-brand .brand-text {
-  font-weight: 700;
-  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-emphasis);
+  letter-spacing: -0.3px;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 0.6rem 0.5rem;
+  padding: 0.75rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.15rem;
   overflow-y: auto;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.75rem;
   width: 100%;
-  padding: 0.55rem 0.75rem;
+  padding: 0.6rem 0.85rem;
   background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
+  border: none;
+  border-radius: 8px;
   color: var(--text-secondary);
-  font-size: 0.92rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
   transition: all 0.15s ease;
+  position: relative;
+}
+
+.sidebar-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+  transition: height 0.2s ease;
 }
 
 .sidebar-link:hover {
@@ -301,17 +326,41 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 }
 
 .sidebar-link.active {
-  background: rgba(240, 185, 11, 0.12);
+  background: rgba(240, 185, 11, 0.1);
   color: var(--accent);
-  border-color: rgba(240, 185, 11, 0.3);
+}
+
+.sidebar-link.active::after {
+  height: 20px;
 }
 
 .sidebar-icon {
-  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.sidebar-link:hover .sidebar-icon {
+  background: rgba(240, 185, 11, 0.15);
+  color: var(--accent);
+}
+
+.sidebar-link.active .sidebar-icon {
+  background: rgba(240, 185, 11, 0.2);
+  color: var(--accent);
 }
 
 .sidebar-foot {
-  padding: 0.8rem;
+  padding: 1rem 1.25rem;
   border-top: 1px solid var(--border-color);
 }
 
@@ -322,6 +371,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
   background: linear-gradient(135deg, var(--accent), #d9a60a);
   color: var(--accent-text);
   font-weight: 700;
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -340,6 +390,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
   min-width: 0;
   display: flex;
   flex-direction: column;
+  background: var(--bg-primary);
 }
 
 .admin-topbar {
@@ -349,17 +400,19 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1.5rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(12px);
 }
 
 .topbar-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-emphasis);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
   margin: 0;
   flex: 1;
+  letter-spacing: -0.2px;
 }
 
 .topbar-right {
@@ -370,10 +423,11 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 999px;
   font-size: 0.7rem;
+  font-weight: 500;
   color: var(--text-secondary);
   background: var(--bg-card);
   text-transform: capitalize;
@@ -412,7 +466,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 }
 
 .admin-content {
-  padding: 1.5rem 1.5rem 3rem;
+  padding: 1.75rem 2rem 4rem;
 }
 
 .min-w-0 {
@@ -432,6 +486,9 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
   }
   .admin-content {
     padding: 1rem 1rem 2rem;
+  }
+  .admin-sidebar {
+    width: 260px;
   }
 }
 

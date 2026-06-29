@@ -159,7 +159,10 @@ function formatDate(iso) {
     <div class="container">
       <header class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-          <h1 class="page-title mb-1">📰 News CMS</h1>
+          <h1 class="page-title mb-1 d-flex align-items-center gap-2">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            News CMS
+          </h1>
           <p class="page-subtitle mb-0">
             Create, edit and publish crypto news with rich-text content.
           </p>
@@ -167,30 +170,33 @@ function formatDate(iso) {
         <div class="d-flex gap-2">
           <button
             type="button"
-            class="btn btn-outline-accent"
+            class="btn btn-outline-accent btn-sm"
             @click="load"
             :disabled="loading"
             title="Refresh"
           >
-            ↻ Refresh
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
           </button>
           <button
             type="button"
-            class="btn btn-outline-accent"
+            class="btn btn-outline-accent btn-sm"
             :disabled="!isAdmin || fetchingNews"
             @click="fetchFromCoinDesk"
             title="Fetch latest from CoinDesk RSS"
           >
             <span v-if="fetchingNews" class="spinner-border spinner-border-sm me-1" />
-            {{ fetchingNews ? "Fetching..." : "📡 CoinDesk" }}
+            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            {{ fetchingNews ? "Fetching..." : "CoinDesk" }}
           </button>
           <button
             type="button"
-            class="btn btn-accent"
+            class="btn btn-accent btn-sm"
             :disabled="!isAdmin"
             @click="goCreate"
           >
-            + New article
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New article
           </button>
         </div>
       </header>
@@ -297,32 +303,32 @@ function formatDate(iso) {
                   <span v-if="a.trending" class="badge bg-info" title="Trending">Trending</span>
                 </td>
                 <td class="text-end">
-                  <div class="btn-group btn-group-sm" role="group">
+                  <div class="d-flex gap-1 justify-content-end">
                     <button
                       type="button"
-                      class="btn btn-outline-accent"
+                      class="btn btn-icon btn-ghost"
                       title="Preview"
                       @click="viewPublic(a.id)"
                     >
-                      👁
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
                     <button
                       type="button"
-                      class="btn btn-outline-accent"
+                      class="btn btn-icon btn-ghost"
                       :disabled="!isAdmin"
                       title="Edit"
                       @click="goEdit(a.id)"
                     >
-                      ✎
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
                     <button
                       type="button"
-                      class="btn btn-outline-danger"
+                      class="btn btn-icon btn-ghost text-danger"
                       :disabled="!isAdmin || busy"
                       title="Delete"
                       @click="confirmingDelete = a.id"
                     >
-                      🗑
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                     </button>
                   </div>
                 </td>
@@ -371,12 +377,12 @@ function formatDate(iso) {
 
 <style scoped>
 .admin-news {
-  padding-top: 40px;
+  padding-top: 0;
 }
 
 .admin-thumb {
-  width: 64px;
-  height: 48px;
+  width: 56px;
+  height: 42px;
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid var(--border-color);
@@ -396,18 +402,22 @@ function formatDate(iso) {
 .table-dark-custom thead th {
   background: var(--bg-card);
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   font-weight: 600;
   border-bottom: 1px solid var(--border-color);
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
 }
 
 .table-dark-custom tbody td {
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
   border-top: 1px solid var(--border-color);
   vertical-align: middle;
+}
+
+.table-dark-custom tbody tr {
+  transition: background 0.15s ease;
 }
 
 .table-dark-custom tbody tr:hover {
@@ -434,5 +444,37 @@ function formatDate(iso) {
 
 .min-w-0 {
   min-width: 0;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-icon:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.btn-icon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-icon.text-danger:hover {
+  background: rgba(246, 70, 93, 0.1);
+  color: var(--negative) !important;
+  border-color: rgba(246, 70, 93, 0.2);
 }
 </style>

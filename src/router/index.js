@@ -17,7 +17,7 @@ import AdminDashboard from "../views/admin/AdminDashboard.vue";
 import AdminNews from "../views/admin/AdminNews.vue";
 import AdminNewsEdit from "../views/admin/AdminNewsEdit.vue";
 import AdminUsers from "../views/admin/AdminUsers.vue";
-import AdminSettings from "../views/admin/AdminSettings.vue";
+
 
 import { supabase } from "../../supabase/supabase.js";
 
@@ -75,11 +75,7 @@ const routes = [
         name: "AdminUsers",
         component: AdminUsers,
       },
-      {
-        path: "settings",
-        name: "AdminSettings",
-        component: AdminSettings,
-      },
+
     ],
   },
 ];

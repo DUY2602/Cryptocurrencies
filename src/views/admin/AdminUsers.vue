@@ -21,7 +21,7 @@ const loading = ref(false);
 const errorMsg = ref(null);
 const search = ref("");
 const busyId = ref(null);
-const confirmDemote = ref(null);
+const confirmDelete = ref(null);
 
 async function load() {
   loading.value = true;
@@ -45,49 +45,34 @@ async function load() {
 onMounted(load);
 
 const filtered = computed(() => {
+  const users = profiles.value.filter((p) => p.role !== "admin");
   const q = search.value.trim().toLowerCase();
-  if (!q) return profiles.value;
-  return profiles.value.filter(
+  if (!q) return users;
+  return users.filter(
     (p) =>
       (p.name || "").toLowerCase().includes(q) ||
-      (p.id || "").toLowerCase().includes(q) ||
-      (p.role || "").toLowerCase().includes(q),
+      (p.id || "").toLowerCase().includes(q),
   );
 });
 
 const stats = computed(() => ({
-  total: profiles.value.length,
+  total: profiles.value.filter((p) => p.role !== "admin").length,
   admins: profiles.value.filter((p) => p.role === "admin").length,
   users: profiles.value.filter((p) => p.role !== "admin").length,
 }));
 
-async function setRole(p, newRole) {
-  if (p.id === user.value?.id && newRole !== "admin") {
-    errorMsg.value = "You can't demote yourself.";
-    return;
-  }
-  if (newRole !== "admin" && p.role === "admin") {
-    confirmDemote.value = { profile: p, newRole };
-    return;
-  }
-  await applyRole(p, newRole);
-}
-
-async function applyRole(p, newRole) {
-  busyId.value = p.id;
+async function deleteProfile(id) {
+  busyId.value = id;
   errorMsg.value = null;
   try {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ role: newRole })
-      .eq("id", p.id);
+    const { error } = await supabase.from("profiles").delete().eq("id", id);
     if (error) throw error;
-    p.role = newRole;
+    profiles.value = profiles.value.filter((p) => p.id !== id);
   } catch (e) {
     errorMsg.value = e.message;
   } finally {
     busyId.value = null;
-    confirmDemote.value = null;
+    confirmDelete.value = null;
   }
 }
 
@@ -111,18 +96,22 @@ function formatDate(iso) {
       class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4"
     >
       <div>
-        <h1 class="page-title mb-1">👥 Users</h1>
+        <h1 class="page-title mb-1 d-flex align-items-center gap-2">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Users
+        </h1>
         <p class="page-subtitle mb-0">
           Manage user roles. Admins can create and edit news articles.
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap">
         <button
-          class="btn btn-outline-accent"
+          class="btn btn-outline-accent btn-sm"
           @click="load"
           :disabled="loading"
         >
-          ↻ Refresh
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
         </button>
       </div>
     </header>
@@ -241,39 +230,16 @@ function formatDate(iso) {
                 <span v-else class="role-badge role-user">User</span>
               </td>
               <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group">
-                  <button
-                    v-if="p.role !== 'admin'"
-                    type="button"
-                    class="btn btn-outline-accent"
-                    :disabled="!isAdmin || busyId === p.id"
-                    @click="setRole(p, 'admin')"
-                  >
-                    <span
-                      v-if="busyId === p.id"
-                      class="spinner-border spinner-border-sm me-1"
-                    />
-                    ↑ Promote
-                  </button>
-                  <button
-                    v-else
-                    type="button"
-                    class="btn btn-outline-accent"
-                    :disabled="!isAdmin || busyId === p.id || p.id === user?.id"
-                    :title="
-                      p.id === user?.id
-                        ? 'You cannot demote yourself'
-                        : 'Demote to user'
-                    "
-                    @click="setRole(p, 'user')"
-                  >
-                    <span
-                      v-if="busyId === p.id"
-                      class="spinner-border spinner-border-sm me-1"
-                    />
-                    ↓ Demote
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger"
+                  :disabled="!isAdmin || busyId === p.id || p.id === user?.id"
+                  :title="p.id === user?.id ? 'You cannot delete yourself' : 'Delete user'"
+                  @click="confirmDelete = p"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  Delete
+                </button>
               </td>
             </tr>
           </tbody>
@@ -281,33 +247,36 @@ function formatDate(iso) {
       </div>
     </div>
 
-    <!-- Confirm demote -->
+    <!-- Confirm delete -->
     <div
-      v-if="confirmDemote"
+      v-if="confirmDelete"
       class="modal-backdrop-custom"
       role="dialog"
-      @click.self="confirmDemote = null"
+      @click.self="confirmDelete = null"
     >
       <div class="modal-card card-crypto p-4">
-        <h5 class="mb-2">Demote {{ confirmDemote.profile.name }}?</h5>
+        <h5 class="mb-2">Delete {{ confirmDelete.name || 'this user' }}?</h5>
         <p class="text-secondary small mb-3">
-          This user will lose access to the admin area and won't be able to
-          create or edit news articles.
+          This action cannot be undone. The user's profile will be permanently
+          removed from the database.
         </p>
         <div class="d-flex justify-content-end gap-2">
           <button
             type="button"
             class="btn btn-outline-accent btn-sm"
-            @click="confirmDemote = null"
+            @click="confirmDelete = null"
+            :disabled="busyId"
           >
             Cancel
           </button>
           <button
             type="button"
             class="btn btn-danger btn-sm"
-            @click="applyRole(confirmDemote.profile, confirmDemote.newRole)"
+            :disabled="busyId"
+            @click="deleteProfile(confirmDelete.id)"
           >
-            Demote
+            <span v-if="busyId" class="spinner-border spinner-border-sm me-1" />
+            {{ busyId ? "Deleting..." : "Delete" }}
           </button>
         </div>
       </div>
@@ -317,8 +286,8 @@ function formatDate(iso) {
 
 <style scoped>
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -332,13 +301,14 @@ function formatDate(iso) {
   background: linear-gradient(135deg, var(--accent), #d9a60a);
   color: var(--accent-text);
   font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .role-badge {
   display: inline-block;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   border: 1px solid;
 }
@@ -359,6 +329,10 @@ function formatDate(iso) {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  height: 100%;
 }
 
 .kpi-mini-lbl {
@@ -388,18 +362,22 @@ function formatDate(iso) {
 .table-dark-custom thead th {
   background: var(--bg-card);
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   font-weight: 600;
   border-bottom: 1px solid var(--border-color);
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
 }
 
 .table-dark-custom tbody td {
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
   border-top: 1px solid var(--border-color);
   vertical-align: middle;
+}
+
+.table-dark-custom tbody tr {
+  transition: background 0.15s ease;
 }
 
 .table-dark-custom tbody tr:hover {
