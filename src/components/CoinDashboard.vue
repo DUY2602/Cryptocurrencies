@@ -579,13 +579,13 @@ export default {
           </div>
 
           <div v-else-if="error" class="chart-error-overlay d-flex flex-column align-items-center justify-content-center text-center p-3">
-            <span class="fs-4 mb-2">⚠️</span>
+            <AlertTriangle :size="24" class="mb-2" />
             <span class="text-danger fw-semibold mb-2">{{ error }}</span>
             <button class="btn btn-sm btn-outline-accent" @click="loadHistoricalData">Retry</button>
           </div>
 
           <div v-else-if="noChart" class="chart-error-overlay d-flex flex-column align-items-center justify-content-center text-center p-3">
-            <span class="fs-4 mb-2">📊</span>
+            <BarChart3 :size="24" class="mb-2" />
             <span class="text-secondary fw-semibold mb-2">Chart not available for this coin</span>
           </div>
 

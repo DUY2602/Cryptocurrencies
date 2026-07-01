@@ -97,7 +97,7 @@ function formatDate(iso) {
     >
       <div>
         <h1 class="page-title mb-1 d-flex align-items-center gap-2">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <Users :size="22" />
           Users
         </h1>
         <p class="page-subtitle mb-0">
@@ -110,7 +110,7 @@ function formatDate(iso) {
           @click="load"
           :disabled="loading"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <RefreshCw :size="14" />
           Refresh
         </button>
       </div>
@@ -144,15 +144,18 @@ function formatDate(iso) {
         v-model="search"
         type="text"
         class="form-control"
-        placeholder="🔍  Search by name, ID, or role…"
+        placeholder="Search by name, ID, or role…"
       />
+      <div class="input-icon-left" style="position: relative;">
+        <Search :size="14" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); pointer-events: none;" />
+      </div>
     </div>
 
     <div
       v-if="errorMsg"
       class="alert alert-danger small d-flex align-items-start gap-2"
     >
-      <span>⚠</span>
+      <span><AlertTriangle :size="16" /></span>
       <span class="flex-grow-1">{{ errorMsg }}</span>
       <button
         class="btn-close btn-close-white btn-sm"
@@ -171,7 +174,7 @@ function formatDate(iso) {
 
     <EmptyState
       v-else-if="!loading && !filtered.length"
-      icon="👤"
+      icon="User"
       title="No users found"
       :message="
         search
@@ -225,7 +228,7 @@ function formatDate(iso) {
               </td>
               <td>
                 <span v-if="p.role === 'admin'" class="role-badge role-admin"
-                  >★ Admin</span
+                  ><Star :size="12" class="me-1" />Admin</span
                 >
                 <span v-else class="role-badge role-user">User</span>
               </td>
@@ -237,7 +240,7 @@ function formatDate(iso) {
                   :title="p.id === user?.id ? 'You cannot delete yourself' : 'Delete user'"
                   @click="confirmDelete = p"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  <Trash2 :size="14" />
                   Delete
                 </button>
               </td>

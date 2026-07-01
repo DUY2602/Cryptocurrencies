@@ -25,7 +25,8 @@ export default {
       loading: true,
       pageLoading: false,
       loadError: null,
-      selectedCategory: null,
+      selectedCategory: '',
+      selectedDate: '',
       categoryCounts: [],
     };
   },
@@ -48,26 +49,22 @@ export default {
         articles = articles.filter((a) => a.category === this.selectedCategory);
       }
 
+      if (this.selectedDate) {
+        const now = new Date();
+        const cutoff = new Date(now);
+        if (this.selectedDate === 'today') cutoff.setDate(now.getDate() - 1);
+        else if (this.selectedDate === 'week') cutoff.setDate(now.getDate() - 7);
+        else if (this.selectedDate === 'month') cutoff.setMonth(now.getMonth() - 1);
+        else if (this.selectedDate === 'year') cutoff.setFullYear(now.getFullYear() - 1);
+        articles = articles.filter((a) => new Date(a.date) >= cutoff);
+      }
+
       const q = this.searchQuery.trim().toLowerCase();
       if (!q) return articles;
 
       return articles.filter((article) => {
-        const dateStr = String(article.date).toLowerCase();
         const title = article.title.toLowerCase();
-        const summary = (article.summary || "").toLowerCase();
-        const full = (article.full_content || "").toLowerCase();
-        const category = article.category.toLowerCase();
-        const source = (article.source_name || "").toLowerCase();
-        const tags = (article.tags || []).join(" ").toLowerCase();
-        return (
-          title.includes(q) ||
-          summary.includes(q) ||
-          full.includes(q) ||
-          category.includes(q) ||
-          dateStr.includes(q) ||
-          source.includes(q) ||
-          tags.includes(q)
-        );
+        return title.includes(q);
       });
     },
     visiblePages() {
@@ -94,6 +91,10 @@ export default {
       this.fetchPage(1);
     },
     selectedCategory() {
+      this.page = 1;
+      this.fetchPage(1);
+    },
+    selectedDate() {
       this.page = 1;
       this.fetchPage(1);
     },
@@ -191,7 +192,7 @@ export default {
       </div>
     </div>
 
-    <div class="container">
+    <div class="container pt-4">
       <div v-if="loadError" class="alert alert-theme small mb-3" role="alert">
         {{ loadError }}
       </div>
@@ -199,13 +200,43 @@ export default {
       <LoadingSpinner v-if="loading" message="Loading news..." />
 
       <template v-else>
-        <div class="row mb-4">
-          <div class="col-12 col-md-8 col-lg-6">
+        <div class="filter-bar mb-4">
+          <div class="filter-row gap-3">
             <SearchBar
               v-model="searchQuery"
-              label="Search articles"
-              placeholder="Search title, summary, category, or tags..."
+              placeholder="Search by title..."
+              class="flex-grow-1"
             />
+            <select
+              v-model="selectedCategory"
+              class="filter-select"
+            >
+              <option value="">All categories</option>
+              <option
+                v-for="cat in categories"
+                :key="cat.category"
+                :value="cat.category"
+              >
+                {{ cat.category }} ({{ cat.count }})
+              </option>
+            </select>
+            <select
+              v-model="selectedDate"
+              class="filter-select"
+            >
+              <option value="">All time</option>
+              <option value="today">Today</option>
+              <option value="week">This week</option>
+              <option value="month">This month</option>
+              <option value="year">This year</option>
+            </select>
+            <button
+              v-if="searchQuery || selectedCategory || selectedDate"
+              class="filter-clear"
+              @click="searchQuery = ''; selectedCategory = ''; selectedDate = ''"
+            >
+              <X :size="16" /> Clear
+            </button>
           </div>
         </div>
 
@@ -271,22 +302,6 @@ export default {
                   </div>
                 </article>
               </RouterLink>
-            </div>
-
-            <div class="category-filters d-flex flex-wrap gap-2 mb-4">
-              <button
-                v-for="cat in categories"
-                :key="cat.category"
-                type="button"
-                class="btn btn-sm"
-                :class="
-                  selectedCategory === cat.category ? 'btn-accent' : 'btn-outline-accent'
-                "
-                @click="selectCategory(cat.category)"
-              >
-                {{ cat.category }}
-                <span class="category-count">{{ cat.count }}</span>
-              </button>
             </div>
 
             <div
@@ -358,7 +373,7 @@ export default {
               <ul class="pagination justify-content-center mb-0">
                 <li class="page-item" :class="{ disabled: page <= 1 || pageLoading }">
                   <button class="page-link page-prev" type="button" :disabled="pageLoading" @click="goTo(page - 1)">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    <ChevronLeft :size="16" />
                     Prev
                   </button>
                 </li>
@@ -375,12 +390,12 @@ export default {
                     :disabled="pageLoading"
                     @click="goTo(p)"
                   >{{ p }}</button>
-                  <span v-else class="page-link page-dots">···</span>
+                  <span v-else class="page-link page-dots"><MoreHorizontal :size="16" /></span>
                 </li>
                 <li class="page-item" :class="{ disabled: page >= totalPages || pageLoading }">
                   <button class="page-link page-next" type="button" :disabled="pageLoading" @click="goTo(page + 1)">
                     Next
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    <ChevronRight :size="16" />
                   </button>
                 </li>
               </ul>
@@ -484,7 +499,7 @@ export default {
   transition: transform 0.3s ease;
 }
 .blog-card:hover .blog-img { transform: scale(1.03); }
-.blog-card-body { padding: 1rem !important; }
+.blog-card .blog-card-body { padding: 1rem; }
 .blog-card-header { margin-bottom: 12px; }
 
 .blog-category {
@@ -541,28 +556,74 @@ export default {
 .trending-item:hover .trending-title { color: #667eea; }
 .trending-meta { font-size: 12px; }
 
-.category-filters .btn { transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; }
-.category-count {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 20px; height: 20px; padding: 0 6px;
-  border-radius: 10px; font-size: 11px; font-weight: 700;
-  background: rgba(255,255,255,0.15); color: inherit;
+.filter-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 12px 16px;
+  backdrop-filter: blur(10px);
 }
-.btn-accent .category-count { background: rgba(255,255,255,0.25); }
+.filter-row {
+  display: flex; align-items: center; gap: 12px;
+}
+.filter-row .search-bar { min-width: 0; }
+.filter-clear {
+  flex-shrink: 0;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.filter-clear:hover {
+  color: var(--accent);
+  background: rgba(240,185,11,0.08);
+}
+.filter-select {
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 32px 8px 14px;
+  border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23f0b90b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+.filter-select:hover {
+  border-color: var(--accent);
+}
+.filter-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(240,185,11,0.15);
+}
+.filter-select option {
+  background: #1a1a2e;
+  color: var(--text-primary);
+}
 
 .pagination-wrap { display: flex; justify-content: center; }
 .pagination { gap: 4px; }
 .page-item { list-style: none; }
-.page-link {
+.pagination .page-link {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 8px 14px; border-radius: 10px !important;
+  padding: 8px 14px; border-radius: 10px;
   background: var(--bg-card); color: var(--text-primary);
   border: 1px solid var(--border-color);
   font-size: 14px; font-weight: 600;
   transition: all 0.25s ease; cursor: pointer;
   text-decoration: none; outline: none;
 }
-.page-link:hover {
+.pagination .page-link:hover {
   background: rgba(102, 126, 234, 0.12);
   border-color: #667eea; color: #667eea;
   transform: translateY(-2px);
@@ -578,7 +639,7 @@ export default {
   opacity: 0.4; cursor: not-allowed; pointer-events: none;
   transform: none; box-shadow: none;
 }
-.page-dots { letter-spacing: 2px; background: transparent !important; border-color: transparent !important; cursor: default; }
+.page-dots { letter-spacing: 2px; background: transparent; border-color: transparent; cursor: default; }
 .page-prev:hover svg, .page-next:hover svg { transform: scale(1.15); transition: transform 0.2s ease; }
 .page-prev svg, .page-next svg { transition: transform 0.2s ease; }
 

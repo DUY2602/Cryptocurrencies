@@ -129,7 +129,7 @@ export default {
         v-else-if="error || !displayCoin"
         title="Coin not found"
         :message="error || 'This coin does not exist.'"
-        icon="?"
+        icon="HelpCircle"
       >
         <RouterLink to="/markets" class="btn btn-accent btn-sm mt-3"
           >Back to Markets</RouterLink
@@ -158,7 +158,7 @@ export default {
             <LiveBadge v-if="isLive" label="Live" />
             <FavoriteButton :coin-id="displayCoin.id" />
             <RouterLink to="/markets" class="btn btn-sm btn-outline-accent"
-              >← Markets</RouterLink
+              ><ArrowLeft :size="16" class="me-1" /> Markets</RouterLink
             >
           </div>
         </div>

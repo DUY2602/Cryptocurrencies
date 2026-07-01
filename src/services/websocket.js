@@ -41,6 +41,7 @@ class LivePriceWebSocket {
     if (SYMBOL_TO_BINANCE[upper]) return SYMBOL_TO_BINANCE[upper]
     if (STABLE_BASES.has(upper)) return null
     if (LEVERAGE_PATTERN.test(upper)) return null
+    if (!/^[A-Z0-9]{2,10}$/.test(upper)) return null
     return `${upper}USDT`
   }
 

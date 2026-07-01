@@ -72,7 +72,7 @@ function quickPrompt(prompt) {
 <template>
   <div>
     <div v-if="open" class="ai-panel">
-      <div class="p-3 border-bottom" style="border-color: var(--border-color) !important">
+      <div class="p-3 border-bottom" style="border-color: var(--border-color)">
         <strong class="text-emphasis">Crypto Assistant</strong>
         <p class="small text-secondary mb-0">Powered by Groq + live prices</p>
       </div>
@@ -100,7 +100,7 @@ function quickPrompt(prompt) {
           <span class="spinner-border spinner-border-sm me-1"></span>Thinking...
         </div>
       </div>
-      <div class="p-2 border-top d-flex flex-wrap gap-1" style="border-color: var(--border-color) !important">
+      <div class="p-2 border-top d-flex flex-wrap gap-1" style="border-color: var(--border-color)">
         <button type="button" class="btn btn-sm btn-outline-accent" @click="quickPrompt('Summarise the market')">
           Market summary
         </button>
@@ -108,13 +108,14 @@ function quickPrompt(prompt) {
           Explain BTC
         </button>
       </div>
-      <form class="p-3 border-top d-flex gap-2" style="border-color: var(--border-color) !important" @submit.prevent="send">
+      <form class="p-3 border-top d-flex gap-2" style="border-color: var(--border-color)" @submit.prevent="send">
         <input v-model="input" type="text" class="form-control form-control-sm" placeholder="Ask about crypto..." :disabled="loading" />
         <button type="submit" class="btn btn-sm btn-accent" :disabled="loading">Send</button>
       </form>
     </div>
     <button type="button" class="ai-fab" aria-label="Open assistant" @click="toggle">
-      {{ open ? "×" : "💬" }}
+      <X :size="20" v-if="open" />
+      <MessageCircle :size="20" v-else />
     </button>
   </div>
 </template>

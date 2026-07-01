@@ -318,7 +318,7 @@ function chain(fn) {
           title="Insert / edit link"
           @click="toggleLink"
         >
-          🔗
+          <Link :size="16" />
         </button>
         <button
           type="button"
@@ -327,7 +327,7 @@ function chain(fn) {
           title="Insert image"
           @click="openImage"
         >
-          🖼
+          <Image :size="16" />
         </button>
         <button
           type="button"
@@ -335,7 +335,7 @@ function chain(fn) {
           title="Upload image from device"
           @click="pickFile"
         >
-          📎
+          <Paperclip :size="16" />
         </button>
         <button
           type="button"
@@ -371,7 +371,7 @@ function chain(fn) {
       <div class="rt-spacer" />
 
       <div class="rt-stats">
-        <span>📝 {{ stats.words }} words</span>
+        <span><FileText :size="16" /> {{ stats.words }} words</span>
         <span v-if="maxLength" :class="{ over: stats.chars > maxLength }">
           {{ stats.chars }}/{{ maxLength }}
         </span>

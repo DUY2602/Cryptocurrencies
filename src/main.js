@@ -7,6 +7,7 @@ import App from './App.vue'
 import router from './router'
 import { user } from './composables/useAuth.js'
 import { watch } from 'vue'
+import { registerIcons } from './icons.js'
 
 initTheme()
 
@@ -22,6 +23,7 @@ watch(user, () => {
 })
 
 const app = createApp(App)
+registerIcons(app)
 app.use(router)
 
 app.directive('focus', {

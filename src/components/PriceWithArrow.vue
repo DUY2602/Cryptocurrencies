@@ -54,7 +54,7 @@ export default {
       :class="arrowClass"
       :title="direction === 'up' ? 'Price up' : 'Price down'"
       aria-hidden="true"
-    >{{ direction === 'up' ? '▲' : '▼' }}</span>
+    ><ArrowUp v-if="direction === 'up'" :size="12" /><ArrowDown v-else :size="12" /></span>
     <span class="price-with-arrow__value">{{ formatPrice(price) }}</span>
   </span>
 </template>

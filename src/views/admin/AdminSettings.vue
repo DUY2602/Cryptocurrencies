@@ -61,7 +61,7 @@ function clearCache() {
   <div class="admin-settings">
     <header class="mb-4">
       <h1 class="page-title mb-1 d-flex align-items-center gap-2">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <Settings :size="22" />
         Settings
       </h1>
       <p class="page-subtitle mb-0">System status and preferences.</p>
@@ -73,11 +73,11 @@ function clearCache() {
         <div class="card-crypto p-3 p-md-4 h-100">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="text-emphasis mb-0 d-flex align-items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              <Database :size="16" />
               Database
             </h6>
             <button class="btn btn-sm btn-outline-accent" @click="checkDb">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <RefreshCw :size="14" />
               Re-check
             </button>
           </div>
@@ -97,13 +97,9 @@ function clearCache() {
                       dbStatus === 'error',
                   }"
                 >
-                  {{
-                    dbStatus === "ok"
-                      ? "✓ Online"
-                      : dbStatus === "checking"
-                        ? "Checking…"
-                        : "✕ Error"
-                  }}
+                  <span v-if="dbStatus === 'ok'"><Check :size="14" /> Online</span>
+                  <span v-else-if="dbStatus === 'checking'">Checking…</span>
+                  <span v-else><X :size="16" /> Error</span>
                 </span>
               </span>
             </div>
@@ -129,7 +125,7 @@ function clearCache() {
       <div class="col-md-6">
         <div class="card-crypto p-3 p-md-4 h-100">
           <h6 class="text-emphasis mb-3 d-flex align-items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <Users :size="16" />
             Your account
           </h6>
           <div class="bin-stats-compact mt-0">
@@ -143,7 +139,7 @@ function clearCache() {
                 <span
                   v-if="profile?.role === 'admin'"
                   class="badge bg-warning-subtle text-warning-emphasis"
-                  >★ Admin</span
+                  ><Star :size="12" class="me-1" />Admin</span
                 >
                 <span v-else class="badge bg-secondary-subtle text-secondary">
                   User
@@ -160,7 +156,7 @@ function clearCache() {
                       ? 'bg-secondary-subtle text-secondary'
                       : 'bg-success-subtle text-success-emphasis'
                   "
-                  >{{ loading ? "…" : "✓" }}</span
+                  >{{ loading ? "…" : "" }}<span v-if="!loading"><Check :size="14" /></span></span
                 >
               </span>
             </div>
@@ -171,7 +167,7 @@ function clearCache() {
               :disabled="loading"
               @click="refresh"
             >
-              ↻ Refresh role
+              <RefreshCw :size="14" /> Refresh role
             </button>
           </div>
         </div>
@@ -181,7 +177,7 @@ function clearCache() {
       <div class="col-md-6">
         <div class="card-crypto p-3 p-md-4 h-100">
           <h6 class="text-emphasis mb-3 d-flex align-items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <Settings :size="16" />
             Preferences
           </h6>
 
@@ -203,7 +199,7 @@ function clearCache() {
 
           <hr class="border-color" />
 
-          <h6 class="text-emphasis mb-2">🧹 Maintenance</h6>
+          <h6 class="text-emphasis mb-2"><Wrench :size="16" /> Maintenance</h6>
           <p class="text-secondary small mb-2">
             Clear localStorage / sessionStorage. Useful after a schema change or
             theme switch issue.
@@ -219,7 +215,7 @@ function clearCache() {
         <div class="card-crypto p-3 p-md-4">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="text-emphasis mb-0 d-flex align-items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg>
+              <Search :size="16" />
               RAG pipeline
             </h6>
             <span class="badge bg-secondary-subtle text-secondary">

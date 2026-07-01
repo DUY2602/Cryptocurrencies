@@ -29,6 +29,7 @@ export function parseUsdtTicker(row) {
   if (!row?.symbol?.endsWith('USDT')) return null
   const base = row.symbol.slice(0, -4)
   if (!base || STABLE_BASES.has(base) || LEVERAGE_PATTERN.test(base)) return null
+  if (!/^[A-Z0-9]{2,10}$/.test(base)) return null
 
   const price = parseFloat(row.lastPrice)
   const change24h = parseFloat(row.priceChangePercent)

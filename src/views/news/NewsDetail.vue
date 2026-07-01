@@ -139,7 +139,7 @@ export default {
           @click="$router.back()"
           aria-label="Go back"
         >
-          ← Back
+          <ArrowLeft :size="16" /> Back
         </button>
 
         <img
@@ -269,7 +269,7 @@ export default {
                   :aria-label="`Delete comment by ${comment.userName}`"
                   @click="removeComment(comment)"
                 >
-                  ×
+                  <X :size="16" />
                 </button>
               </div>
               <p class="mb-0 mt-2 text-secondary">{{ comment.text }}</p>

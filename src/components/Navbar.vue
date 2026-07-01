@@ -124,7 +124,7 @@ function onDocClick(e) {
                 active-class="active"
                 title="Admin area"
               >
-                <span class="admin-badge">★</span> Admin
+                <span class="admin-badge"><Star :size="12" class="me-1" /></span> Admin
               </RouterLink>
             </li>
             <li class="nav-item dropdown">
@@ -138,7 +138,7 @@ function onDocClick(e) {
                   {{ (userName[0] || "A").toUpperCase() }}
                 </span>
                 <span class="d-none d-lg-inline ms-1">{{ userName }}</span>
-                <span class="dropdown-caret">▾</span>
+                <span class="dropdown-caret"><ChevronDown :size="14" /></span>
               </button>
               <div v-if="showAdminMenu" class="user-menu">
                 <RouterLink
@@ -146,7 +146,7 @@ function onDocClick(e) {
                   class="user-menu-item"
                   @click="showAdminMenu = false"
                 >
-                  👤 Profile
+                  <User :size="14" /> Profile
                 </RouterLink>
                 <RouterLink
                   v-if="isAdmin"
@@ -154,10 +154,10 @@ function onDocClick(e) {
                   class="user-menu-item"
                   @click="showAdminMenu = false"
                 >
-                  ★ Admin dashboard
+                  <Star :size="14" /> Admin dashboard
                 </RouterLink>
                 <button class="user-menu-item text-danger" @click="onLogout">
-                  ⤴ Logout
+                  <LogOut :size="14" /> Logout
                 </button>
               </div>
             </li>
@@ -175,14 +175,14 @@ function onDocClick(e) {
 
 <style scoped>
 .crypto-navbar .admin-link {
-  color: var(--accent) !important;
+  color: var(--accent);
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
 }
 
-.crypto-navbar .admin-link:hover { color: var(--accent-hover) !important; }
+.crypto-navbar .admin-link:hover { color: var(--accent-hover); }
 
 .crypto-navbar .admin-badge {
   display: inline-flex;
@@ -267,10 +267,10 @@ function onDocClick(e) {
   color: var(--accent);
 }
 
-.user-menu-item.text-danger { color: var(--negative) !important; }
+.user-menu-item.text-danger { color: var(--negative); }
 .user-menu-item.text-danger:hover {
   background: rgba(246, 70, 93, 0.1);
-  color: var(--negative) !important;
+  color: var(--negative);
 }
 
 .nav-item.dropdown { position: relative; }

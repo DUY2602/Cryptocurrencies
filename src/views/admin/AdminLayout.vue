@@ -111,7 +111,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
       class="card-crypto p-4 text-center"
       style="max-width: 480px; margin: 80px auto"
     >
-      <div style="font-size: 3rem">🔒</div>
+      <Lock :size="48" />
       <h2 class="mt-3 mb-2">Admin access required</h2>
       <p class="text-secondary mb-3">
         You're signed in as <strong>{{ userEmail }}</strong> but your account is
@@ -125,7 +125,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
         >.
       </p>
       <RouterLink to="/" class="btn btn-outline-accent"
-        >← Back to site</RouterLink
+        ><ArrowLeft :size="16" /> Back to site</RouterLink
       >
     </div>
   </div>
@@ -146,7 +146,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
           @click="sidebarOpen = !sidebarOpen"
           aria-label="Toggle sidebar"
         >
-          ✕
+          <X :size="16" />
         </button>
       </div>
 
@@ -207,7 +207,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
           @click="sidebarOpen = !sidebarOpen"
           aria-label="Open menu"
         >
-          ☰
+          <Menu :size="20" />
         </button>
         <h1 class="topbar-title">{{ pageTitle }}</h1>
         <div class="topbar-right d-flex align-items-center gap-2">

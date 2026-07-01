@@ -66,7 +66,7 @@ function mergeTrackedIds(newEntries) {
 
 function applyWebSocketTracking() {
   const coins = trackedCoinsMeta.length
-    ? trackedCoinsMeta
+    ? trackedCoinsMeta.filter(c => c._hasBinanceChart !== false)
     : resolveCoins(trackedIds);
   if (!coins.length) return;
 

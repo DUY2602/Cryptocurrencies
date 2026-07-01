@@ -111,7 +111,7 @@ export default {
                     :disabled="loading"
                     tabindex="-1"
                   >
-                    {{ showPassword ? '🙈' : '👁️' }}
+                    <EyeOff :size="16" v-if="showPassword" /><Eye :size="16" v-else />
                   </button>
                 </div>
                 <div
@@ -147,7 +147,7 @@ export default {
                     :disabled="loading"
                     tabindex="-1"
                   >
-                    {{ showConfirm ? '🙈' : '👁️' }}
+                    <EyeOff :size="16" v-if="showConfirm" /><Eye :size="16" v-else />
                   </button>
                 </div>
                 <div v-if="submitted && !confirmValid" class="invalid-feedback d-block">

@@ -32,7 +32,7 @@ export default {
 </script>
 
 <template>
-  <div class="table-responsive rounded-3 border border-secondary border-opacity-25">
+  <div class="table-responsive">
     <table class="table table-hover table-dark-custom mb-0 align-middle">
       <thead>
         <tr>

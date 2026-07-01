@@ -299,12 +299,12 @@ function autoSummary() {
     <header class="editor-topbar">
       <div class="topbar-left">
         <button type="button" class="btn btn-sm btn-ghost" @click="cancel">
-          ← Back
+          <ArrowLeft :size="16" /> Back
         </button>
         <span class="topbar-divider" />
         <span class="topbar-title">{{ isNew ? "New article" : "Edit article" }}</span>
         <span v-if="lastSavedAt" class="save-badge saved">
-          ✓ Saved {{ lastSavedAt.toLocaleTimeString() }}
+          <Check :size="14" /> Saved {{ lastSavedAt.toLocaleTimeString() }}
         </span>
         <span v-else-if="dirty" class="save-badge unsaved">
           ● Unsaved
@@ -321,7 +321,7 @@ function autoSummary() {
           @click="showPreview = !showPreview"
           title="Preview"
         >
-          👁
+          <Eye :size="16" />
         </button>
         <button
           type="button"
@@ -330,7 +330,7 @@ function autoSummary() {
           @click="showMeta = !showMeta"
           title="Metadata"
         >
-          ⚙
+          <Settings :size="14" />
         </button>
         <button
           v-if="!isNew"
@@ -339,7 +339,7 @@ function autoSummary() {
           @click="viewPublic"
           title="View public page"
         >
-          ↗
+          <ExternalLink :size="14" />
         </button>
         <button
           type="button"
@@ -358,12 +358,12 @@ function autoSummary() {
       <strong>Read-only.</strong> Signed in as <em>{{ user?.email }}</em> but not admin.
     </div>
     <div v-if="errorMsg" class="alert alert-danger small mx-3 mt-3 d-flex align-items-start gap-2">
-      <span>⚠</span>
+      <span><AlertTriangle :size="16" /></span>
       <span class="flex-grow-1">{{ errorMsg }}</span>
       <button class="btn-close btn-close-white btn-sm" @click="errorMsg = null" />
     </div>
     <div v-if="successMsg" class="alert alert-success small mx-3 mt-3 d-flex align-items-center gap-2">
-      ✓ {{ successMsg }}
+      <Check :size="14" /> {{ successMsg }}
       <button class="btn-close btn-close-white btn-sm ms-auto" @click="successMsg = null" />
     </div>
 
@@ -409,7 +409,7 @@ function autoSummary() {
                 class="btn btn-sm btn-ghost auto-summary-btn"
                 @click="autoSummary"
               >
-                ✨ Auto-generate summary
+                <Sparkles :size="14" /> Auto-generate summary
               </button>
             </div>
 
@@ -467,7 +467,7 @@ function autoSummary() {
             <div class="tags-input form-control d-flex flex-wrap gap-1 align-items-center">
               <span v-for="t in form.tags" :key="t" class="tag-chip d-inline-flex align-items-center gap-1">
                 #{{ t }}
-                <button type="button" class="tag-remove" aria-label="Remove" @click="removeTag(t)">×</button>
+                <button type="button" class="tag-remove" aria-label="Remove" @click="removeTag(t)"><X :size="16" /></button>
               </span>
               <input
                 v-model="tagInput"

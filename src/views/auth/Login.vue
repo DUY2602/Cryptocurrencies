@@ -126,7 +126,7 @@ export default {
                     :disabled="loading"
                     tabindex="-1"
                   >
-                    {{ showPassword ? '🙈' : '👁️' }}
+                    <EyeOff :size="16" v-if="showPassword" /><Eye :size="16" v-else />
                   </button>
                 </div>
                 <div

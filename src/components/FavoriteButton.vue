@@ -35,6 +35,10 @@ async function onClick(e) {
     :title="active ? 'Remove from watchlist' : 'Add to watchlist'"
     @click="onClick"
   >
-    <span aria-hidden="true">{{ active ? '★' : '☆' }}</span>
+    <span aria-hidden="true"><Star :size="18" :fill="active ? 'currentColor' : 'none'" :class="{ 'star-active': active }" /></span>
   </button>
 </template>
+
+<style scoped>
+.star-active { color: var(--accent); }
+</style>

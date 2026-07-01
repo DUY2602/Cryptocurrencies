@@ -1,0 +1,55 @@
+import * as icons from '@lucide/vue'
+
+const iconMap = {
+  Search: icons.Search,
+  Star: icons.Star,
+  User: icons.User,
+  LogOut: icons.LogOut,
+  Menu: icons.Menu,
+  X: icons.X,
+  ArrowLeft: icons.ArrowLeft,
+  ArrowRight: icons.ArrowRight,
+  ChevronDown: icons.ChevronDown,
+  ChevronLeft: icons.ChevronLeft,
+  ChevronRight: icons.ChevronRight,
+  Eye: icons.Eye,
+  EyeOff: icons.EyeOff,
+  Settings: icons.Settings,
+  AlertTriangle: icons.AlertTriangle,
+  Check: icons.Check,
+  RefreshCw: icons.RefreshCw,
+  ExternalLink: icons.ExternalLink,
+  Sparkles: icons.Sparkles,
+  MessageCircle: icons.MessageCircle,
+  TrendingUp: icons.TrendingUp,
+  BarChart3: icons.BarChart3,
+  Lock: icons.Lock,
+  HelpCircle: icons.HelpCircle,
+  Inbox: icons.Inbox,
+  Link: icons.Link,
+  Image: icons.Image,
+  Paperclip: icons.Paperclip,
+  FileText: icons.FileText,
+  MoreHorizontal: icons.MoreHorizontal,
+  Wrench: icons.Wrench,
+  Sun: icons.Sun,
+  Moon: icons.Moon,
+  Trash2: icons.Trash2,
+  Edit3: icons.Edit3,
+  Plus: icons.Plus,
+  BookOpen: icons.BookOpen,
+  Database: icons.Database,
+  Clock: icons.Clock,
+  Calendar: icons.Calendar,
+  Shield: icons.Shield,
+  Users: icons.Users,
+  ArrowUp: icons.ArrowUp,
+  ArrowDown: icons.ArrowDown,
+  TrendingDown: icons.TrendingDown,
+}
+
+export function registerIcons(app) {
+  for (const [name, component] of Object.entries(iconMap)) {
+    app.component(name, component)
+  }
+}
