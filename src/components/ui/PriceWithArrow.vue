@@ -1,5 +1,5 @@
 <script>
-import { formatPrice } from '../utils/format.js'
+import { formatPrice } from "../../utils/format.js"
 
 export default {
   props: {

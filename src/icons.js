@@ -46,6 +46,11 @@ const iconMap = {
   ArrowUp: icons.ArrowUp,
   ArrowDown: icons.ArrowDown,
   TrendingDown: icons.TrendingDown,
+  LayoutDashboard: icons.LayoutDashboard,
+  Newspaper: icons.Newspaper,
+  Pencil: icons.Pencil,
+  UserPlus: icons.UserPlus,
+  Mail: icons.Mail,
 }
 
 export function registerIcons(app) {

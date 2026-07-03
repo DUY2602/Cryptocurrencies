@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useWatchlist } from '../composables/useWatchlist.js'
+import { useWatchlist } from "../../composables/useWatchlist.js"
 
 const props = defineProps({
   coinId: { type: [String, Number], required: true },

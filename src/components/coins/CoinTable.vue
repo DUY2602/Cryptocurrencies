@@ -1,8 +1,8 @@
 <script>
 import { RouterLink } from 'vue-router'
-import FavoriteButton from './FavoriteButton.vue'
-import PriceWithArrow from './PriceWithArrow.vue'
-import { formatMarketCap, formatChange, changeClass } from '../utils/format.js'
+import FavoriteButton from '../ui/FavoriteButton.vue'
+import PriceWithArrow from '../ui/PriceWithArrow.vue'
+import { formatMarketCap, formatChange, changeClass } from "../../utils/format.js"
 
 export default {
   components: { RouterLink, FavoriteButton, PriceWithArrow },

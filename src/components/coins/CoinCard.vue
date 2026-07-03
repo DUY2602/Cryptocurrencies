@@ -1,6 +1,6 @@
 <script>
-import PriceWithArrow from "./PriceWithArrow.vue";
-import { formatChange, changeClass } from "../utils/format.js";
+import PriceWithArrow from "../ui/PriceWithArrow.vue";
+import { formatChange, changeClass } from "../../utils/format.js";
 
 export default {
   components: { PriceWithArrow },

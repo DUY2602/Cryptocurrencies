@@ -1,9 +1,9 @@
 <script>
 import { createChart, ColorType, CrosshairMode, CandlestickSeries, HistogramSeries, LineSeries } from 'lightweight-charts'
-import { coinWebSocket } from '../services/websocket.js'
-import { livePrices, getLiveQuote } from '../services/livePrices.js'
-import { useTheme } from '../composables/useTheme.js'
-import { formatPrice, formatChange, formatMarketCap, changeClass, formatVolume } from '../utils/format.js'
+import { coinWebSocket } from "../../services/websocket.js"
+import { livePrices, getLiveQuote } from "../../services/livePrices.js"
+import { useTheme } from "../../composables/useTheme.js"
+import { formatPrice, formatChange, formatMarketCap, changeClass, formatVolume } from "../../utils/format.js"
 
 const TIMEFRAME_SECONDS = {
   '1s': 1,
@@ -260,8 +260,8 @@ export default {
         width:  container.clientWidth,
         height: 400,
         layout: {
-          background: { type: ColorType.Solid, color: this.isDark ? '#141820' : '#ffffff' },
-          textColor:  this.isDark ? '#848e9c' : '#707a8a',
+          background: { type: ColorType.Solid, color: this.isDark ? '#0b0f19' : '#ffffff' },
+          textColor:  this.isDark ? '#9ca3af' : '#475569',
         },
         localization: {
           timeFormatter: (time) => {
@@ -273,13 +273,13 @@ export default {
           },
         },
         grid: {
-          vertLines: { color: this.isDark ? '#2b3139' : '#e6e8ea' },
-          horzLines: { color: this.isDark ? '#2b3139' : '#e6e8ea' },
+          vertLines: { color: this.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.06)' },
+          horzLines: { color: this.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.06)' },
         },
         crosshair: { mode: CrosshairMode.Normal },
-        rightPriceScale: { borderColor: this.isDark ? '#2b3139' : '#e6e8ea', visible: true },
+        rightPriceScale: { borderColor: this.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)', visible: true },
         timeScale: {
-          borderColor:    this.isDark ? '#2b3139' : '#e6e8ea',
+          borderColor:    this.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)',
           timeVisible:    true,
           secondsVisible: this.timeframe === '1s',
           rightOffset:    3,
@@ -342,15 +342,15 @@ export default {
       if (!this.chart) return
       this.chart.applyOptions({
         layout: {
-          background: { type: ColorType.Solid, color: this.isDark ? '#141820' : '#ffffff' },
-          textColor:  this.isDark ? '#848e9c' : '#707a8a',
+          background: { type: ColorType.Solid, color: this.isDark ? '#0b0f19' : '#ffffff' },
+          textColor:  this.isDark ? '#9ca3af' : '#475569',
         },
         grid: {
-          vertLines: { color: this.isDark ? '#2b3139' : '#e6e8ea' },
-          horzLines: { color: this.isDark ? '#2b3139' : '#e6e8ea' },
+          vertLines: { color: this.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.06)' },
+          horzLines: { color: this.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.06)' },
         },
-        rightPriceScale: { borderColor: this.isDark ? '#2b3139' : '#e6e8ea' },
-        timeScale:       { borderColor: this.isDark ? '#2b3139' : '#e6e8ea' },
+        rightPriceScale: { borderColor: this.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)' },
+        timeScale:       { borderColor: this.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)' },
       })
     },
 

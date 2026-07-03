@@ -243,56 +243,72 @@ export default {
   position: relative;
   width: 100%;
   height: 560px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  background: #0b1220;
+  background: var(--bg-card);
   margin-bottom: 2rem;
   border: 1px solid var(--border-color);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
 }
+
 .map-canvas { display: block; width: 100%; height: 100%; outline: none; }
 
 .legend {
   position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 4px;
-  padding: 6px 14px;
-  background: rgba(11,18,32,0.85);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  background: rgba(11, 15, 25, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   z-index: 2;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .legend-item {
-  display: flex; align-items: center; gap: 3px;
-  font-size: 9px; color: rgba(255,255,255,0.4);
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--text-secondary);
+  font-weight: 600;
   letter-spacing: 0.5px;
 }
-.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
+.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
 
 .map-tooltip {
   position: absolute; pointer-events: none; z-index: 10;
-  background: rgba(11,18,32,0.92);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  padding: 10px 14px;
-  min-width: 150px;
-  backdrop-filter: blur(8px);
+  background: rgba(17, 24, 39, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 170px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
 }
-.tip-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 2px; }
-.tip-rank { font-size: 10px; color: rgba(255,255,255,0.35); margin-bottom: 6px; }
-.tip-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.tip-label { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 0.5px; }
-.tip-val { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.85); font-family: 'Courier New', monospace; }
-.tip-lvl { font-size: 11px; font-weight: 600; }
-.tip-bar { margin-top: 6px; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
-.tip-fill { height: 100%; border-radius: 2px; transition: width 0.1s; }
+.tip-name { font-size: 0.9rem; font-weight: 800; color: var(--text-emphasis); margin-bottom: 2px; }
+.tip-rank { font-size: 0.72rem; color: var(--text-tertiary); margin-bottom: 8px; font-weight: 500; }
+.tip-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
+.tip-label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; }
+.tip-val { font-size: 0.8rem; font-weight: 700; color: var(--text-emphasis); font-family: 'JetBrains Mono', monospace; }
+.tip-lvl { font-size: 0.78rem; font-weight: 700; }
+.tip-bar { margin-top: 8px; height: 6px; background: rgba(255, 255, 255, 0.06); border-radius: 99px; overflow: hidden; }
+.tip-fill { height: 100%; border-radius: 99px; transition: width 0.1s; }
 
 .map-note {
   position: absolute; bottom: 12px; left: 0; right: 0; text-align: center;
-  font-size: 9px; color: rgba(255,255,255,0.25); letter-spacing: 0.3px;
+  font-size: 10px; color: var(--text-tertiary); letter-spacing: 0.3px;
   padding: 0 16px;
   z-index: 1;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
   .map-section { height: 400px; }
+  .legend {
+    flex-wrap: wrap;
+    width: 90%;
+    justify-content: center;
+    bottom: 60px;
+  }
 }
 </style>

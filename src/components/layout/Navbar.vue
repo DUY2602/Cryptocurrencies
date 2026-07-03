@@ -1,12 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter, RouterLink } from "vue-router";
-import ThemeToggle from "./ThemeToggle.vue";
-import { useTheme } from "../composables/useTheme.js";
-import { useAuth } from "../composables/useAuth.js";
-import { useAdmin } from "../composables/useAdmin.js";
-import { supabase } from "../../supabase/supabase.js";
+import ThemeToggle from "../ui/ThemeToggle.vue";
+import { useTheme } from "../../composables/useTheme.js";
+import { useAuth } from "../../composables/useAuth.js";
+import { useAdmin } from "../../composables/useAdmin.js";
+import { supabase } from "../../../supabase/supabase.js";
 import { Collapse } from "bootstrap";
+import { Star, ChevronDown, User, LogOut } from "@lucide/vue";
 
 const { isDark } = useTheme();
 const { isLoggedIn, logout, user } = useAuth();
@@ -15,9 +16,18 @@ const router = useRouter();
 
 const showAdminMenu = ref(false);
 const navbarCollapse = ref(null);
+const isScrolled = ref(false);
 let bsCollapse = null;
 
+function handleScroll() {
+  const scrolled = window.scrollY > 20;
+  if (scrolled !== isScrolled.value) {
+    isScrolled.value = scrolled;
+  }
+}
+
 onMounted(() => {
+  window.addEventListener("scroll", handleScroll, { passive: true });
   if (navbarCollapse.value) {
     bsCollapse = new Collapse(navbarCollapse.value, { toggle: false });
   }
@@ -28,6 +38,7 @@ onMounted(() => {
   document.addEventListener("click", onDocClick);
 });
 onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleScroll);
   document.removeEventListener("click", onDocClick);
   if (bsCollapse) bsCollapse.dispose();
 });
@@ -57,7 +68,7 @@ function onDocClick(e) {
 <template>
   <nav
     class="navbar navbar-expand-lg crypto-navbar sticky-top shadow-sm"
-    :class="isDark ? 'navbar-dark' : 'navbar-light'"
+    :class="[isDark ? 'navbar-dark' : 'navbar-light', { 'navbar-scrolled': isScrolled }]"
   >
     <div class="container">
       <RouterLink class="navbar-brand d-flex align-items-center gap-2" to="/">
@@ -174,9 +185,33 @@ function onDocClick(e) {
 </template>
 
 <style scoped>
+.crypto-navbar .nav-link {
+  color: var(--nav-text) !important;
+  position: relative;
+  padding: 0.5rem 1rem !important;
+}
+
+.crypto-navbar .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 16px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 99px;
+  box-shadow: 0 0 10px var(--accent);
+  transition: transform var(--transition-fast);
+}
+
+.crypto-navbar .nav-link.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
 .crypto-navbar .admin-link {
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -200,37 +235,43 @@ function onDocClick(e) {
 .crypto-navbar .user-menu-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  background: transparent;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
   border-radius: 999px;
-  padding: 0.25rem 0.7rem;
+  padding: 0.35rem 0.85rem;
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
 }
 
 .crypto-navbar .user-menu-toggle:hover {
   background: var(--bg-card-hover);
   border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(255, 200, 55, 0.1);
 }
 
 .crypto-navbar .user-avatar-mini {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #d9a60a);
+  background: linear-gradient(135deg, var(--accent) 0%, #f59e0b 100%);
   color: var(--accent-text);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
 .crypto-navbar .dropdown-caret {
   font-size: 0.7rem;
   color: var(--text-secondary);
+  transition: transform var(--transition-fast);
+}
+
+.crypto-navbar .user-menu-toggle[aria-expanded="true"] .dropdown-caret {
+  transform: rotate(180deg);
 }
 
 .user-menu {
@@ -239,27 +280,38 @@ function onDocClick(e) {
   right: 0;
   margin-top: 0.5rem;
   min-width: 200px;
-  background: var(--bg-card);
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-  padding: 0.4rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 0.5rem;
   z-index: 1080;
+  animation: fade-slide-up 0.2s ease-out;
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .user-menu-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   width: 100%;
   text-align: left;
   background: transparent;
   border: none;
-  padding: 0.55rem 0.7rem;
-  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.15s ease;
+  transition: all var(--transition-fast);
 }
 
 .user-menu-item:hover {
@@ -269,7 +321,7 @@ function onDocClick(e) {
 
 .user-menu-item.text-danger { color: var(--negative); }
 .user-menu-item.text-danger:hover {
-  background: rgba(246, 70, 93, 0.1);
+  background: rgba(244, 63, 94, 0.1);
   color: var(--negative);
 }
 

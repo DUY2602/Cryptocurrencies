@@ -6,8 +6,8 @@ import {
   getDislikesCount,
   react,
   removeReaction,
-} from "../composables/useReactions.js";
-import { user } from "../composables/useAuth.js";
+} from "../../composables/useReactions.js";
+import { user } from "../../composables/useAuth.js";
 
 const props = defineProps({
   articleId: { type: [String, Number], required: true },

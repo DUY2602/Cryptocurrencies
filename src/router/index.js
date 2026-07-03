@@ -20,6 +20,7 @@ import AdminUsers from "../views/admin/AdminUsers.vue";
 
 
 import { supabase } from "../../supabase/supabase.js";
+import { user } from "../composables/useAuth.js";
 
 const routes = [
   { path: "/", name: "Home", component: Home },
@@ -88,16 +89,18 @@ const router = createRouter({
   },
 });
 
+let sessionChecked = false;
 router.beforeEach(async (to) => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const user = session?.user || null;
+  if (!sessionChecked) {
+    const { data: { session } } = await supabase.auth.getSession();
+    sessionChecked = true;
+  }
+  const currentUser = user.value;
 
-  if (to.meta.requiresAuth && !user) {
+  if (to.meta.requiresAuth && !currentUser) {
     return { name: "Login", query: { redirect: to.fullPath } };
   }
-  if (to.meta.guestOnly && user) {
+  if (to.meta.guestOnly && currentUser) {
     return { name: "Home" };
   }
   // requiresAdmin: bail out (the layout itself renders a friendly

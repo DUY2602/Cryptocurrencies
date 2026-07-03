@@ -136,11 +136,103 @@ export default {
 </template>
 
 <style scoped>
-.is-valid {
-  border-color: var(--positive) !important;
+/* ── Auth Page Layout ─────────────────────────── */
+.page-section {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.page-section::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(255,200,55,0.06) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border-radius: 50%;
+  animation: pulse-auth 6s ease-in-out infinite;
+}
+@keyframes pulse-auth {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
 }
 
+/* ── Auth Card ────────────────────────────────── */
+.card.card-crypto {
+  border-top: 2px solid var(--accent) !important;
+  box-shadow: 0 0 40px rgba(255,200,55,0.07), 0 24px 64px rgba(0,0,0,0.45) !important;
+}
+
+.page-title {
+  background: linear-gradient(135deg, var(--accent) 0%, #ffe97a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 28px;
+}
+
+/* ── Form Controls ────────────────────────────── */
+.form-label {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  background: var(--form-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: 10px !important;
+  padding: 12px 16px !important;
+  font-size: 15px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+.form-control::placeholder { color: var(--text-tertiary); opacity: 0.8; }
+.form-control:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(255,200,55,0.15) !important;
+  background: var(--form-bg-focus) !important;
+  outline: none;
+}
+
+.is-valid {
+  border-color: var(--positive) !important;
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.12) !important;
+}
 .is-invalid {
   border-color: var(--negative) !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
 }
+.invalid-feedback { font-size: 12px; color: var(--negative); margin-top: 6px; }
+
+/* ── Alerts ───────────────────────────────────── */
+.alert-success {
+  background: var(--positive-bg);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: var(--positive);
+  border-radius: 10px;
+  font-size: 14px;
+}
+.alert-danger {
+  background: var(--negative-bg);
+  border: 1px solid rgba(220,38,38,0.3);
+  color: var(--negative);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* ── Footer link ──────────────────────────────── */
+a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+a:hover { opacity: 0.8; }
 </style>

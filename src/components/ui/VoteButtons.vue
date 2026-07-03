@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { useReactions } from '../composables/useReactions.js'
+import { useReactions } from "../../composables/useReactions.js"
 
 const props = defineProps({
   coinId: { type: [String, Number], required: true },

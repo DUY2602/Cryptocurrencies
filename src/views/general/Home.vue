@@ -1,10 +1,10 @@
 <script>
 import { defineAsyncComponent } from "vue";
 import { RouterLink } from "vue-router";
-import HeroSection from "../../components/HeroSection.vue";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
-import LiveBadge from "../../components/LiveBadge.vue";
-import PriceWithArrow from "../../components/PriceWithArrow.vue";
+import HeroSection from "../../components/layout/HeroSection.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
+import LiveBadge from "../../components/ui/LiveBadge.vue";
+import PriceWithArrow from "../../components/ui/PriceWithArrow.vue";
 import { api } from "../../services/api.js";
 import {
   livePrices,
@@ -12,6 +12,7 @@ import {
   getLiveQuote,
 } from "../../services/livePrices.js";
 import { fetchNews } from "../../services/news.js";
+import { fetchUsdtTickers } from "../../services/binance.js";
 import { formatVolume as _formatVolume } from "../../utils/format.js";
 
 
@@ -35,10 +36,13 @@ export default {
       liveFlashTick: {},
       liveTick: 0,
       isLive: false,
+      binanceCoinCount: 0,
       newsTrack: null,
       newsScrollPos: 0,
       newsCanPrev: false,
       newsCanNext: true,
+      globalCoins: [],
+      _mergeCache: null,
     };
   },
   computed: {
@@ -55,29 +59,35 @@ export default {
         .sort((a, b) => (b.volume24h || 0) - (a.volume24h || 0))
         .slice(0, 10);
     },
+    liveCoinCount() {
+      // Count of coins actively receiving data from Binance websocket
+      return Object.keys(this.livePricesMap).length;
+    },
     btcDominance() {
-      const btc = this.liveAllCoins.find((c) => c.id === 'bitcoin');
+      const source = this.globalCoins.length > 0 ? this.globalCoins : this.liveAllCoins;
+      const btc = source.find((c) => c.id === 'bitcoin');
       if (!btc) return null;
-      const total = this.liveAllCoins.reduce((s, c) => s + (c.marketCap || 0), 0);
+      const total = source.reduce((s, c) => s + (c.marketCap || 0), 0);
       return total > 0 ? ((btc.marketCap / total) * 100).toFixed(1) : null;
     },
     newsAtStart() { return !this.newsCanPrev; },
     newsAtEnd() { return !this.newsCanNext; },
     marketStats() {
-      const totalCap = this.liveAllCoins.reduce(
+      const source = this.globalCoins.length > 0 ? this.globalCoins : this.liveAllCoins;
+      const totalCap = source.reduce(
         (s, c) => s + (c.marketCap || 0),
         0,
       );
-      const totalVol = this.liveAllCoins.reduce(
+      const totalVol = source.reduce(
         (s, c) => s + (c.volume24h || 0),
         0,
       );
       const avgChange =
-        this.liveAllCoins.length > 0
-          ? this.liveAllCoins.reduce((s, c) => s + c.change24h, 0) /
-            this.liveAllCoins.length
+        source.length > 0
+          ? source.reduce((s, c) => s + c.change24h, 0) /
+            source.length
           : 0;
-      return { totalCap, totalVol, avgChange, count: this.liveAllCoins.length };
+      return { totalCap, totalVol, avgChange, count: source.length };
     },
   },
   async mounted() {
@@ -89,6 +99,16 @@ export default {
       this.trending = [...top].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h));
       this.allCoins = top;
       this.latestNews = Array.isArray(news) ? news : [];
+
+      // Count coins from top 100 that have Binance live data
+      try {
+        const allCoins = await api.getTopCoins(100);
+        this.globalCoins = allCoins;
+        this.binanceCoinCount = allCoins.filter(c => c._hasBinanceChart).length;
+      } catch {
+        this.globalCoins = top;
+        this.binanceCoinCount = top.filter(c => c._hasBinanceChart).length;
+      }
     } catch (e) {
       console.warn('[Home] failed to load coins:', e.message)
     } finally {
@@ -106,6 +126,7 @@ export default {
   beforeUnmount() {
     if (this._unsub) this._unsub();
     livePrices.stop();
+    this._mergeCache = null;
     const el = this.$refs?.newsTrack;
     if (el) el.removeEventListener('scroll', this.onNewsScroll);
   },
@@ -131,17 +152,31 @@ export default {
       const id = String(coin.coingeckoId || coin.id);
       const live = getLiveQuote(this.livePricesMap, coin);
       if (live?.usd == null) return coin;
-      const liveMarketCap = coin.circulatingSupply > 0
-        ? coin.circulatingSupply * live.usd
-        : coin.marketCap;
-      return {
+
+      const cached = this._mergeCache?.get(id);
+      if (cached) {
+        const changed =
+          cached.price !== live.usd ||
+          cached.change24h !== (live.usd_24h_change ?? coin.change24h ?? 0) ||
+          cached.marketCap !== (coin.circulatingSupply > 0 ? coin.circulatingSupply * live.usd : coin.marketCap) ||
+          cached._flash !== this.liveFlashes[id] ||
+          cached._flashTick !== !!this.liveFlashTick[id];
+        if (!changed) return cached;
+      }
+
+      const merged = {
         ...coin,
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
-        marketCap: liveMarketCap,
+        marketCap: coin.circulatingSupply > 0
+          ? coin.circulatingSupply * live.usd
+          : coin.marketCap,
         _flash: this.liveFlashes[id],
         _flashTick: !!this.liveFlashTick[id],
       };
+      if (!this._mergeCache) this._mergeCache = new Map();
+      this._mergeCache.set(id, merged);
+      return merged;
     },
     formatVolume(val) {
       return _formatVolume(val);
@@ -218,8 +253,8 @@ export default {
                 </span>
               </div>
               <div class="glance-item">
-                <span class="glance-label">Coins</span>
-                <span class="glance-value">{{ marketStats.count }}</span>
+                <span class="glance-label">Active</span>
+                <span class="glance-value">{{ binanceCoinCount }}</span>
               </div>
             </div>
           </div>
@@ -341,100 +376,164 @@ export default {
 <style scoped>
 /* ── Glance Panel ── */
 .glance-panel {
-  background: linear-gradient(135deg, rgba(240,185,11,0.08) 0%, rgba(240,185,11,0.02) 100%);
-  border: 1px solid rgba(240,185,11,0.15);
-  border-radius: 16px;
-  padding: 20px 24px;
+  background: linear-gradient(135deg, rgba(255, 200, 55, 0.08) 0%, rgba(255, 200, 55, 0.02) 100%);
+  border: 1px solid rgba(255, 200, 55, 0.15);
+  border-radius: 20px;
+  padding: 24px;
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
 }
+
 .glance-panel::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 1px;
+  height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0.6;
+  opacity: 0.7;
 }
+
 .glance-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
 }
+
 .glance-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 0 12px;
-  border-right: 1px solid rgba(240,185,11,0.08);
+  gap: 6px;
+  padding: 0 16px;
+  border-right: 1px solid var(--border-color);
 }
+
 .glance-item:last-child { border-right: none; }
+
 .glance-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: rgba(240,185,11,0.6);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
 }
+
 .glance-value {
-  font-size: 18px;
+  font-size: 1.35rem;
   font-weight: 800;
   color: var(--text-emphasis);
   font-variant-numeric: tabular-nums;
-  font-family: ui-monospace, SFMono-Regular, 'Roboto Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* ── Dash Table (Trending + Volume) ── */
 .dash-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   height: 100%;
 }
+
 .dash-card-title {
-  font-size: 14px; font-weight: 700; color: var(--text-secondary);
-  text-transform: uppercase; letter-spacing: 0.5px;
-  margin-bottom: 16px; padding-bottom: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .dash-table { display: flex; flex-direction: column; }
+
 .dt-head {
   display: grid;
-  grid-template-columns: 24px 1fr 100px 72px;
+  grid-template-columns: 24px 1fr 110px 72px;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 8px 4px;
-  font-size: 10px;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   border-bottom: 1px solid var(--border-color);
 }
+
 .dt-body { position: relative; }
+
 .dt-row {
   display: grid;
-  grid-template-columns: 24px 1fr 100px 72px;
+  grid-template-columns: 24px 1fr 110px 72px;
   align-items: center;
-  gap: 6px;
-  padding: 9px 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  transition: background 0.15s;
+  gap: 8px;
+  padding: 12px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  transition: all var(--transition-fast);
   color: var(--text-emphasis);
-  border-radius: 6px;
+  border-radius: 8px;
 }
+
 .dt-row:last-child { border-bottom: none; }
-.dt-row:hover { background: var(--bg-card-hover); }
-.dt-rank { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-align: center; }
-.dt-coin { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.dt-icon { flex-shrink: 0; }
-.dt-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dt-price { font-size: 12px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, 'Roboto Mono', monospace; }
-.dt-chg { font-size: 11px; font-weight: 700; text-align: right; }
+
+.dt-row:hover {
+  background: var(--bg-card-hover);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dt-rank {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.dt-coin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dt-icon {
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.dt-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dt-price {
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.dt-chg {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
 
 .flip-list-move { transition: transform 0.5s ease; }
 .flip-list-enter-active { transition: all 0.4s ease; }
@@ -445,30 +544,41 @@ export default {
 /* ── News ── */
 .news-track {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  padding: 10px 4px;
 }
+
 .news-track::-webkit-scrollbar { display: none; }
+
 .news-slide {
-  flex: 0 0 calc(50% - 8px);
-  min-width: 300px;
+  flex: 0 0 calc(50% - 10px);
+  min-width: 320px;
   scroll-snap-align: start;
+  transition: transform var(--transition);
 }
+
+.news-slide:hover {
+  transform: translateY(-4px);
+}
+
 .news-wrap {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
+
 .news-track {
   flex: 1;
   min-width: 0;
 }
+
 .news-arrow {
-  width: 36px; height: 36px;
+  width: 40px; height: 40px;
   border-radius: 50%;
   border: 1px solid var(--border-color);
   background: var(--bg-card);
@@ -476,22 +586,59 @@ export default {
   font-size: 16px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   flex-shrink: 0;
   z-index: 2;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
+
 .news-arrow:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(240,185,11,0.1);
-  box-shadow: 0 0 12px rgba(240,185,11,0.15);
+  background: rgba(255, 200, 55, 0.08);
+  box-shadow: 0 0 12px rgba(255, 200, 55, 0.15);
+  transform: scale(1.05);
 }
+
 .news-arrow:disabled {
   opacity: 0.25;
   cursor: not-allowed;
+  box-shadow: none;
 }
-.news-img { flex-shrink: 0; object-fit: cover; }
+
+.news-img {
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
 .news-body { display: flex; flex-direction: column; min-width: 0; }
-.news-title { font-size: 13px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-emphasis); }
-.news-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.news-title { font-size: 0.95rem; font-weight: 700; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-emphasis); }
+.news-meta { font-size: 0.78rem; color: var(--text-secondary); margin-top: 6px; }
+
+@media (max-width: 991.98px) {
+  .glance-grid {
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 16px;
+  }
+  .glance-item {
+    border-right: none;
+  }
+  .news-slide {
+    flex: 0 0 100%;
+  }
+}
+
+@media (max-width: 575px) {
+  .glance-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dt-head, .dt-row {
+    grid-template-columns: 24px 1fr 90px;
+  }
+  .dt-chg {
+    display: none;
+  }
+}
 </style>

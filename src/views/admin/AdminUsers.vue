@@ -1,28 +1,45 @@
 <script setup>
 /**
- * AdminUsers — list and manage user roles
+ * AdminUsers — Full CRUD user management
  *
  *  - Lists all profiles from Supabase
- *  - Allows promoting/demoting roles (admin / user)
- *  - Server-side: RLS in the profiles table should also enforce
+ *  - Create: admin adds a new profile (name, email, role)
+ *  - Edit: update name and role per user
+ *  - Delete: remove profile with confirmation
  */
 
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { supabase } from "../../../supabase/supabase.js";
 import { useAdmin } from "../../composables/useAdmin.js";
 import { user } from "../../composables/useAuth.js";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
-import EmptyState from "../../components/EmptyState.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
+import EmptyState from "../../components/ui/EmptyState.vue";
 
 const { isAdmin, loading: roleLoading } = useAdmin();
 
 const profiles = ref([]);
 const loading = ref(false);
 const errorMsg = ref(null);
+const successMsg = ref(null);
 const search = ref("");
 const busyId = ref(null);
-const confirmDelete = ref(null);
 
+// ── Modal state ────────────────────────────────────────────────
+const confirmDelete = ref(null);
+const editModal = ref(null);       // profile being edited
+const createModal = ref(false);    // show create modal
+
+// Create form
+const createForm = ref({ name: "", email: "", role: "user" });
+const createLoading = ref(false);
+const createError = ref(null);
+
+// Edit form
+const editForm = ref({ name: "", role: "user" });
+const editLoading = ref(false);
+const editError = ref(null);
+
+// ── Data loading ────────────────────────────────────────────────
 async function load() {
   loading.value = true;
   errorMsg.value = null;
@@ -44,23 +61,96 @@ async function load() {
 
 onMounted(load);
 
+// ── Computed ────────────────────────────────────────────────────
 const filtered = computed(() => {
-  const users = profiles.value.filter((p) => p.role !== "admin");
   const q = search.value.trim().toLowerCase();
-  if (!q) return users;
-  return users.filter(
+  if (!q) return profiles.value;
+  return profiles.value.filter(
     (p) =>
       (p.name || "").toLowerCase().includes(q) ||
+      (p.email || "").toLowerCase().includes(q) ||
+      (p.role || "").toLowerCase().includes(q) ||
       (p.id || "").toLowerCase().includes(q),
   );
 });
 
 const stats = computed(() => ({
-  total: profiles.value.filter((p) => p.role !== "admin").length,
+  total: profiles.value.length,
   admins: profiles.value.filter((p) => p.role === "admin").length,
   users: profiles.value.filter((p) => p.role !== "admin").length,
 }));
 
+// ── Create ──────────────────────────────────────────────────────
+function openCreate() {
+  createForm.value = { name: "", email: "", role: "user" };
+  createError.value = null;
+  createModal.value = true;
+}
+
+async function submitCreate() {
+  if (!createForm.value.email.trim()) {
+    createError.value = "Email is required.";
+    return;
+  }
+  createLoading.value = true;
+  createError.value = null;
+  try {
+    const payload = {
+      email: createForm.value.email.trim(),
+      name: createForm.value.name.trim() || null,
+      role: createForm.value.role,
+      created_at: new Date().toISOString(),
+    };
+    const { data, error } = await supabase
+      .from("profiles")
+      .insert(payload)
+      .select("id, email, name, role, created_at")
+      .single();
+    if (error) throw error;
+    profiles.value.unshift(data);
+    createModal.value = false;
+    showSuccess("User created successfully.");
+  } catch (e) {
+    createError.value = e.message;
+  } finally {
+    createLoading.value = false;
+  }
+}
+
+// ── Edit ────────────────────────────────────────────────────────
+function openEdit(profile) {
+  editForm.value = { name: profile.name || "", role: profile.role || "user" };
+  editError.value = null;
+  editModal.value = profile;
+}
+
+async function submitEdit() {
+  if (!editModal.value) return;
+  editLoading.value = true;
+  editError.value = null;
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({
+        name: editForm.value.name.trim() || null,
+        role: editForm.value.role,
+      })
+      .eq("id", editModal.value.id)
+      .select("id, email, name, role, created_at")
+      .single();
+    if (error) throw error;
+    const idx = profiles.value.findIndex((p) => p.id === data.id);
+    if (idx !== -1) profiles.value[idx] = data;
+    editModal.value = null;
+    showSuccess("User updated successfully.");
+  } catch (e) {
+    editError.value = e.message;
+  } finally {
+    editLoading.value = false;
+  }
+}
+
+// ── Delete ──────────────────────────────────────────────────────
 async function deleteProfile(id) {
   busyId.value = id;
   errorMsg.value = null;
@@ -68,16 +158,24 @@ async function deleteProfile(id) {
     const { error } = await supabase.from("profiles").delete().eq("id", id);
     if (error) throw error;
     profiles.value = profiles.value.filter((p) => p.id !== id);
+    confirmDelete.value = null;
+    showSuccess("User deleted.");
   } catch (e) {
     errorMsg.value = e.message;
   } finally {
     busyId.value = null;
-    confirmDelete.value = null;
   }
 }
 
-function initialOf(name) {
-  return (name || "?").trim().charAt(0).toUpperCase();
+// ── Helpers ────────────────────────────────────────────────────
+function showSuccess(msg) {
+  successMsg.value = msg;
+  setTimeout(() => (successMsg.value = null), 3500);
+}
+
+function initialOf(name, email) {
+  const src = name || email || "?";
+  return src.trim().charAt(0).toUpperCase();
 }
 
 function formatDate(iso) {
@@ -88,89 +186,101 @@ function formatDate(iso) {
     day: "numeric",
   });
 }
+
+// Keyboard: Escape closes any open modal
+function onKeydown(e) {
+  if (e.key === "Escape") {
+    if (confirmDelete.value) confirmDelete.value = null;
+    else if (editModal.value) editModal.value = null;
+    else if (createModal.value) createModal.value = false;
+  }
+}
+onMounted(() => window.addEventListener("keydown", onKeydown));
+onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>
   <div class="admin-users">
-    <header
-      class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4"
-    >
+    <!-- Header -->
+    <header class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
       <div>
         <h1 class="page-title mb-1 d-flex align-items-center gap-2">
           <Users :size="22" />
           Users
         </h1>
         <p class="page-subtitle mb-0">
-          Manage user roles. Admins can create and edit news articles.
+          Manage user accounts and roles. Admins can create and edit news articles.
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <button
-          class="btn btn-outline-accent btn-sm"
-          @click="load"
-          :disabled="loading"
-        >
+        <button class="btn btn-outline-accent btn-sm" @click="load" :disabled="loading">
           <RefreshCw :size="14" />
           Refresh
+        </button>
+        <button
+          v-if="isAdmin"
+          class="btn btn-accent btn-sm"
+          @click="openCreate"
+        >
+          <UserPlus :size="14" />
+          Add User
         </button>
       </div>
     </header>
 
     <!-- Stats -->
-    <div class="row g-3 mb-3">
-      <div class="col-6 col-md-4">
+    <div class="row g-3 mb-4">
+      <div class="col-4">
         <div class="kpi-mini card-crypto p-3">
           <div class="kpi-mini-lbl">Total</div>
           <div class="kpi-mini-val">{{ stats.total }}</div>
         </div>
       </div>
-      <div class="col-6 col-md-4">
+      <div class="col-4">
         <div class="kpi-mini card-crypto p-3">
           <div class="kpi-mini-lbl">Admins</div>
-          <div class="kpi-mini-val text-warning">{{ stats.admins }}</div>
+          <div class="kpi-mini-val accent">{{ stats.admins }}</div>
         </div>
       </div>
-      <div class="col-6 col-md-4">
+      <div class="col-4">
         <div class="kpi-mini card-crypto p-3">
-          <div class="kpi-mini-lbl">Regular users</div>
+          <div class="kpi-mini-lbl">Users</div>
           <div class="kpi-mini-val">{{ stats.users }}</div>
         </div>
       </div>
     </div>
 
     <!-- Search -->
-    <div class="mb-3">
+    <div class="search-wrap mb-3">
+      <Search :size="15" class="search-icon" />
       <input
         v-model="search"
         type="text"
-        class="form-control"
-        placeholder="Search by name, ID, or role…"
+        class="form-control search-input"
+        placeholder="Search by name, email or role…"
       />
-      <div class="input-icon-left" style="position: relative;">
-        <Search :size="14" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); pointer-events: none;" />
+    </div>
+
+    <!-- Success/Error banners -->
+    <transition name="fade-banner">
+      <div v-if="successMsg" class="alert-banner alert-success-banner mb-3">
+        <Check :size="15" /> {{ successMsg }}
       </div>
-    </div>
-
-    <div
-      v-if="errorMsg"
-      class="alert alert-danger small d-flex align-items-start gap-2"
-    >
-      <span><AlertTriangle :size="16" /></span>
+    </transition>
+    <div v-if="errorMsg" class="alert-banner alert-danger-banner mb-3">
+      <AlertTriangle :size="15" />
       <span class="flex-grow-1">{{ errorMsg }}</span>
-      <button
-        class="btn-close btn-close-white btn-sm"
-        @click="errorMsg = null"
-      />
+      <button class="close-btn" @click="errorMsg = null">
+        <X :size="14" />
+      </button>
     </div>
 
-    <div v-if="!roleLoading && !isAdmin" class="alert alert-warning small">
-      You need to be an admin to change roles. The list is read-only.
+    <div v-if="!roleLoading && !isAdmin" class="alert-banner alert-warn-banner mb-3">
+      You need admin role to manage users. The list is read-only.
     </div>
 
-    <LoadingSpinner
-      v-if="loading && !profiles.length"
-      message="Loading users..."
-    />
+    <!-- Loading / empty -->
+    <LoadingSpinner v-if="loading && !profiles.length" message="Loading users..." />
 
     <EmptyState
       v-else-if="!loading && !filtered.length"
@@ -179,107 +289,206 @@ function formatDate(iso) {
       :message="
         search
           ? 'Try a different search term.'
-          : 'No profiles yet. Users are created on registration.'
+          : 'No profiles yet. Users appear here after registration.'
       "
     />
 
+    <!-- Table -->
     <div v-else class="card-crypto overflow-hidden">
       <div class="table-responsive">
         <table class="table table-dark-custom align-middle mb-0">
           <thead>
             <tr>
               <th>User</th>
-              <th class="d-none d-md-table-cell">Joined</th>
+              <th class="d-none d-md-table-cell">Email</th>
+              <th class="d-none d-sm-table-cell">Joined</th>
               <th>Role</th>
               <th class="text-end">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="p in filtered" :key="p.id">
+              <!-- User -->
               <td>
-                  <div class="d-flex gap-3 align-items-center">
-                    <div class="user-avatar avatar-fallback">
-                      {{ initialOf(p.name) }}
-                    </div>
-                    <div class="min-w-0">
-                    <div
-                      class="text-emphasis fw-semibold text-truncate"
-                      style="max-width: 220px"
-                    >
+                <div class="d-flex gap-3 align-items-center">
+                  <div class="user-avatar avatar-fallback">
+                    {{ initialOf(p.name, p.email) }}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-emphasis fw-semibold text-truncate" style="max-width: 180px">
                       {{ p.name || "(no name)" }}
-                      <span
-                        v-if="p.id === user?.id"
-                        class="badge bg-secondary-subtle text-secondary ms-1"
-                      >
-                        you
-                      </span>
+                      <span v-if="p.id === user?.id" class="you-badge">you</span>
                     </div>
-                    <div
-                      class="text-secondary small text-truncate"
-                      style="max-width: 220px"
-                    >
+                    <div class="text-secondary small text-truncate d-md-none" style="max-width: 180px">
                       {{ p.email || p.id }}
                     </div>
                   </div>
                 </div>
               </td>
-              <td class="d-none d-md-table-cell small text-secondary">
+              <!-- Email (md+) -->
+              <td class="d-none d-md-table-cell small text-secondary text-truncate" style="max-width: 200px">
+                {{ p.email || "—" }}
+              </td>
+              <!-- Joined -->
+              <td class="d-none d-sm-table-cell small text-secondary">
                 {{ formatDate(p.created_at) }}
               </td>
+              <!-- Role -->
               <td>
-                <span v-if="p.role === 'admin'" class="role-badge role-admin"
-                  ><Star :size="12" class="me-1" />Admin</span
-                >
+                <span v-if="p.role === 'admin'" class="role-badge role-admin">
+                  <Star :size="10" class="me-1" />Admin
+                </span>
                 <span v-else class="role-badge role-user">User</span>
               </td>
+              <!-- Actions -->
               <td class="text-end">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-danger"
-                  :disabled="!isAdmin || busyId === p.id || p.id === user?.id"
-                  :title="p.id === user?.id ? 'You cannot delete yourself' : 'Delete user'"
-                  @click="confirmDelete = p"
-                >
-                  <Trash2 :size="14" />
-                  Delete
-                </button>
+                <div class="d-flex gap-1 justify-content-end">
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-outline-accent"
+                    :disabled="!isAdmin || busyId === p.id"
+                    title="Edit user"
+                    @click="openEdit(p)"
+                  >
+                    <Pencil :size="13" />
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-outline-danger"
+                    :disabled="!isAdmin || busyId === p.id || p.id === user?.id"
+                    :title="p.id === user?.id ? 'You cannot delete yourself' : 'Delete user'"
+                    @click="confirmDelete = p"
+                  >
+                    <Trash2 :size="13" />
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+      <div class="table-footer small text-secondary">
+        Showing {{ filtered.length }} of {{ profiles.length }} users
+      </div>
     </div>
 
-    <!-- Confirm delete -->
-    <div
-      v-if="confirmDelete"
-      class="modal-backdrop-custom"
-      role="dialog"
-      @click.self="confirmDelete = null"
-    >
+    <!-- ── Create Modal ───────────────────────────────────────── -->
+    <div v-if="createModal" class="modal-backdrop-custom" role="dialog" aria-modal="true" @click.self="createModal = false">
       <div class="modal-card card-crypto p-4">
-        <h5 class="mb-2">Delete {{ confirmDelete.name || 'this user' }}?</h5>
+        <div class="modal-header-row mb-3">
+          <h5 class="mb-0 d-flex align-items-center gap-2">
+            <UserPlus :size="18" /> Add User
+          </h5>
+          <button class="close-btn" @click="createModal = false"><X :size="16" /></button>
+        </div>
         <p class="text-secondary small mb-3">
-          This action cannot be undone. The user's profile will be permanently
-          removed from the database.
+          Creates a profile entry. The user can log in once they register with the same email.
         </p>
+        <div v-if="createError" class="alert-banner alert-danger-banner mb-3 small">
+          <AlertTriangle :size="13" /> {{ createError }}
+        </div>
+        <div class="mb-3">
+          <label class="modal-label">Name</label>
+          <input v-model="createForm.name" type="text" class="form-control" placeholder="Display name (optional)" :disabled="createLoading" />
+        </div>
+        <div class="mb-3">
+          <label class="modal-label">Email <span class="text-negative">*</span></label>
+          <input v-model="createForm.email" type="email" class="form-control" placeholder="user@example.com" :disabled="createLoading" />
+        </div>
+        <div class="mb-4">
+          <label class="modal-label">Role</label>
+          <select v-model="createForm.role" class="form-control" :disabled="createLoading">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
         <div class="d-flex justify-content-end gap-2">
-          <button
-            type="button"
-            class="btn btn-outline-accent btn-sm"
-            @click="confirmDelete = null"
-            :disabled="busyId"
-          >
+          <button type="button" class="btn btn-outline-accent btn-sm" @click="createModal = false" :disabled="createLoading">
             Cancel
           </button>
-          <button
-            type="button"
-            class="btn btn-danger btn-sm"
-            :disabled="busyId"
-            @click="deleteProfile(confirmDelete.id)"
-          >
+          <button type="button" class="btn btn-accent btn-sm" @click="submitCreate" :disabled="createLoading">
+            <span v-if="createLoading" class="spinner-border spinner-border-sm me-1" />
+            {{ createLoading ? "Creating…" : "Create User" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Edit Modal ─────────────────────────────────────────── -->
+    <div v-if="editModal" class="modal-backdrop-custom" role="dialog" aria-modal="true" @click.self="editModal = null">
+      <div class="modal-card card-crypto p-4">
+        <div class="modal-header-row mb-3">
+          <h5 class="mb-0 d-flex align-items-center gap-2">
+            <Pencil :size="18" /> Edit User
+          </h5>
+          <button class="close-btn" @click="editModal = null"><X :size="16" /></button>
+        </div>
+        <!-- User info preview -->
+        <div class="user-preview mb-3">
+          <div class="user-avatar avatar-fallback me-2">{{ initialOf(editModal.name, editModal.email) }}</div>
+          <div class="min-w-0">
+            <div class="text-emphasis fw-semibold">{{ editModal.name || "(no name)" }}</div>
+            <div class="text-secondary small">{{ editModal.email || editModal.id }}</div>
+          </div>
+        </div>
+        <div v-if="editError" class="alert-banner alert-danger-banner mb-3 small">
+          <AlertTriangle :size="13" /> {{ editError }}
+        </div>
+        <div class="mb-3">
+          <label class="modal-label">Display Name</label>
+          <input v-model="editForm.name" type="text" class="form-control" placeholder="Display name" :disabled="editLoading" />
+        </div>
+        <div class="mb-4">
+          <label class="modal-label">Role</label>
+          <select v-model="editForm.role" class="form-control" :disabled="editLoading || editModal.id === user?.id">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+          <p v-if="editModal.id === user?.id" class="text-secondary small mt-1">
+            You cannot change your own role.
+          </p>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-accent btn-sm" @click="editModal = null" :disabled="editLoading">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-accent btn-sm" @click="submitEdit" :disabled="editLoading">
+            <span v-if="editLoading" class="spinner-border spinner-border-sm me-1" />
+            {{ editLoading ? "Saving…" : "Save Changes" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Delete Confirm Modal ──────────────────────────────── -->
+    <div v-if="confirmDelete" class="modal-backdrop-custom" role="dialog" aria-modal="true" @click.self="confirmDelete = null">
+      <div class="modal-card card-crypto p-4">
+        <div class="modal-header-row mb-3">
+          <h5 class="mb-0 d-flex align-items-center gap-2 text-negative">
+            <Trash2 :size="18" /> Delete User
+          </h5>
+          <button class="close-btn" @click="confirmDelete = null"><X :size="16" /></button>
+        </div>
+        <p class="text-secondary small mb-1">
+          You are about to permanently delete:
+        </p>
+        <div class="user-preview mb-3">
+          <div class="user-avatar avatar-fallback me-2">{{ initialOf(confirmDelete.name, confirmDelete.email) }}</div>
+          <div class="min-w-0">
+            <div class="text-emphasis fw-semibold">{{ confirmDelete.name || "(no name)" }}</div>
+            <div class="text-secondary small">{{ confirmDelete.email || confirmDelete.id }}</div>
+          </div>
+        </div>
+        <p class="text-secondary small mb-3">
+          This action <strong>cannot be undone</strong>. The profile will be permanently removed.
+        </p>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-accent btn-sm" @click="confirmDelete = null" :disabled="busyId">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger btn-sm" :disabled="busyId" @click="deleteProfile(confirmDelete.id)">
             <span v-if="busyId" class="spinner-border spinner-border-sm me-1" />
-            {{ busyId ? "Deleting..." : "Delete" }}
+            {{ busyId ? "Deleting…" : "Delete User" }}
           </button>
         </div>
       </div>
@@ -288,6 +497,7 @@ function formatDate(iso) {
 </template>
 
 <style scoped>
+/* ── Avatar ───────────────────────────────────────────────────── */
 .user-avatar {
   width: 36px;
   height: 36px;
@@ -301,40 +511,56 @@ function formatDate(iso) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--accent), #d9a60a);
+  background: var(--accent-gradient);
   color: var(--accent-text);
   font-weight: 700;
   font-size: 0.85rem;
 }
 
+/* ── Badges ───────────────────────────────────────────────────── */
 .role-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 700;
   border: 1px solid;
+  white-space: nowrap;
 }
 
 .role-admin {
-  background: rgba(240, 185, 11, 0.15);
+  background: var(--accent-bg-subtle);
   color: var(--accent);
-  border-color: rgba(240, 185, 11, 0.4);
+  border-color: var(--accent-bg-hover);
 }
 
 .role-user {
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   color: var(--text-secondary);
   border-color: var(--border-color);
 }
 
+.you-badge {
+  display: inline-block;
+  background: var(--bg-card-hover);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ── KPI Mini cards ───────────────────────────────────────────── */
 .kpi-mini {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
   border-radius: 10px;
   border: 1px solid var(--border-color);
-  background: var(--bg-card);
   height: 100%;
 }
 
@@ -348,11 +574,61 @@ function formatDate(iso) {
 
 .kpi-mini-val {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-emphasis);
   font-variant-numeric: tabular-nums;
 }
+.kpi-mini-val.accent { color: var(--accent); }
 
+/* ── Search ───────────────────────────────────────────────────── */
+.search-wrap {
+  position: relative;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+  z-index: 1;
+}
+.search-input {
+  padding-left: 38px !important;
+}
+
+/* ── Alert banners ────────────────────────────────────────────── */
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+.alert-success-banner {
+  background: var(--positive-bg);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: var(--positive);
+}
+.alert-danger-banner {
+  background: var(--negative-bg);
+  border-color: rgba(220, 38, 38, 0.25);
+  color: var(--negative);
+}
+.alert-warn-banner {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: var(--accent);
+}
+.fade-banner-enter-active,
+.fade-banner-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
+.fade-banner-enter-from,
+.fade-banner-leave-to { opacity: 0; transform: translateY(-6px); }
+
+/* ── Table ────────────────────────────────────────────────────── */
 .table-dark-custom {
   --bs-table-bg: transparent;
   --bs-table-color: var(--text-primary);
@@ -368,13 +644,14 @@ function formatDate(iso) {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-weight: 600;
+  font-weight: 700;
   border-bottom: 1px solid var(--border-color);
   padding: 0.65rem 1rem;
+  white-space: nowrap;
 }
 
 .table-dark-custom tbody td {
-  padding: 0.65rem 1rem;
+  padding: 0.7rem 1rem;
   border-top: 1px solid var(--border-color);
   vertical-align: middle;
 }
@@ -387,11 +664,57 @@ function formatDate(iso) {
   background: var(--bg-card-hover);
 }
 
+.table-footer {
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+.btn-xs {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+.btn-outline-danger {
+  color: var(--negative);
+  border-color: var(--negative);
+  background: transparent;
+  transition: all 0.15s ease;
+}
+.btn-outline-danger:hover:not(:disabled) {
+  background: var(--negative-bg);
+}
+.btn-danger {
+  background: var(--negative);
+  border-color: var(--negative);
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+.close-btn:hover { color: var(--text-emphasis); }
+
+/* ── Modals ───────────────────────────────────────────────────── */
 .modal-backdrop-custom {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--overlay-bg);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1100;
   display: flex;
   align-items: center;
@@ -400,15 +723,42 @@ function formatDate(iso) {
 }
 
 .modal-card {
-  max-width: 420px;
+  max-width: 460px;
   width: 100%;
-  background: var(--bg-card);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
 }
 
-.min-w-0 {
-  min-width: 0;
+.modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-.btn-close-white {
-  filter: invert(1) grayscale(100%) brightness(200%);
+
+.modal-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
 }
+
+/* ── User preview row ─────────────────────────────────────────── */
+.user-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+}
+
+/* ── Misc ─────────────────────────────────────────────────────── */
+.min-w-0 { min-width: 0; }
+.text-negative { color: var(--negative); }
 </style>

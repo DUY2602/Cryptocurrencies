@@ -1,5 +1,5 @@
 <script>
-import PageHero from "../../components/PageHero.vue";
+import PageHero from "../../components/layout/PageHero.vue";
 
 export default {
   components: { PageHero },
@@ -262,8 +262,8 @@ export default {
   gap: 0.4rem;
   padding: 0.9rem 0.5rem;
   border-radius: 18px;
-  border: 2px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.03);
+  border: 2px solid var(--border-light);
+  background: var(--bg-card);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.28s ease;
@@ -286,13 +286,13 @@ export default {
 .coin-option:hover {
   border-color: var(--coin-color);
   transform: translateY(-3px);
-  color: #fff;
+  color: var(--text-emphasis);
 }
 
 .coin-active {
   border-color: var(--coin-color) !important;
   box-shadow: 0 0 24px var(--coin-glow);
-  color: #fff;
+  color: var(--text-emphasis);
 }
 
 .coin-active::before { opacity: 1; }

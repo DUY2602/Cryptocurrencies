@@ -10,12 +10,12 @@ export default {
 
 <template>
   <footer class="crypto-footer mt-auto">
-    <div class="container py-5">
-      <div class="row g-4">
+    <div class="container py-3">
+      <div class="row g-3">
         <div class="col-12 col-md-4">
-          <div class="d-flex align-items-center gap-2 mb-3">
-            <img src="/site-logo.png" alt="" width="28" height="28" class="flex-shrink-0" />
-            <span class="footer-brand fs-5">CryptoDash</span>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="/site-logo.png" alt="" width="26" height="26" class="flex-shrink-0" />
+            <span class="footer-brand">CryptoDash</span>
           </div>
           <p class="text-secondary small mb-3" style="max-width: 280px">
             Real-time cryptocurrency market data, news, and portfolio tracking.
@@ -58,7 +58,7 @@ export default {
           </ul>
         </div>
       </div>
-      <hr class="my-4" style="border-color: var(--border-color)" />
+      <hr class="my-2" style="border-color: var(--border-color)" />
       <div class="row align-items-center gy-2">
         <div class="col-md-6 text-center text-md-start">
           <small class="text-secondary">&copy; {{ currentYear }} CryptoDash. COS30043 &middot; Swinburne University</small>
@@ -77,8 +77,11 @@ export default {
   border-top: 1px solid var(--border-color);
 }
 .footer-brand {
+  font-family: 'Orbitron', sans-serif;
   font-weight: 700;
+  font-size: 1rem;
   color: var(--text-emphasis);
+  letter-spacing: -0.3px;
 }
 .footer-heading {
   font-size: 13px;
@@ -86,7 +89,7 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-secondary);
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 .footer-links {
   list-style: none;
@@ -94,7 +97,7 @@ export default {
   margin: 0;
 }
 .footer-links li {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 .footer-links a {
   color: var(--text-tertiary);
@@ -120,6 +123,8 @@ export default {
 .social-link:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(240, 185, 11, 0.06);
+  background: var(--accent-bg-subtle);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 200, 55, 0.15);
 }
 </style>

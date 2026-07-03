@@ -12,8 +12,8 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { fetchNews, subscribeNews } from "../../services/news.js";
 import { user } from "../../composables/useAuth.js";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
-import EmptyState from "../../components/EmptyState.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
+import EmptyState from "../../components/ui/EmptyState.vue";
 
 const router = useRouter();
 const articles = ref([]);
@@ -142,7 +142,7 @@ function go(to) {
               <div class="kpi-value">{{ kpis.total }}</div>
               <div class="kpi-label">Total articles</div>
             </div>
-            <div class="kpi-icon-wrap" style="background: linear-gradient(135deg, rgba(240,185,11,0.15), rgba(240,185,11,0.05)); color: var(--accent);">
+            <div class="kpi-icon-wrap" style="background: var(--accent-bg-subtle); color: var(--accent);">
               <BookOpen :size="20" />
             </div>
           </div>
@@ -153,7 +153,7 @@ function go(to) {
               <div class="kpi-value">{{ kpis.featured }}</div>
               <div class="kpi-label">Featured</div>
             </div>
-            <div class="kpi-icon-wrap" style="background: linear-gradient(135deg, rgba(102,126,234,0.15), rgba(102,126,234,0.05)); color: #667eea;">
+            <div class="kpi-icon-wrap" style="background: rgba(102, 126, 234, 0.15); color: #667eea;">
               <Star :size="20" />
             </div>
           </div>
@@ -164,7 +164,7 @@ function go(to) {
               <div class="kpi-value">{{ kpis.trending }}</div>
               <div class="kpi-label">Trending</div>
             </div>
-            <div class="kpi-icon-wrap" style="background: linear-gradient(135deg, rgba(14,203,129,0.15), rgba(14,203,129,0.05)); color: var(--positive);">
+            <div class="kpi-icon-wrap" style="background: var(--positive-bg); color: var(--positive);">
               <TrendingUp :size="20" />
             </div>
           </div>
@@ -175,7 +175,7 @@ function go(to) {
               <div class="kpi-value">{{ kpis.thisWeek }}</div>
               <div class="kpi-label">This week</div>
             </div>
-            <div class="kpi-icon-wrap" style="background: linear-gradient(135deg, rgba(246,70,93,0.15), rgba(246,70,93,0.05)); color: var(--negative);">
+            <div class="kpi-icon-wrap" style="background: var(--negative-bg); color: var(--negative);">
               <Calendar :size="20" />
             </div>
           </div>
@@ -420,7 +420,7 @@ function go(to) {
 
 .cat-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #fcd535);
+  background: var(--accent-gradient);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
@@ -451,7 +451,7 @@ function go(to) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--accent), #d9a60a);
+  background: var(--accent-gradient);
   color: var(--accent-text);
   font-weight: 700;
   font-size: 0.8rem;

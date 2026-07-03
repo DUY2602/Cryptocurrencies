@@ -1,8 +1,8 @@
 <script>
 import { fetchNews, fetchNewsById } from "../../services/news.js";
-import NewsReactions from "../../components/NewsReactions.vue";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
-import EmptyState from "../../components/EmptyState.vue";
+import NewsReactions from "../../components/news/NewsReactions.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
+import EmptyState from "../../components/ui/EmptyState.vue";
 import {
   getComments,
   postComment,
@@ -318,11 +318,12 @@ export default {
 .article-header { margin-bottom: 2rem; }
 
 .blog-category {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--accent-gradient);
+  color: var(--accent-text);
   padding: 6px 16px; border-radius: 20px;
-  font-size: 12px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.5px;
+  font-size: 12px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  box-shadow: 0 0 12px rgba(255,200,55,0.25);
 }
 
 .read-time-badge { background: var(--bg-card-hover); padding: 4px 12px; border-radius: 12px; color: var(--text-secondary); }
@@ -345,8 +346,10 @@ article { max-width: 100%; }
 .article-body :deep(ul), .article-body :deep(ol) { margin-bottom: 1.5em; padding-left: 2em; }
 .article-body :deep(li) { margin-bottom: 0.5em; }
 .article-body :deep(blockquote) {
-  border-left: 4px solid #667eea;
-  padding-left: 1.5em; margin: 1.5em 0;
+  border-left: 4px solid var(--accent);
+  background: rgba(255,200,55,0.04);
+  padding: 1em 1.5em; margin: 1.5em 0;
+  border-radius: 0 8px 8px 0;
   font-style: italic;
   color: var(--text-secondary);
 }
@@ -358,20 +361,26 @@ article { max-width: 100%; }
 
 .tags-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .tag-item {
-  background: rgba(102, 126, 234, 0.15);
-  color: #667eea;
+  background: var(--accent-bg-subtle);
+  color: var(--accent);
+  border: 1px solid var(--accent-bg-hover);
   padding: 6px 14px; border-radius: 20px;
-  font-size: 14px; font-weight: 500;
-  transition: all 0.2s ease;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none; transition: all 0.2s ease;
 }
-.tag-item:hover { background: rgba(102, 126, 234, 0.25); color: #764ba2; }
+.tag-item:hover {
+  background: var(--accent-bg-hover);
+  color: var(--accent-active);
+  transform: translateY(-2px);
+}
 .article-footer { margin-top: 2rem; }
 
 .sidebar-card { border-radius: 16px; overflow: hidden; }
 .sidebar-header {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  background: var(--accent-bg);
+  border: 1px solid var(--border-color);
+  font-size: 16px; font-weight: 700; color: var(--text-emphasis); 
 }
-.sidebar-title { font-size: 16px; font-weight: 700; color: var(--text-emphasis); }
 
 .related-list { display: flex; flex-direction: column; }
 .related-item {
@@ -389,11 +398,11 @@ article { max-width: 100%; }
   transition: color 0.2s ease;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.related-item:hover .related-title { color: #667eea; }
+.related-item:hover .related-title { color: var(--accent); }
 .related-meta { font-size: 12px; }
 
 .share-buttons .btn { border-color: rgba(102, 126, 234, 0.3); transition: all 0.2s ease; }
-.share-buttons .btn:hover { background: rgba(102, 126, 234, 0.1); border-color: rgba(102, 126, 234, 0.5); }
+.share-buttons .btn:hover { background: var(--bg-card-hover); border-color: var(--border-light); color: var(--text-emphasis); }
 
 @media (max-width: 991.98px) {
   .article-hero-img { max-height: 300px; }

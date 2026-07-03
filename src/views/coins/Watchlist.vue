@@ -7,9 +7,9 @@ import {
 } from "../../services/livePrices.js";
 import { useWatchlist } from "../../composables/useWatchlist.js";
 import { formatPrice, formatMarketCap, formatChange, changeClass } from "../../utils/format.js";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
-import EmptyState from "../../components/EmptyState.vue";
-import PageHero from "../../components/PageHero.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
+import EmptyState from "../../components/ui/EmptyState.vue";
+import PageHero from "../../components/layout/PageHero.vue";
 
 export default {
   components: { LoadingSpinner, EmptyState, PageHero },

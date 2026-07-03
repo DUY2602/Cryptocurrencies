@@ -5,12 +5,12 @@ import {
   applyLiveFlashes,
   getLiveQuote,
 } from "../../services/livePrices.js";
-import StatCard from "../../components/StatCard.vue";
-import CoinDashboard from "../../components/CoinDashboard.vue";
-import FavoriteButton from "../../components/FavoriteButton.vue";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
-import EmptyState from "../../components/EmptyState.vue";
-import LiveBadge from "../../components/LiveBadge.vue";
+import StatCard from "../../components/ui/StatCard.vue";
+import CoinDashboard from "../../components/coins/CoinDashboard.vue";
+import FavoriteButton from "../../components/ui/FavoriteButton.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
+import EmptyState from "../../components/ui/EmptyState.vue";
+import LiveBadge from "../../components/ui/LiveBadge.vue";
 import {
   formatPrice,
   formatMarketCap,

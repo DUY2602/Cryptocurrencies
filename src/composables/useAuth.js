@@ -1,6 +1,5 @@
 import { ref, computed } from "vue";
 import { supabase } from "../../supabase/supabase.js";
-import bcrypt from "bcryptjs";
 
 export const user = ref(null);
 
@@ -44,6 +43,7 @@ async function upsertProfile(authUser, name) {
 
 async function updatePasswordHash(password) {
   if (!user.value) return;
+  const bcrypt = await import("bcryptjs").then(m => m.default || m);
   const hash = await bcrypt.hash(password, 10);
   const { error } = await supabase
     .from("profiles")

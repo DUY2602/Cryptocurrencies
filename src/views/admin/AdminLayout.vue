@@ -64,9 +64,9 @@ function handleResize() {
 }
 
 const navItems = [
-  { to: { name: "AdminDashboard" }, icon: "D", label: "Dashboard" },
-  { to: { name: "AdminNews" }, icon: "N", label: "News CMS" },
-  { to: { name: "AdminUsers" }, icon: "U", label: "Users" },
+  { to: { name: "AdminDashboard" }, icon: "LayoutDashboard", label: "Dashboard" },
+  { to: { name: "AdminNews" }, icon: "Newspaper", label: "News CMS" },
+  { to: { name: "AdminUsers" }, icon: "Users", label: "Users" },
 ];
 
 const isActive = (name) =>
@@ -88,9 +88,14 @@ const pageTitle = computed(() => {
     AdminNews: "News CMS",
     AdminNewsEdit: "News editor",
     AdminUsers: "Users",
+    AdminSettings: "Settings",
   };
   return titles[route.name] || "Admin";
 });
+
+const showNewArticleBtn = computed(() =>
+  route.name === "AdminNews" || route.name === "AdminNewsEdit"
+);
 
 const userName = computed(
   () => profile.value?.name || user.value?.name || "Admin",
@@ -158,7 +163,9 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
           :class="{ active: isActive(item.to.name) }"
           @click="go(item.to)"
         >
-          <span class="sidebar-icon">{{ item.icon }}</span>
+          <span class="sidebar-icon">
+            <component :is="item.icon" :size="16" />
+          </span>
           <span class="sidebar-label">{{ item.label }}</span>
         </button>
       </nav>
@@ -175,7 +182,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
             </div>
           </div>
         </div>
-        <div class="d-flex gap-2 mt-2">
+        <div class="d-flex flex-wrap gap-2 mt-2">
           <RouterLink to="/profile" class="btn btn-sm btn-outline-accent flex-grow-1">
             Profile
           </RouterLink>
@@ -220,6 +227,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
             {{ realtimeStatus === "live" ? "Realtime live" : realtimeStatus }}
           </span>
           <RouterLink
+            v-if="showNewArticleBtn"
             :to="{ name: 'AdminNewsEdit', params: { id: 'new' } }"
             class="btn btn-sm btn-accent"
           >
@@ -326,7 +334,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 }
 
 .sidebar-link.active {
-  background: rgba(240, 185, 11, 0.1);
+  background: var(--accent-bg-subtle);
   color: var(--accent);
 }
 
@@ -350,12 +358,12 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 }
 
 .sidebar-link:hover .sidebar-icon {
-  background: rgba(240, 185, 11, 0.15);
+  background: var(--accent-bg);
   color: var(--accent);
 }
 
 .sidebar-link.active .sidebar-icon {
-  background: rgba(240, 185, 11, 0.2);
+  background: var(--accent-bg-hover);
   color: var(--accent);
 }
 
@@ -368,7 +376,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #d9a60a);
+  background: var(--accent-gradient);
   color: var(--accent-text);
   font-weight: 700;
   font-size: 0.85rem;
@@ -381,7 +389,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-bg);
   z-index: 899;
 }
 

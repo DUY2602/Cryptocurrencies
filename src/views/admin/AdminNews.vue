@@ -20,8 +20,8 @@ import {
 } from "../../services/news.js";
 import { useAdmin } from "../../composables/useAdmin.js";
 import { user } from "../../composables/useAuth.js";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
-import EmptyState from "../../components/EmptyState.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
+import EmptyState from "../../components/ui/EmptyState.vue";
 
 const router = useRouter();
 const { isAdmin, loading: roleLoading } = useAdmin();

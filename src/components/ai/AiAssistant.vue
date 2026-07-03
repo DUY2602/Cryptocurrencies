@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { supabase } from '../../supabase/supabase'
-import { livePrices } from '../services/livePrices'
-import { useAdmin } from '../composables/useAdmin'
+import { supabase } from '../../../supabase/supabase.js'
+import { livePrices } from '../../services/livePrices.js'
+import { useAdmin } from '../../composables/useAdmin.js'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import { X, MessageCircle } from '@lucide/vue'
+
 
 marked.setOptions({ breaks: true, gfm: true })
 

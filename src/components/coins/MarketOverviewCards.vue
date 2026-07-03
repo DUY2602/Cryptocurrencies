@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
-import { formatPrice, formatMarketCap, formatChange, changeClass } from '../utils/format.js'
+import { formatPrice, formatMarketCap, formatChange, changeClass } from "../../utils/format.js"
 
 defineProps({
   coins: { type: Array, required: true },

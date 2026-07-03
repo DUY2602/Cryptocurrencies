@@ -22,8 +22,8 @@ import DOMPurify from "dompurify";
 import { createNews, updateNews, fetchNewsById } from "../../services/news.js";
 import { useAdmin } from "../../composables/useAdmin.js";
 import { user } from "../../composables/useAuth.js";
-import RichTextEditor from "../../components/RichTextEditor.vue";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
+import RichTextEditor from "../../components/admin/RichTextEditor.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
 
 const route = useRoute();
 const router = useRouter();

@@ -6,13 +6,13 @@ import {
   getLiveQuote,
 } from "../../services/livePrices.js";
 import { useWatchlist } from "../../composables/useWatchlist.js";
-import SearchBar from "../../components/SearchBar.vue";
-import SortSelect from "../../components/SortSelect.vue";
-import BinanceSparkline from "../../components/BinanceSparkline.vue";
-import LoadingSpinner from "../../components/LoadingSpinner.vue";
-import EmptyState from "../../components/EmptyState.vue";
-import LiveBadge from "../../components/LiveBadge.vue";
-import PageHero from "../../components/PageHero.vue";
+import SearchBar from "../../components/ui/SearchBar.vue";
+import SortSelect from "../../components/ui/SortSelect.vue";
+import BinanceSparkline from "../../components/coins/BinanceSparkline.vue";
+import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
+import EmptyState from "../../components/ui/EmptyState.vue";
+import LiveBadge from "../../components/ui/LiveBadge.vue";
+import PageHero from "../../components/layout/PageHero.vue";
 import {
   formatPrice,
   formatMarketCap,
@@ -50,6 +50,7 @@ export default {
       liveTick: 0,
       isLive: false,
       lastCoinPrice: {},
+      _mergeCache: null,
     };
   },
   computed: {
@@ -109,10 +110,6 @@ export default {
     sortBy() {
       this.currentPage = 1;
     },
-    filteredCoins() {
-      if (this.currentPage > this.totalPages)
-        this.currentPage = this.totalPages;
-    },
   },
   async mounted() {
     await this.loadCoins();
@@ -121,6 +118,7 @@ export default {
   beforeUnmount() {
     if (this._unsub) this._unsub();
     livePrices.stop();
+    this._mergeCache = null;
   },
   methods: {
     async loadCoins() {
@@ -155,9 +153,21 @@ export default {
       const id = String(coin.coingeckoId || coin.id);
       const live = getLiveQuote(this.livePricesMap, coin);
       if (live?.usd == null) return coin;
+
+      const cached = this._mergeCache?.get(id);
+      if (cached) {
+        const changed =
+          cached.price !== live.usd ||
+          cached.change24h !== (live.usd_24h_change ?? coin.change24h ?? 0) ||
+          cached.volume24h !== (live.usd_24h_volume ?? coin.volume24h ?? 0) ||
+          cached._flash !== this.liveFlashes[id] ||
+          cached._flashTick !== !!this.liveFlashTick[id];
+        if (!changed) return cached;
+      }
+
       const prev = this.lastCoinPrice[id] ?? coin.price;
       this.lastCoinPrice[id] = live.usd;
-      return {
+      const merged = {
         ...coin,
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
@@ -167,6 +177,9 @@ export default {
         _priceUp: live.usd > prev,
         _priceDown: live.usd < prev,
       };
+      if (!this._mergeCache) this._mergeCache = new Map();
+      this._mergeCache.set(id, merged);
+      return merged;
     },
     sparkTrend(coin) {
       return coin.change24h >= 0 ? "up" : "down";
@@ -381,12 +394,15 @@ export default {
 }
 
 /* ── Table wrapper ─────────────────── */
-
 .table-crypto-wrap {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+  margin-top: 1.5rem;
 }
 
 .table-crypto {
@@ -398,32 +414,32 @@ export default {
 .table-crypto-head {
   background: var(--table-header-bg);
   color: var(--text-secondary);
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 .table-crypto-head th {
-  padding: 0.55rem 0.75rem;
+  padding: 1rem 0.85rem;
   border-bottom: 1px solid var(--table-border);
   vertical-align: middle;
 }
 
-.cell-rank { width: 50px; padding-left: 1rem; }
+.cell-rank { width: 60px; padding-left: 1.25rem !important; }
 .cell-name { width: auto; }
-.cell-price { width: 130px; text-align: right; }
-.cell-change { width: 110px; text-align: right; }
-.cell-spark { width: 90px; text-align: center; }
-.cell-volume { width: 120px; text-align: right; }
-.cell-cap { width: 120px; text-align: right; }
-.cell-act { width: 150px; text-align: right; padding-right: 0.75rem; }
+.cell-price { width: 140px; text-align: right; }
+.cell-change { width: 120px; text-align: right; }
+.cell-spark { width: 100px; text-align: center; }
+.cell-volume { width: 130px; text-align: right; }
+.cell-cap { width: 140px; text-align: right; }
+.cell-act { width: 150px; text-align: right; padding-right: 1.25rem !important; }
 
 .table-crypto-row {
   border-bottom: 1px solid var(--table-border);
   color: var(--text-primary);
-  font-size: 0.9rem;
-  transition: background 0.1s ease;
+  font-size: 0.88rem;
+  transition: all var(--transition-fast);
   position: relative;
 }
 
@@ -432,7 +448,7 @@ export default {
 }
 
 .table-crypto-row td {
-  padding: 0.6rem 0.75rem;
+  padding: 0.85rem 0.85rem;
   vertical-align: middle;
 }
 
@@ -455,50 +471,52 @@ export default {
 .coin-link {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.65rem;
   text-decoration: none;
   color: inherit;
 }
 
 .coin-icon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   object-fit: cover;
 }
 
 .coin-name-cell {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-emphasis);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
 }
 
 .coin-name-cell small {
   color: var(--text-secondary);
-  font-weight: 400;
-  font-size: 0.78rem;
-  margin-left: 0.1rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+  margin-left: 0.2rem;
+  text-transform: uppercase;
 }
 
 .price-value {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
-  color: var(--text-primary);
+  color: var(--text-emphasis);
   font-variant-numeric: tabular-nums;
-  font-family: "Roboto Mono", SFMono-Regular, ui-monospace, monospace;
+  font-family: "JetBrains Mono", SFMono-Regular, ui-monospace, monospace;
 }
 
 .change-value {
-  font-weight: 600;
-  font-size: 0.88rem;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .action-buttons {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .btn-icon {
@@ -507,92 +525,102 @@ export default {
   color: var(--text-secondary);
   font-size: 1.1rem;
   cursor: pointer;
-  padding: 0.2rem 0.3rem;
+  padding: 0.25rem;
   border-radius: 6px;
-  transition: color 0.12s;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-icon:hover {
   color: var(--accent);
+  background: rgba(255, 200, 55, 0.08);
 }
 
 .btn-primary {
   background: var(--accent);
   color: var(--accent-text);
   border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.76rem;
-  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.85rem;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.12s;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(255, 200, 55, 0.15);
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
   color: var(--accent-text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 200, 55, 0.25);
 }
 
 .btn-xs {
-  padding: 0.28rem 0.55rem;
+  padding: 0.3rem 0.65rem;
   font-size: 0.75rem;
 }
 
-.star-active { color: var(--accent); }
+.star-active { color: var(--accent) !important; }
 
 /* ── Flash highlights ────────────── */
-
 .flash-up {
-  animation: flashGreen 0.55s ease;
-  color: var(--positive);
+  animation: flashGreen 0.6s ease;
+  color: var(--positive) !important;
 }
 
 .flash-down {
-  animation: flashRed 0.55s ease;
-  color: var(--negative);
+  animation: flashRed 0.6s ease;
+  color: var(--negative) !important;
 }
 
 @keyframes flashGreen {
-  0% { background-color: rgba(14, 203, 129, 0.2); }
+  0% { background-color: var(--positive-bg); }
   100% { background-color: transparent; }
 }
 
 @keyframes flashRed {
-  0% { background-color: rgba(246, 70, 93, 0.2); }
+  0% { background-color: var(--negative-bg); }
   100% { background-color: transparent; }
 }
 
 /* ── Pagination ──────────────────── */
-
 .pagination-crypto {
   display: flex;
-  gap: 0.2rem;
+  gap: 0.35rem;
 }
 
 .page-btn {
-  min-width: 34px;
-  height: 34px;
-  padding: 0 0.45rem;
-  border: 1px solid var(--table-border);
-  background: var(--table-bg);
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
   color: var(--text-primary);
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 0.82rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.12s;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
 }
 
 .page-btn:hover:not(:disabled) {
-  background: var(--table-bg-hover);
+  background: var(--bg-card-hover);
   border-color: var(--accent);
   color: var(--accent);
+  box-shadow: 0 0 10px rgba(255, 200, 55, 0.1);
 }
 
 .page-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.35;
+  opacity: 0.3;
 }
 
 .page-btn.active {
@@ -600,25 +628,26 @@ export default {
   border-color: var(--accent);
   color: var(--accent-text);
   font-weight: 700;
+  box-shadow: 0 4px 10px rgba(255, 200, 55, 0.2);
 }
 
 /* ── Responsive ──────────────────── */
-
 @media (max-width: 991px) {
   .cell-volume, .cell-cap { display: none; }
   .price-value { font-size: 0.82rem; }
-  .cell-rank { width: 40px; padding-left: 0.5rem; }
-  .cell-spark { width: 70px; }
+  .cell-rank { width: 45px; padding-left: 0.5rem; }
+  .cell-spark { width: 75px; }
+  .cell-act { width: 130px; }
 }
 
 .row-disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   pointer-events: none;
 }
 
 @media (max-width: 575px) {
   .cell-spark { display: none; }
   .cell-change { width: auto; }
-  .cell-rank { width: 30px; padding-left: 0.25rem; }
+  .cell-rank { width: 35px; padding-left: 0.25rem; }
 }
 </style>
