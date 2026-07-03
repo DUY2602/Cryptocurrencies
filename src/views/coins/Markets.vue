@@ -398,16 +398,15 @@ export default {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-sm);
   margin-top: 1.5rem;
 }
 
 .table-crypto {
   width: 100%;
-  table-layout: fixed;
+  min-width: 560px;
   border-collapse: collapse;
 }
 
@@ -439,7 +438,6 @@ export default {
   border-bottom: 1px solid var(--table-border);
   color: var(--text-primary);
   font-size: 0.88rem;
-  transition: all var(--transition-fast);
   position: relative;
 }
 
@@ -527,7 +525,6 @@ export default {
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 6px;
-  transition: all var(--transition-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -548,14 +545,12 @@ export default {
   padding: 0.35rem 0.85rem;
   cursor: pointer;
   text-decoration: none;
-  transition: all var(--transition-fast);
   box-shadow: 0 2px 8px rgba(255, 200, 55, 0.15);
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
   color: var(--accent-text);
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 200, 55, 0.25);
 }
 
@@ -604,11 +599,9 @@ export default {
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(8px);
 }
 
 .page-btn:hover:not(:disabled) {
@@ -640,6 +633,17 @@ export default {
   .cell-act { width: 130px; }
 }
 
+@media (max-width: 768px) {
+  .cell-price { width: 110px; }
+  .cell-change { width: 90px; }
+  .cell-spark { width: 60px; }
+  .cell-act { width: 110px; }
+  .coin-name-cell { font-size: 0.82rem; }
+  .coin-name-cell small { font-size: 0.7rem; }
+  .table-crypto-row td { padding: 0.65rem 0.5rem; }
+  .table-crypto { min-width: 480px; }
+}
+
 .row-disabled {
   opacity: 0.4;
   pointer-events: none;
@@ -649,5 +653,12 @@ export default {
   .cell-spark { display: none; }
   .cell-change { width: auto; }
   .cell-rank { width: 35px; padding-left: 0.25rem; }
+  .cell-price { width: 90px; }
+  .cell-act { width: 90px; }
+  .coin-icon { width: 22px; height: 22px; }
+  .coin-link { gap: 0.4rem; }
+  .table-crypto { min-width: 380px; }
+  .btn-icon { padding: 0.15rem; }
+  .btn-xs { padding: 0.25rem 0.5rem; font-size: 0.7rem; }
 }
 </style>

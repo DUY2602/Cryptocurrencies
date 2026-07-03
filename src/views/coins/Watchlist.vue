@@ -260,40 +260,41 @@ export default {
 .table-crypto-wrap {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
-  border-radius: var(--radius);
-  overflow: hidden;
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: var(--shadow-sm);
 }
-.table-crypto { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.table-crypto { width: 100%; min-width: 560px; border-collapse: collapse; }
 .table-crypto-head {
   background: var(--table-header-bg);
   color: var(--text-secondary);
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 .table-crypto-head th {
-  padding: 0.55rem 0.75rem;
+  padding: 1rem 0.85rem;
   border-bottom: 1px solid var(--table-border);
   vertical-align: middle;
 }
-.cell-rank { width: 50px; padding-left: 1rem; }
+.cell-rank { width: 60px; padding-left: 1.25rem; }
 .cell-name { width: auto; }
-.cell-price { width: 130px; text-align: right; }
-.cell-change { width: 110px; text-align: right; }
-.cell-volume { width: 120px; text-align: right; }
-.cell-cap { width: 120px; text-align: right; }
-.cell-act { width: 150px; text-align: right; padding-right: 0.75rem; }
+.cell-price { width: 140px; text-align: right; }
+.cell-change { width: 120px; text-align: right; }
+.cell-volume { width: 130px; text-align: right; }
+.cell-cap { width: 140px; text-align: right; }
+.cell-act { width: 150px; text-align: right; padding-right: 1.25rem; }
 .table-crypto-row {
   border-bottom: 1px solid var(--table-border);
   color: var(--text-primary);
-  font-size: 0.9rem;
-  transition: background 0.1s ease;
+  font-size: 0.88rem;
   position: relative;
 }
 .table-crypto-row:last-child { border-bottom: none; }
 .table-crypto-row td {
-  padding: 0.6rem 0.75rem;
+  padding: 0.85rem 0.85rem;
   vertical-align: middle;
 }
 .table-crypto-row.is-gainer td:first-child { box-shadow: inset 3px 0 0 0 var(--positive); }
@@ -301,40 +302,40 @@ export default {
 .table-crypto-row:hover { background: var(--table-bg-hover); }
 .table-crypto-row:hover td:first-child { box-shadow: inset 3px 0 0 0 var(--accent); }
 .coin-link {
-  display: flex; align-items: center; gap: 0.55rem;
+  display: flex; align-items: center; gap: 0.65rem;
   text-decoration: none; color: inherit;
 }
-.coin-icon { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-secondary); object-fit: cover; }
-.coin-name-cell { font-weight: 600; color: var(--text-emphasis); font-size: 0.88rem; }
-.coin-name-cell small { color: var(--text-secondary); font-weight: 400; font-size: 0.78rem; margin-left: 0.1rem; }
+.coin-icon { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.05); box-shadow: 0 2px 5px rgba(0,0,0,0.2); object-fit: cover; }
+.coin-name-cell { font-weight: 700; color: var(--text-emphasis); font-size: 0.9rem; }
+.coin-name-cell small { color: var(--text-secondary); font-weight: 500; font-size: 0.75rem; margin-left: 0.2rem; text-transform: uppercase; }
 .price-value {
-  font-weight: 600; font-size: 0.9rem; color: var(--text-primary);
+  font-weight: 700; font-size: 0.9rem; color: var(--text-emphasis);
   font-variant-numeric: tabular-nums;
-  font-family: "Roboto Mono", SFMono-Regular, ui-monospace, monospace;
+  font-family: "JetBrains Mono", SFMono-Regular, ui-monospace, monospace;
 }
-.change-value { font-weight: 600; font-size: 0.88rem; }
-.action-buttons { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; }
+.change-value { font-weight: 700; font-size: 0.85rem; }
+.action-buttons { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; }
 .btn-icon {
   background: transparent; border: none; color: var(--text-secondary);
-  font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.3rem; border-radius: 6px;
-  transition: color 0.12s;
+  font-size: 1.1rem; cursor: pointer; padding: 0.25rem; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
 }
-.btn-icon:hover { color: var(--accent); }
+.btn-icon:hover { color: var(--accent); background: rgba(255,200,55,0.08); }
 .btn-primary {
-  background: var(--accent); color: var(--accent-text); border: none; border-radius: 6px;
-  font-weight: 600; font-size: 0.76rem; padding: 0.3rem 0.65rem;
-  cursor: pointer; text-decoration: none; transition: background 0.12s;
+  background: var(--accent); color: var(--accent-text); border: none; border-radius: 8px;
+  font-weight: 700; font-size: 0.78rem; padding: 0.35rem 0.85rem;
+  cursor: pointer; text-decoration: none; box-shadow: 0 2px 8px rgba(255,200,55,0.15);
 }
 .btn-primary:hover { background: var(--accent-hover); color: var(--accent-text); }
-.btn-xs { padding: 0.28rem 0.55rem; font-size: 0.75rem; }
+.btn-xs { padding: 0.3rem 0.65rem; font-size: 0.75rem; }
 .flash-up { animation: flashGreen 0.55s ease; color: var(--positive); }
 .flash-down { animation: flashRed 0.55s ease; color: var(--negative); }
 @keyframes flashGreen {
-  0% { background-color: rgba(14, 203, 129, 0.2); }
+  0% { background-color: var(--positive-bg); }
   100% { background-color: transparent; }
 }
 @keyframes flashRed {
-  0% { background-color: rgba(246, 70, 93, 0.2); }
+  0% { background-color: var(--negative-bg); }
   100% { background-color: transparent; }
 }
 .row-disabled { opacity: 0.45; pointer-events: none; }
@@ -342,9 +343,27 @@ export default {
 @media (max-width: 991px) {
   .cell-volume, .cell-cap { display: none; }
   .price-value { font-size: 0.82rem; }
-  .cell-rank { width: 40px; padding-left: 0.5rem; }
+  .cell-rank { width: 45px; padding-left: 0.5rem; }
+  .cell-act { width: 130px; }
+}
+@media (max-width: 768px) {
+  .cell-price { width: 110px; }
+  .cell-change { width: 90px; }
+  .cell-act { width: 110px; }
+  .coin-name-cell { font-size: 0.82rem; }
+  .coin-name-cell small { font-size: 0.7rem; }
+  .table-crypto-row td { padding: 0.65rem 0.5rem; }
+  .table-crypto { min-width: 480px; }
 }
 @media (max-width: 575px) {
-  .cell-rank { width: 30px; padding-left: 0.25rem; }
+  .cell-rank { width: 35px; padding-left: 0.25rem; }
+  .cell-change { width: auto; }
+  .cell-price { width: 90px; }
+  .cell-act { width: 90px; }
+  .coin-icon { width: 22px; height: 22px; }
+  .coin-link { gap: 0.4rem; }
+  .table-crypto { min-width: 380px; }
+  .btn-icon { padding: 0.15rem; }
+  .btn-xs { padding: 0.25rem 0.5rem; font-size: 0.7rem; }
 }
 </style>

@@ -17,4 +17,27 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // Optimize chunk size to avoid large bundles
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        // Split vendor chunks for better caching
+        manualChunks: {
+          vue: ['vue', 'vue-router'],
+          lucide: ['@lucide/vue'],
+          bootstrap: ['bootstrap'],
+          'lightweight-charts': ['lightweight-charts'],
+        },
+      },
+    },
+    // Enable CSS code splitting
+    cssCodeSplit: true,
+    // Minify CSS for smaller payloads
+    cssMinify: true,
+  },
+  // Optimize dependencies for faster dev server
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'bootstrap', 'lightweight-charts'],
+  },
 })

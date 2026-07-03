@@ -192,6 +192,8 @@ class LivePriceWebSocket {
 
   startRestPoll() {
     if (this.restPollTimer) return
+    // Only start REST poll if WebSocket is not connected
+    if (this.wsConnected) return
     this.restPollTimer = setInterval(() => this.fetchBinanceRest(), REST_POLL_MS)
   }
 

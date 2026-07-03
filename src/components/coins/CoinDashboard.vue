@@ -598,7 +598,7 @@ export default {
         <!-- Market Sentiment (Moved below chart) -->
         <div class="p-3 px-4 border-top border-secondary border-opacity-25">
           <h6 class="text-uppercase text-muted fw-bold mb-2 panel-title">Market Sentiment</h6>
-          <div class="d-flex justify-content-between text-white small mb-1">
+          <div class="d-flex justify-content-between small mb-1">
             <span>Bullish ({{ bullishPercent }}%)</span>
             <span>Bearish ({{ bearishPercent }}%)</span>
           </div>
@@ -615,9 +615,9 @@ export default {
               <div class="d-flex justify-content-between align-items-center">
                 <div>
                   <div class="text-muted small">Market Cap</div>
-                  <div class="fw-bold text-white mt-1">{{ formatMarketCap(coin.marketCap) }}</div>
+                  <div class="fw-bold mt-1">{{ formatMarketCap(coin.marketCap) }}</div>
                 </div>
-                <div class="sparkline-placeholder"><svg width="40" height="20"><path d="M0 20 Q10 5, 20 15 T40 0" fill="none" stroke="#00f3ff" stroke-width="2"/></svg></div>
+                <div class="sparkline-placeholder"><svg width="40" height="20"><path d="M0 20 Q10 5, 20 15 T40 0" fill="none" stroke="var(--accent)" stroke-width="2"/></svg></div>
               </div>
             </div>
           </div>
@@ -626,7 +626,7 @@ export default {
               <div class="d-flex justify-content-between align-items-center">
                 <div>
                   <div class="text-muted small">24h Volume</div>
-                  <div class="fw-bold text-white mt-1">{{ formatVolume(coin.volume24h) }}</div>
+                  <div class="fw-bold mt-1">{{ formatVolume(coin.volume24h) }}</div>
                 </div>
                 <div class="sparkline-placeholder"><svg width="40" height="20"><path d="M0 10 Q10 20, 20 10 T40 5" fill="none" stroke="#7d2ae8" stroke-width="2"/></svg></div>
               </div>
@@ -667,7 +667,6 @@ export default {
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-primary);
 }
 
@@ -688,7 +687,6 @@ export default {
 }
 
 .price-display-wrapper {
-  transition: all 0.2s ease;
   padding: 4px 12px;
 }
 
@@ -713,7 +711,6 @@ export default {
   font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .btn-tf:hover {
@@ -737,7 +734,6 @@ export default {
   font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 12px;
-  transition: all 0.2s;
 }
 
 .indicator-btn:hover {
@@ -752,8 +748,9 @@ export default {
 }
 
 .chart-area-wrapper {
-  min-height: 400px;
-  height: 400px;
+  min-height: 300px;
+  height: 50vh;
+  max-height: 600px;
   position: relative;
   background: var(--bg-secondary);
 }
@@ -764,7 +761,6 @@ export default {
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 10;
   background: var(--bg-card);
-  backdrop-filter: blur(4px);
 }
 
 /* Tooltip */
@@ -773,7 +769,6 @@ export default {
   display: none;
   padding: 12px;
   background: var(--bg-card);
-  backdrop-filter: blur(8px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   font-size: 12px;
@@ -822,12 +817,10 @@ export default {
   background: var(--bg-card) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 10px;
-  transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .stat-card:hover {
   background: var(--bg-card-hover) !important;
-  transform: translateY(-2px);
 }
 
 .sparkline-placeholder {

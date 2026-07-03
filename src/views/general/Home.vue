@@ -47,15 +47,23 @@ export default {
   },
   computed: {
     liveAllCoins() {
+      // Use memoization to avoid recalculating on every update
+      if (!this._mergeCache) {
+        this._mergeCache = new Map();
+      }
       return this.allCoins.map((c) => this.mergeLive(c));
     },
     liveTrending() {
+      // Optimize sorting - only recalculate when trending changes
       return [...this.trending]
         .map((c) => this.mergeLive(c))
         .sort((a, b) => b.change24h - a.change24h);
     },
+    liveGlobalCoins() {
+      return this.globalCoins.map((c) => this.mergeLive(c));
+    },
     topVolume() {
-      return [...this.liveAllCoins]
+      return [...this.liveGlobalCoins]
         .sort((a, b) => (b.volume24h || 0) - (a.volume24h || 0))
         .slice(0, 10);
     },
@@ -64,7 +72,7 @@ export default {
       return Object.keys(this.livePricesMap).length;
     },
     btcDominance() {
-      const source = this.globalCoins.length > 0 ? this.globalCoins : this.liveAllCoins;
+      const source = this.liveGlobalCoins;
       const btc = source.find((c) => c.id === 'bitcoin');
       if (!btc) return null;
       const total = source.reduce((s, c) => s + (c.marketCap || 0), 0);
@@ -73,7 +81,7 @@ export default {
     newsAtStart() { return !this.newsCanPrev; },
     newsAtEnd() { return !this.newsCanNext; },
     marketStats() {
-      const source = this.globalCoins.length > 0 ? this.globalCoins : this.liveAllCoins;
+      const source = this.liveGlobalCoins;
       const totalCap = source.reduce(
         (s, c) => s + (c.marketCap || 0),
         0,
@@ -82,33 +90,28 @@ export default {
         (s, c) => s + (c.volume24h || 0),
         0,
       );
+      const coinsWithChange = source.filter((c) => c.change24h != null);
       const avgChange =
-        source.length > 0
-          ? source.reduce((s, c) => s + c.change24h, 0) /
-            source.length
+        coinsWithChange.length > 0
+          ? coinsWithChange.reduce((s, c) => s + c.change24h, 0) /
+            coinsWithChange.length
           : 0;
-      return { totalCap, totalVol, avgChange, count: source.length };
+      return { totalCap, totalVol, count: source.length, avgChange };
     },
   },
   async mounted() {
     try {
-      const [top, news] = await Promise.all([
-        api.getTopCoins(10),
+      // Fetch top 100 coins once instead of two separate calls
+      const allCoins = await api.getTopCoins(100);
+      const top = allCoins.slice(0, 10);
+      const [news] = await Promise.all([
         fetchNews({ page: 1, pageSize: 10 }).catch(() => []),
       ]);
       this.trending = [...top].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h));
       this.allCoins = top;
+      this.globalCoins = allCoins;
+      this.binanceCoinCount = allCoins.filter(c => c._hasBinanceChart).length;
       this.latestNews = Array.isArray(news) ? news : [];
-
-      // Count coins from top 100 that have Binance live data
-      try {
-        const allCoins = await api.getTopCoins(100);
-        this.globalCoins = allCoins;
-        this.binanceCoinCount = allCoins.filter(c => c._hasBinanceChart).length;
-      } catch {
-        this.globalCoins = top;
-        this.binanceCoinCount = top.filter(c => c._hasBinanceChart).length;
-      }
     } catch (e) {
       console.warn('[Home] failed to load coins:', e.message)
     } finally {
@@ -133,7 +136,7 @@ export default {
   methods: {
     startLive() {
       if (this._unsub) this._unsub();
-      livePrices.start([...this.trending, ...this.allCoins]);
+      livePrices.start([...this.trending, ...this.globalCoins]);
       this._unsub = livePrices.subscribe((data) => {
         const { directions, tick } = applyLiveFlashes(
           this.liveFlashes,
@@ -247,9 +250,9 @@ export default {
                 <span class="glance-label">Avg 24h</span>
                 <span
                   class="glance-value"
-                  :class="marketStats.avgChange >= 0 ? 'text-positive' : 'text-negative'"
+                  :class="marketStats.avgChange != null ? (marketStats.avgChange >= 0 ? 'text-positive' : 'text-negative') : ''"
                 >
-                  {{ marketStats.avgChange >= 0 ? '+' : '' }}{{ marketStats.avgChange.toFixed(2) }}%
+                  {{ marketStats.avgChange != null ? (marketStats.avgChange >= 0 ? '+' : '') + marketStats.avgChange.toFixed(2) + '%' : '—' }}
                 </span>
               </div>
               <div class="glance-item">
@@ -380,20 +383,7 @@ export default {
   border: 1px solid rgba(255, 200, 55, 0.15);
   border-radius: 20px;
   padding: 24px;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
-}
-
-.glance-panel::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0.7;
 }
 
 .glance-grid {
@@ -476,7 +466,6 @@ export default {
   gap: 8px;
   padding: 12px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-  transition: all var(--transition-fast);
   color: var(--text-emphasis);
   border-radius: 8px;
 }
@@ -485,8 +474,6 @@ export default {
 
 .dt-row:hover {
   background: var(--bg-card-hover);
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .dt-rank {
@@ -506,7 +493,6 @@ export default {
 .dt-icon {
   flex-shrink: 0;
   border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .dt-name {
@@ -535,11 +521,7 @@ export default {
   gap: 2px;
 }
 
-.flip-list-move { transition: transform 0.5s ease; }
-.flip-list-enter-active { transition: all 0.4s ease; }
-.flip-list-leave-active { transition: all 0.3s ease; position: absolute; }
-.flip-list-enter-from { opacity: 0; transform: translateX(-20px); }
-.flip-list-leave-to { opacity: 0; transform: translateX(20px); }
+.flip-list-move { transition: transform 0.2s ease; }
 
 /* ── News ── */
 .news-track {
@@ -558,11 +540,6 @@ export default {
   flex: 0 0 calc(50% - 10px);
   min-width: 320px;
   scroll-snap-align: start;
-  transition: transform var(--transition);
-}
-
-.news-slide:hover {
-  transform: translateY(-4px);
 }
 
 .news-wrap {
@@ -586,18 +563,14 @@ export default {
   font-size: 16px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: all var(--transition-fast);
   flex-shrink: 0;
   z-index: 2;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .news-arrow:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
   background: rgba(255, 200, 55, 0.08);
-  box-shadow: 0 0 12px rgba(255, 200, 55, 0.15);
-  transform: scale(1.05);
 }
 
 .news-arrow:disabled {
@@ -610,7 +583,6 @@ export default {
   flex-shrink: 0;
   object-fit: cover;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .news-body { display: flex; flex-direction: column; min-width: 0; }
@@ -632,7 +604,15 @@ export default {
 
 @media (max-width: 575px) {
   .glance-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .glance-item:nth-child(4) {
+    grid-column: 2;
+  }
+  .glance-item:nth-child(5) {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
   }
   .dt-head, .dt-row {
     grid-template-columns: 24px 1fr 90px;
