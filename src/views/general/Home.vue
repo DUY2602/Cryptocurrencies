@@ -280,7 +280,6 @@ export default {
                       :key="coin.id"
                       :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                       class="dt-row text-decoration-none"
-                      :class="{ 'opacity-50 pe-none': coin._hasBinanceChart === false }"
                     >
                       <span class="dt-rank">#{{ i + 1 }}</span>
                       <span class="dt-coin">
@@ -322,7 +321,6 @@ export default {
                       :key="coin.id"
                       :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                       class="dt-row text-decoration-none"
-                      :class="{ 'opacity-50 pe-none': coin._hasBinanceChart === false }"
                     >
                       <span class="dt-rank">{{ i + 1 }}</span>
                       <span class="dt-coin">

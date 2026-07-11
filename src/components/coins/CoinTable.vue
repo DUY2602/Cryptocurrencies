@@ -54,7 +54,7 @@ export default {
           v-for="(coin, index) in coins"
           :key="coin.id"
           class="table-row-link"
-          :class="[rowClass(coin), { 'opacity-50 pe-none': coin._hasBinanceChart === false }]"
+          :class="[rowClass(coin)]"
         >
           <td v-if="showRank" class="text-secondary d-none d-sm-table-cell">{{ startRank + index }}</td>
           <td>
@@ -82,6 +82,7 @@ export default {
                   {{ coin.name }}
                 </RouterLink>
                 <small class="text-secondary ms-1">{{ coin.symbol }}</small>
+                <span v-if="coin._hasBinanceChart === false" class="badge-gecko-sm">CoinGecko</span>
                 <div class="d-md-none small text-secondary">
                   <PriceWithArrow
                     :price="coin.price"
@@ -110,7 +111,6 @@ export default {
               <RouterLink
                 :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                 class="btn btn-sm btn-outline-accent"
-                :class="{ disabled: coin._hasBinanceChart === false }"
               >
                 Details
               </RouterLink>
@@ -121,3 +121,20 @@ export default {
     </table>
   </div>
 </template>
+
+<style scoped>
+.badge-gecko-sm {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, #f0b90b 12%, transparent);
+  color: #f0b90b;
+  border: 1px solid color-mix(in srgb, #f0b90b 25%, transparent);
+  white-space: nowrap;
+  vertical-align: middle;
+  margin-left: 0.25rem;
+}
+</style>

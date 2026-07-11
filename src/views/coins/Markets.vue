@@ -257,7 +257,7 @@ export default {
                   v-for="(coin, idx) in paginatedCoins"
                   :key="coin.id"
                   class="table-crypto-row"
-                  :class="[coin.change24h >= 0 ? 'is-gainer' : 'is-loser', { 'row-disabled': coin._hasBinanceChart === false }]"
+                  :class="[coin.change24h >= 0 ? 'is-gainer' : 'is-loser']"
                 >
                   <td class="cell-rank text-secondary">
                     {{ (currentPage - 1) * itemsPerPage + idx + 1 }}
@@ -267,7 +267,6 @@ export default {
                     <RouterLink
                   :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                   class="coin-link"
-                  :class="{ 'text-muted opacity-50': coin._hasBinanceChart === false }"
                     >
                       <img
                         v-if="coin.image"
@@ -280,6 +279,7 @@ export default {
                       <span class="coin-name-cell"
                         >{{ coin.name }} <small>{{ coin.symbol }}</small></span
                       >
+                      <span v-if="coin._hasBinanceChart === false" class="badge-gecko-table">CoinGecko</span>
                     </RouterLink>
                   </td>
 
@@ -344,7 +344,6 @@ export default {
                       <RouterLink
                         :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                         class="btn btn-xs btn-primary"
-                        :class="{ disabled: coin._hasBinanceChart === false }"
                       >
                         Trade
                       </RouterLink>
@@ -561,6 +560,21 @@ export default {
 
 .star-active { color: var(--accent) !important; }
 
+.badge-gecko-table {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: color-mix(in srgb, #f0b90b 12%, transparent);
+  color: #f0b90b;
+  border: 1px solid color-mix(in srgb, #f0b90b 25%, transparent);
+  white-space: nowrap;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+}
+
 /* ── Flash highlights ────────────── */
 .flash-up {
   animation: flashGreen 0.6s ease;
@@ -642,11 +656,6 @@ export default {
   .coin-name-cell small { font-size: 0.7rem; }
   .table-crypto-row td { padding: 0.65rem 0.5rem; }
   .table-crypto { min-width: 480px; }
-}
-
-.row-disabled {
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 @media (max-width: 575px) {

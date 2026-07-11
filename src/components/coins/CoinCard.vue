@@ -29,9 +29,8 @@ export default {
   <RouterLink
     :to="{ name: 'CoinDetail', params: { id: coin.id } }"
     class="text-decoration-none coin-card-link"
-    :class="{ 'pe-none': coin._hasBinanceChart === false }"
   >
-    <div class="card card-crypto coin-card h-100 anim-fade-slide" :class="{ 'opacity-50': coin._hasBinanceChart === false }">
+    <div class="card card-crypto coin-card h-100 anim-fade-slide">
       <div class="card-body p-3">
         <div class="d-flex align-items-center gap-2 mb-3">
           <img
@@ -42,12 +41,13 @@ export default {
             width="32"
             height="32"
           />
-          <div>
+          <div class="flex-grow-1">
             <h6 class="mb-0 coin-name">
               {{ coin.name }}
               <small class="text-secondary">{{ coin.symbol }}</small>
             </h6>
           </div>
+          <span v-if="coin._hasBinanceChart === false" class="badge-gecko">CoinGecko</span>
         </div>
         <p class="coin-price mb-1">
           <PriceWithArrow
@@ -111,5 +111,18 @@ export default {
 .coin-change {
   font-weight: 700;
   font-size: 0.88rem;
+}
+
+.badge-gecko {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: color-mix(in srgb, #f0b90b 15%, transparent);
+  color: #f0b90b;
+  border: 1px solid color-mix(in srgb, #f0b90b 30%, transparent);
+  white-space: nowrap;
 }
 </style>

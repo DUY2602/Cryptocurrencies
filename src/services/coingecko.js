@@ -93,3 +93,67 @@ export async function refreshCoinMeta(coins) {
     }
   })
 }
+
+const COINGECKO_BASE_URL = 'https://api.coingecko.com/api/v3'
+const geckoPriceCache = {}
+const GECKO_PRICE_CACHE_MS = 30 * 1000
+
+export async function fetchCoinPrice(coinId) {
+  if (!coinId) return null
+  const id = String(coinId).toLowerCase()
+
+  const cached = geckoPriceCache[id]
+  if (cached && Date.now() - cached.time < GECKO_PRICE_CACHE_MS) {
+    return cached.data
+  }
+
+  try {
+    const url = `${COINGECKO_BASE_URL}/simple/price?ids=${encodeURIComponent(id)}&vs_currency=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`CoinGecko ${res.status}`)
+    const json = await res.json()
+    const row = json[id]
+    if (!row) return null
+
+    const data = {
+      usd: row.usd ?? null,
+      usd_24h_change: row.usd_24h_change ?? 0,
+      usd_24h_volume: row.usd_24h_volume ?? 0,
+      usd_market_cap: row.usd_market_cap ?? 0,
+      source: 'coingecko',
+    }
+
+    geckoPriceCache[id] = { data, time: Date.now() }
+    return data
+  } catch (e) {
+    console.warn('[coingecko] fetchCoinPrice failed:', e.message)
+    return geckoPriceCache[id]?.data ?? null
+  }
+}
+
+export async function fetchMarketChart(coinId, days = 7) {
+  if (!coinId) return null
+  const id = String(coinId).toLowerCase()
+
+  try {
+    const url = `${COINGECKO_BASE_URL}/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=${days}`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`CoinGecko ${res.status}`)
+    const json = await res.json()
+
+    const candles = (json.prices || []).map(([time, price]) => ({
+      time: Math.floor(time / 1000),
+      value: price,
+    }))
+
+    const volumes = (json.total_volumes || []).map(([time, vol]) => ({
+      time: Math.floor(time / 1000),
+      value: vol,
+    }))
+
+    return { candles, volumes, source: 'coingecko' }
+  } catch (e) {
+    console.warn('[coingecko] fetchMarketChart failed:', e.message)
+    return null
+  }
+}
