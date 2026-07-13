@@ -1,6 +1,8 @@
 import { ref, computed } from "vue";
 import { supabase } from "../../supabase/supabase.js";
 
+const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin;
+
 export const user = ref(null);
 
 function mapUser(authUser) {
@@ -43,7 +45,7 @@ async function upsertProfile(authUser, name) {
 
 async function updatePasswordHash(password) {
   if (!user.value) return;
-  const bcrypt = await import("bcryptjs").then(m => m.default || m);
+  const bcrypt = await import("bcryptjs").then((m) => m.default || m);
   const hash = await bcrypt.hash(password, 10);
   const { error } = await supabase
     .from("profiles")
@@ -59,8 +61,6 @@ supabase.auth.onAuthStateChange((_event, session) => {
 });
 
 loadUser();
-
-
 
 export function useAuth() {
   const isLoggedIn = computed(() => !!user.value);
@@ -108,7 +108,7 @@ export function useAuth() {
             name: displayName,
             tempPassword: tempPassword,
           },
-          emailRedirectTo: `${window.location.origin}/set-password`,
+          emailRedirectTo: `${APP_URL}/set-password`,
         },
       });
 
@@ -174,7 +174,7 @@ export function useAuth() {
         password,
         options: {
           data: { name: displayName },
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${APP_URL}/`,
         },
       });
 
