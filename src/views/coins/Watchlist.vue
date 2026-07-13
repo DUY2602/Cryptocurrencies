@@ -223,7 +223,7 @@ export default {
                       class="btn btn-xs btn-primary"
                       :class="{ disabled: coin._hasBinanceChart === false }"
                     >
-                      Trade
+                      View
                     </RouterLink>
                   </div>
                 </td>

@@ -189,6 +189,13 @@ function onDocClick(e) {
   color: var(--nav-text) !important;
   position: relative;
   padding: 0.5rem 1rem !important;
+  transition: all var(--transition-fast);
+}
+
+.crypto-navbar .nav-link:hover {
+  color: var(--accent) !important;
+  background: rgba(255, 255, 255, 0.05);
+  text-shadow: 0 0 10px var(--accent);
 }
 
 .crypto-navbar .nav-link::after {
@@ -205,8 +212,15 @@ function onDocClick(e) {
   transition: transform var(--transition-fast);
 }
 
-.crypto-navbar .nav-link.active::after {
+.crypto-navbar .nav-link.active::after,
+.crypto-navbar .nav-link:hover::after {
   transform: translateX(-50%) scaleX(1);
+  box-shadow: 0 0 15px var(--accent);
+}
+
+.crypto-navbar .nav-link.active {
+  color: var(--accent) !important;
+  font-weight: 600;
 }
 
 .crypto-navbar .admin-link {
@@ -215,9 +229,13 @@ function onDocClick(e) {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  transition: color var(--transition-fast);
 }
 
-.crypto-navbar .admin-link:hover { color: var(--accent-hover); }
+.crypto-navbar .admin-link:hover { 
+  color: var(--accent-hover);
+  text-shadow: 0 0 10px var(--accent-hover);
+}
 
 .crypto-navbar .admin-badge {
   display: inline-flex;
@@ -248,7 +266,7 @@ function onDocClick(e) {
 .crypto-navbar .user-menu-toggle:hover {
   background: var(--bg-card-hover);
   border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(255, 200, 55, 0.1);
+  box-shadow: 0 0 12px rgba(239, 177, 22, 0.751);
 }
 
 .crypto-navbar .user-avatar-mini {

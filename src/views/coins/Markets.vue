@@ -345,7 +345,7 @@ export default {
                         :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                         class="btn btn-xs btn-primary"
                       >
-                        Trade
+                        View
                       </RouterLink>
                     </div>
                   </td>
