@@ -33,9 +33,6 @@ export async function getCommentCount(articleId) {
 }
 
 export async function getComments(articleId) {
-  const key = String(articleId)
-  if (cache.value[key]) return cache.value[key]
-
   const { data, error } = await supabase
     .from('comments')
     .select('*')
@@ -56,6 +53,7 @@ export async function getComments(articleId) {
     createdAt: row.created_at,
   }))
 
+  const key = String(articleId)
   cache.value[key] = list
   saveCache()
   return list

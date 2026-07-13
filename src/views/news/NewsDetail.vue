@@ -85,6 +85,8 @@ export default {
             this.newComment = "";
             this.comments = [...this.comments, comment];
             this.commentCount++;
+          } else {
+            alert("Failed to post comment. Check console for details.");
           }
         },
       );
