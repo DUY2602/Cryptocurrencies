@@ -82,7 +82,6 @@ export default {
                   {{ coin.name }}
                 </RouterLink>
                 <small class="text-secondary ms-1">{{ coin.symbol }}</small>
-                <span v-if="coin._hasBinanceChart === false" class="badge-gecko-sm">CoinGecko</span>
                 <div class="d-md-none small text-secondary">
                   <PriceWithArrow
                     :price="coin.price"

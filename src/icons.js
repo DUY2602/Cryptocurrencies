@@ -26,8 +26,8 @@ const iconMap = {
   Lock: icons.Lock,
   HelpCircle: icons.HelpCircle,
   Inbox: icons.Inbox,
-  Link: icons.Link,
-  Image: icons.Image,
+  IconLink: icons.Link,
+  IconImage: icons.Image,
   Paperclip: icons.Paperclip,
   FileText: icons.FileText,
   MoreHorizontal: icons.MoreHorizontal,
@@ -51,6 +51,9 @@ const iconMap = {
   Pencil: icons.Pencil,
   UserPlus: icons.UserPlus,
   Mail: icons.Mail,
+  Save: icons.Save,
+  Library: icons.Library,
+  BrainCircuit: icons.BrainCircuit,
 }
 
 export function registerIcons(app) {

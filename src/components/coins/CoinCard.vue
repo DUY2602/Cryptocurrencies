@@ -47,7 +47,6 @@ export default {
               <small class="text-secondary">{{ coin.symbol }}</small>
             </h6>
           </div>
-          <span v-if="coin._hasBinanceChart === false" class="badge-gecko">CoinGecko</span>
         </div>
         <p class="coin-price mb-1">
           <PriceWithArrow

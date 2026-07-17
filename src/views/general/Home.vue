@@ -1,5 +1,5 @@
 <script>
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, shallowRef, ref } from "vue";
 import { RouterLink } from "vue-router";
 import HeroSection from "../../components/layout/HeroSection.vue";
 import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
@@ -25,17 +25,20 @@ export default {
     LiveBadge,
     AdoptionMap: defineAsyncComponent(() => import("../../components/geo/RadarMap.vue")),
   },
+  setup() {
+    const prices = shallowRef({})
+    const flashes = shallowRef({})
+    const flashTick = shallowRef({})
+    const renderTick = ref(0)
+    const isLive = ref(false)
+    return { prices, flashes, flashTick, renderTick, isLive }
+  },
   data() {
     return {
       trending: [],
       allCoins: [],
       latestNews: [],
       loading: true,
-      livePricesMap: {},
-      liveFlashes: {},
-      liveFlashTick: {},
-      liveTick: 0,
-      isLive: false,
       binanceCoinCount: 0,
       newsTrack: null,
       newsScrollPos: 0,
@@ -68,8 +71,8 @@ export default {
         .slice(0, 10);
     },
     liveCoinCount() {
-      // Count of coins actively receiving data from Binance websocket
-      return Object.keys(this.livePricesMap).length;
+      void this.renderTick;
+      return Object.keys(this.prices).length;
     },
     btcDominance() {
       const source = this.liveGlobalCoins;
@@ -102,7 +105,7 @@ export default {
   async mounted() {
     try {
       // Fetch top 100 coins once instead of two separate calls
-      const allCoins = await api.getTopCoins(100);
+      const allCoins = await api.getTopCoins();
       const top = allCoins.slice(0, 10);
       const [news] = await Promise.all([
         fetchNews({ page: 1, pageSize: 10 }).catch(() => []),
@@ -110,7 +113,7 @@ export default {
       this.trending = [...top].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h));
       this.allCoins = top;
       this.globalCoins = allCoins;
-      this.binanceCoinCount = allCoins.filter(c => c._hasBinanceChart).length;
+      this.binanceCoinCount = allCoins.length;
       this.latestNews = Array.isArray(news) ? news : [];
     } catch (e) {
       console.warn('[Home] failed to load coins:', e.message)
@@ -139,21 +142,21 @@ export default {
       livePrices.start([...this.trending, ...this.globalCoins]);
       this._unsub = livePrices.subscribe((data) => {
         const { directions, tick } = applyLiveFlashes(
-          this.liveFlashes,
-          this.livePricesMap,
+          this.flashes,
+          this.prices,
           data,
         );
-        this.liveFlashes = directions;
-        this.liveFlashTick = tick;
-        this.livePricesMap = { ...data };
-        this.liveTick += 1;
-        this.isLive = Object.keys(data).length > 0;
+        Object.assign(this.flashes, directions);
+        Object.assign(this.flashTick, tick);
+        Object.assign(this.prices, data);
+        this.renderTick++;
+        this.isLive = true;
       });
     },
     mergeLive(coin) {
-      void this.liveTick;
+      void this.renderTick;
       const id = String(coin.coingeckoId || coin.id);
-      const live = getLiveQuote(this.livePricesMap, coin);
+      const live = getLiveQuote(this.prices, coin);
       if (live?.usd == null) return coin;
 
       const cached = this._mergeCache?.get(id);
@@ -162,8 +165,8 @@ export default {
           cached.price !== live.usd ||
           cached.change24h !== (live.usd_24h_change ?? coin.change24h ?? 0) ||
           cached.marketCap !== (coin.circulatingSupply > 0 ? coin.circulatingSupply * live.usd : coin.marketCap) ||
-          cached._flash !== this.liveFlashes[id] ||
-          cached._flashTick !== !!this.liveFlashTick[id];
+          cached._flash !== this.flashes[id] ||
+          cached._flashTick !== !!this.flashTick[id];
         if (!changed) return cached;
       }
 
@@ -174,8 +177,8 @@ export default {
         marketCap: coin.circulatingSupply > 0
           ? coin.circulatingSupply * live.usd
           : coin.marketCap,
-        _flash: this.liveFlashes[id],
-        _flashTick: !!this.liveFlashTick[id],
+        _flash: this.flashes[id],
+        _flashTick: !!this.flashTick[id],
       };
       if (!this._mergeCache) this._mergeCache = new Map();
       this._mergeCache.set(id, merged);

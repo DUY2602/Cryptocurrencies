@@ -1,13 +1,4 @@
 <script setup>
-/**
- * AdminSettings — quick settings panel
- *
- *  - DB connection status
- *  - RAG pipeline status (future-proof placeholder)
- *  - Editor preferences
- *  - Theme + cache utilities
- */
-
 import { ref, onMounted } from "vue";
 import { supabase } from "../../../supabase/supabase.js";
 import { useTheme } from "../../composables/useTheme.js";
@@ -41,9 +32,7 @@ async function checkDb() {
   }
 }
 
-onMounted(() => {
-  checkDb();
-});
+onMounted(checkDb);
 
 function clearCache() {
   try {
@@ -81,22 +70,15 @@ function clearCache() {
               Re-check
             </button>
           </div>
-
           <div class="bin-stats-compact mt-0">
             <div class="bin-stat">
               <span class="bin-stat-lbl">Connection</span>
               <span class="bin-stat-val">
-                <span
-                  class="badge"
-                  :class="{
-                    'bg-success-subtle text-success-emphasis':
-                      dbStatus === 'ok',
-                    'bg-warning-subtle text-warning-emphasis':
-                      dbStatus === 'checking',
-                    'bg-danger-subtle text-danger-emphasis':
-                      dbStatus === 'error',
-                  }"
-                >
+                <span class="badge" :class="{
+                  'bg-success-subtle text-success-emphasis': dbStatus === 'ok',
+                  'bg-warning-subtle text-warning-emphasis': dbStatus === 'checking',
+                  'bg-danger-subtle text-danger-emphasis': dbStatus === 'error',
+                }">
                   <span v-if="dbStatus === 'ok'"><Check :size="14" /> Online</span>
                   <span v-else-if="dbStatus === 'checking'">Checking…</span>
                   <span v-else><X :size="16" /> Error</span>
@@ -113,9 +95,7 @@ function clearCache() {
             </div>
             <div class="bin-stat">
               <span class="bin-stat-lbl">Last check</span>
-              <span class="bin-stat-val">
-                {{ lastCheck ? lastCheck.toLocaleTimeString() : "—" }}
-              </span>
+              <span class="bin-stat-val">{{ lastCheck ? lastCheck.toLocaleTimeString() : "—" }}</span>
             </div>
           </div>
         </div>
@@ -136,37 +116,23 @@ function clearCache() {
             <div class="bin-stat">
               <span class="bin-stat-lbl">Role</span>
               <span class="bin-stat-val">
-                <span
-                  v-if="profile?.role === 'admin'"
-                  class="badge bg-warning-subtle text-warning-emphasis"
-                  ><Star :size="12" class="me-1" />Admin</span
-                >
-                <span v-else class="badge bg-secondary-subtle text-secondary">
-                  User
+                <span v-if="profile?.role === 'admin'" class="badge bg-warning-subtle text-warning-emphasis">
+                  <Star :size="12" class="me-1" />Admin
                 </span>
+                <span v-else class="badge bg-secondary-subtle text-secondary">User</span>
               </span>
             </div>
             <div class="bin-stat">
               <span class="bin-stat-lbl">Role check</span>
               <span class="bin-stat-val">
-                <span
-                  class="badge"
-                  :class="
-                    loading
-                      ? 'bg-secondary-subtle text-secondary'
-                      : 'bg-success-subtle text-success-emphasis'
-                  "
-                  >{{ loading ? "…" : "" }}<span v-if="!loading"><Check :size="14" /></span></span
-                >
+                <span class="badge" :class="loading ? 'bg-secondary-subtle text-secondary' : 'bg-success-subtle text-success-emphasis'">
+                  {{ loading ? "…" : "" }}<span v-if="!loading"><Check :size="14" /></span>
+                </span>
               </span>
             </div>
           </div>
           <div class="mt-3">
-            <button
-              class="btn btn-sm btn-outline-accent"
-              :disabled="loading"
-              @click="refresh"
-            >
+            <button class="btn btn-sm btn-outline-accent" :disabled="loading" @click="refresh">
               <RefreshCw :size="14" /> Refresh role
             </button>
           </div>
@@ -180,57 +146,23 @@ function clearCache() {
             <Settings :size="16" />
             Preferences
           </h6>
-
           <div class="form-check form-switch mb-3">
-            <input
-              id="themeToggle"
-              class="form-check-input"
-              type="checkbox"
-              :checked="isDark"
-              @change="toggle"
-            />
+            <input id="themeToggle" class="form-check-input" type="checkbox" :checked="isDark" @change="toggle" />
             <label class="form-check-label" for="themeToggle">
               <strong>Dark theme</strong>
-              <small class="d-block text-secondary">
-                Off = use the light theme.
-              </small>
+              <small class="d-block text-secondary">Off = use the light theme.</small>
             </label>
           </div>
-
           <hr class="border-color" />
-
           <h6 class="text-emphasis mb-2"><Wrench :size="16" /> Maintenance</h6>
           <p class="text-secondary small mb-2">
-            Clear localStorage / sessionStorage. Useful after a schema change or
-            theme switch issue.
+            Clear localStorage / sessionStorage. Useful after a schema change or theme switch issue.
           </p>
-          <button class="btn btn-sm btn-outline-accent" @click="clearCache">
-            Clear local cache
-          </button>
-        </div>
-      </div>
-
-      <!-- RAG / future -->
-      <div class="col-12">
-        <div class="card-crypto p-3 p-md-4">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="text-emphasis mb-0 d-flex align-items-center gap-2">
-              <Search :size="16" />
-              RAG pipeline
-            </h6>
-            <span class="badge bg-secondary-subtle text-secondary">
-              Coming soon
-            </span>
-          </div>
-          <p class="text-secondary small mb-0">
-            Once the <code>news_embeddings</code> table is created (see bottom
-            of <code>supabase/news_table.sql</code>), this panel will let admins
-            trigger re-embedding, inspect chunk counts, and test Gemini-powered
-            Q&A.
-          </p>
+          <button class="btn btn-sm btn-outline-accent" @click="clearCache">Clear local cache</button>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 

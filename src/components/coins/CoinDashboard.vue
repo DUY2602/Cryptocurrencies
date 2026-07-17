@@ -4,7 +4,6 @@ import { coinWebSocket } from "../../services/websocket.js"
 import { livePrices, getLiveQuote } from "../../services/livePrices.js"
 import { useTheme } from "../../composables/useTheme.js"
 import { formatPrice, formatChange, formatMarketCap, changeClass, formatVolume } from "../../utils/format.js"
-import { fetchMarketChart } from "../../services/coingecko.js"
 
 const TIMEFRAME_SECONDS = {
   '1s': 1,
@@ -165,8 +164,8 @@ export default {
       const symbol = this.coin.symbol
       const pair = coinWebSocket.toBinancePair(symbol)
 
-      if (!pair || this.coin._hasBinanceChart === false) {
-        await this.loadCoinGeckoChart()
+      if (!pair) {
+        this.error = 'Trading pair not found on Binance.'
         this.loading = false
         return
       }
@@ -237,129 +236,10 @@ export default {
         })
       } catch (err) {
         console.error('[CoinDashboard]', err)
-        await this.loadCoinGeckoChart()
+        this.error = 'Failed to load chart data from Binance.'
       } finally {
         this.loading = false
       }
-    },
-
-    async loadCoinGeckoChart() {
-      this.chartSource = 'coingecko'
-      const days = this.timeframe === '1s' ? 1
-        : this.timeframe === '1m' ? 1
-        : this.timeframe === '5m' ? 1
-        : this.timeframe === '15m' ? 2
-        : this.timeframe === '1h' ? 7
-        : this.timeframe === '4h' ? 30
-        : this.timeframe === '12h' ? 30
-        : this.timeframe === '1d' ? 90
-        : 90
-
-      try {
-        const chartData = await fetchMarketChart(this.coin.coingeckoId || this.coin.id, days)
-        if (!chartData?.candles?.length) {
-          this.noChart = true
-          this.error = null
-          return
-        }
-
-        this.candles = chartData.candles
-        this.volumes = chartData.candles.map((c) => ({
-          time: c.time,
-          value: 0,
-          color: 'rgba(100, 100, 100, 0.2)',
-        }))
-
-        let emaVal = this.candles[0].value
-        const k = 2 / (20 + 1)
-        this.maData = []
-        this.emaData = []
-        for (let i = 0; i < this.candles.length; i++) {
-          const c = this.candles[i]
-          if (i === 0) emaVal = c.value
-          else emaVal = (c.value - emaVal) * k + emaVal
-          this.emaData.push({ time: c.time, value: emaVal })
-
-          if (i >= 19) {
-            let sum = 0
-            for (let j = 0; j < 20; j++) sum += this.candles[i - j].value
-            this.maData.push({ time: c.time, value: sum / 20 })
-          }
-        }
-
-        this.$nextTick(() => {
-          try { this.initCoinGeckoChart() } catch (e) {
-            console.error('[CoinDashboard] initCoinGeckoChart error:', e)
-            this.error = e.message || 'Error rendering chart'
-          }
-        })
-      } catch (err) {
-        console.error('[CoinDashboard] CoinGecko fallback failed:', err)
-        this.noChart = true
-        this.error = null
-      }
-    },
-
-    initCoinGeckoChart() {
-      const container = this.$refs.chartContainer
-      if (!container) return
-      this.cleanupChart()
-
-      this.chart = createChart(container, {
-        width:  container.clientWidth,
-        height: 400,
-        layout: {
-          background: { type: ColorType.Solid, color: this.isDark ? '#0b0f19' : '#ffffff' },
-          textColor:  this.isDark ? '#9ca3af' : '#475569',
-        },
-        grid: {
-          vertLines: { color: this.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.06)' },
-          horzLines: { color: this.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.06)' },
-        },
-        crosshair: { mode: CrosshairMode.Normal },
-        rightPriceScale: { borderColor: this.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)', visible: true },
-        timeScale: {
-          borderColor: this.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)',
-          timeVisible: false,
-          rightOffset: 3,
-          barSpacing: 8,
-        },
-      })
-
-      const lineData = this.candles.map(c => ({ time: c.time, value: c.value }))
-      this.candlestickSeries = this.chart.addSeries(LineSeries, {
-        color: '#f0b90b',
-        lineWidth: 2,
-        visible: this.activeIndicator === 'Price',
-      })
-      this.candlestickSeries.setData(lineData)
-
-      this.maSeries = this.chart.addSeries(LineSeries, {
-        color: '#0ecb81',
-        lineWidth: 1,
-        visible: this.activeIndicator === 'MA',
-      })
-      this.maSeries.setData(this.maData)
-
-      this.emaSeries = this.chart.addSeries(LineSeries, {
-        color: '#7d2ae8',
-        lineWidth: 1,
-        visible: this.activeIndicator === 'EMA',
-      })
-      this.emaSeries.setData(this.emaData)
-
-      this.volumeSeries = this.chart.addSeries(HistogramSeries, {
-        priceFormat:       { type: 'volume' },
-        priceScaleId:      '',
-        lastValueVisible:  false,
-        priceLineVisible:  false,
-        visible: false,
-      })
-      this.volumeSeries.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } })
-      this.volumeSeries.setData(this.volumes)
-
-      this.chart.timeScale().scrollToRealTime()
-      this.setupResizeObserver()
     },
 
     initChart() {

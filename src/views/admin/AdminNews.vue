@@ -87,7 +87,7 @@ onMounted(() => {
   load();
   // Realtime — when something changes server-side, just re-fetch the list
   // (cheap, robust, and avoids us missing any cascade)
-  unsubscribe = subscribeNews(() => load());
+  unsubscribe = subscribeNews(() => load(), "admin-news");
 });
 
 onBeforeUnmount(() => {

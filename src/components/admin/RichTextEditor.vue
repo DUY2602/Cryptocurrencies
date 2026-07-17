@@ -44,6 +44,8 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4] },
+      link: false,
+      underline: false,
     }),
     Underline,
     Link.configure({
@@ -318,7 +320,7 @@ function chain(fn) {
           title="Insert / edit link"
           @click="toggleLink"
         >
-          <Link :size="16" />
+          <IconLink :size="16" />
         </button>
         <button
           type="button"
@@ -327,7 +329,7 @@ function chain(fn) {
           title="Insert image"
           @click="openImage"
         >
-          <Image :size="16" />
+          <IconImage :size="16" />
         </button>
         <button
           type="button"

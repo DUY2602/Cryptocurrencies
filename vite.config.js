@@ -4,6 +4,9 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   server: {
+    hmr: {
+      timeout: 120000,
+    },
     proxy: {
       '/api/binance': {
         target: 'https://api.binance.com',

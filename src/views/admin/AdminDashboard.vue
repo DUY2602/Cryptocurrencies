@@ -145,7 +145,7 @@ async function loadChart() {
 onMounted(async () => {
   await load();
   loadChart();
-  unsubscribe = subscribeNews(() => load());
+  unsubscribe = subscribeNews(() => load(), "dashboard");
 });
 
 onBeforeUnmount(() => {

@@ -25,6 +25,8 @@ class LivePriceWebSocket {
     this.ws = null
     this.symbolToLocalId = new Map()
     this.prices = {}
+    this._changedIds = new Set()
+    this._firstFlush = true
     this.listeners = new Set()
     this.reconnectAttempts = 0
     this.reconnectTimer = null
@@ -47,6 +49,8 @@ class LivePriceWebSocket {
 
   setTrackedCoins(coins) {
     this.symbolToLocalId.clear()
+    this._changedIds.clear()
+    this._firstFlush = true
 
     for (const coin of coins) {
       const localId = String(coin.id)
@@ -179,6 +183,7 @@ class LivePriceWebSocket {
               : volume,
             timestamp: row.closeTime || Date.now(),
           }
+          this._changedIds.add(localId)
           changed = true
         }
       } catch (e) {
@@ -231,26 +236,55 @@ class LivePriceWebSocket {
         usd_24h_volume: parsed.volume,
         timestamp: t.E || Date.now(),
       }
+      this._changedIds.add(localId)
       matched += 1
     }
 
     if (matched) this.scheduleNotify()
   }
 
-  /** Trailing throttle — always flush latest prices after NOTIFY_MS */
+  /** Throttle — flush latest prices at most every NOTIFY_ms */
   scheduleNotify() {
-    if (this.notifyTimer) clearTimeout(this.notifyTimer)
-    this.notifyTimer = setTimeout(() => {
-      this.notifyTimer = null
-      const snapshot = { ...this.prices }
-      this.listeners.forEach((cb) => {
-        try {
-          cb(snapshot)
-        } catch (e) {
-          console.error('[WebSocket] listener error:', e)
-        }
-      })
-    }, NOTIFY_MS)
+    const now = Date.now()
+    if (!this._lastNotify) this._lastNotify = now
+    const remaining = NOTIFY_MS - (now - this._lastNotify)
+
+    if (remaining <= 0) {
+      if (this.notifyTimer) {
+        clearTimeout(this.notifyTimer)
+        this.notifyTimer = null
+      }
+      this._lastNotify = now
+      this.flushPrices()
+    } else if (!this.notifyTimer) {
+      this.notifyTimer = setTimeout(() => {
+        this.notifyTimer = null
+        this._lastNotify = Date.now()
+        this.flushPrices()
+      }, remaining)
+    }
+  }
+
+  flushPrices() {
+    if (this._changedIds.size === 0 && !this._firstFlush) return
+    this._firstFlush = false
+
+    const changed = {}
+    for (const id of this._changedIds) {
+      changed[id] = this.prices[id]
+    }
+    this._changedIds.clear()
+
+    const keys = Object.keys(changed)
+    if (keys.length === 0) return
+
+    this.listeners.forEach((cb) => {
+      try {
+        cb(changed)
+      } catch (e) {
+        console.error('[WebSocket] listener error:', e)
+      }
+    })
   }
 
   scheduleReconnect() {
@@ -296,9 +330,12 @@ class LivePriceWebSocket {
     this.stopRestPoll()
     this.reconnectTimer = null
     this.notifyTimer = null
+    this._lastNotify = 0
     this.closeSocket()
     this.listeners.clear()
     this.symbolToLocalId.clear()
+    this._changedIds.clear()
+    this._firstFlush = true
     this.prices = {}
     this.reconnectAttempts = 0
   }

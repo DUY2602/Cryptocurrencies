@@ -5,6 +5,7 @@ import {
   applyLiveFlashes,
   getLiveQuote,
 } from "../../services/livePrices.js";
+import { shallowRef, ref } from "vue";
 import StatCard from "../../components/ui/StatCard.vue";
 import CoinDashboard from "../../components/coins/CoinDashboard.vue";
 import FavoriteButton from "../../components/ui/FavoriteButton.vue";
@@ -28,16 +29,19 @@ export default {
     EmptyState,
     LiveBadge,
   },
+  setup() {
+    const prices = shallowRef({})
+    const flashes = shallowRef({})
+    const flashTick = shallowRef({})
+    const renderTick = ref(0)
+    const isLive = ref(false)
+    return { prices, flashes, flashTick, renderTick, isLive }
+  },
   data() {
     return {
       coin: null,
       loading: true,
       error: null,
-      livePricesMap: {},
-      liveFlashes: {},
-      liveFlashTick: {},
-      liveTick: 0,
-      isLive: false,
     };
   },
   computed: {
@@ -91,29 +95,29 @@ export default {
       livePrices.start([this.coin]);
       this._unsub = livePrices.subscribe((data) => {
         const { directions, tick } = applyLiveFlashes(
-          this.liveFlashes,
-          this.livePricesMap,
+          this.flashes,
+          this.prices,
           data,
         );
-        this.liveFlashes = directions;
-        this.liveFlashTick = tick;
-        this.livePricesMap = { ...data };
-        this.liveTick += 1;
-        this.isLive = Object.keys(data).length > 0;
+        Object.assign(this.flashes, directions);
+        Object.assign(this.flashTick, tick);
+        Object.assign(this.prices, data);
+        this.renderTick++;
+        this.isLive = true;
       });
     },
     mergeLive(coin) {
-      void this.liveTick;
+      void this.renderTick;
       const id = String(coin.coingeckoId || coin.id);
-      const live = getLiveQuote(this.livePricesMap, coin);
+      const live = getLiveQuote(this.prices, coin);
       if (live?.usd == null) return coin;
       return {
         ...coin,
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
         volume24h: live.usd_24h_volume ?? coin.volume24h ?? 0,
-        _flash: this.liveFlashes[id],
-        _flashTick: !!this.liveFlashTick[id],
+        _flash: this.flashes[id],
+        _flashTick: !!this.flashTick[id],
       };
     },
   },

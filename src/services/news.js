@@ -245,9 +245,12 @@ export async function deleteNews(id) {
  * Subscribe to realtime INSERT/UPDATE/DELETE on the news table.
  * Returns an unsubscribe function.
  */
-export function subscribeNews(callback) {
+let channelCounter = 0;
+export function subscribeNews(callback, suffix = "") {
+  const id = ++channelCounter;
+  const channelName = "news-realtime" + (suffix ? "-" + suffix : "") + "-" + id;
   const channel = supabase
-    .channel("news-realtime")
+    .channel(channelName)
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "news" },

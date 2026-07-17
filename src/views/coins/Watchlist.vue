@@ -5,6 +5,7 @@ import {
   applyLiveFlashes,
   getLiveQuote,
 } from "../../services/livePrices.js";
+import { shallowRef, ref } from "vue";
 import { useWatchlist } from "../../composables/useWatchlist.js";
 import { formatPrice, formatMarketCap, formatChange, changeClass } from "../../utils/format.js";
 import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
@@ -14,17 +15,17 @@ import PageHero from "../../components/layout/PageHero.vue";
 export default {
   components: { LoadingSpinner, EmptyState, PageHero },
   setup() {
-    return useWatchlist();
+    const prices = shallowRef({})
+    const flashes = shallowRef({})
+    const flashTick = shallowRef({})
+    const renderTick = ref(0)
+    const isLive = ref(false)
+    return { ...useWatchlist(), prices, flashes, flashTick, renderTick, isLive }
   },
   data() {
     return {
       allCoins: [],
       loading: true,
-      livePricesMap: {},
-      liveFlashes: {},
-      liveFlashTick: {},
-      liveTick: 0,
-      isLive: false,
     };
   },
   computed: {
@@ -42,7 +43,7 @@ export default {
     },
     async loadCoins() {
       try {
-        this.allCoins = await api.getTopCoins(50);
+        this.allCoins = await api.getTopCoins();
       } finally {
         this.loading = false;
         this.startLive();
@@ -57,28 +58,28 @@ export default {
       livePrices.start(tracked);
       this._unsub = livePrices.subscribe((data) => {
         const { directions, tick } = applyLiveFlashes(
-          this.liveFlashes,
-          this.livePricesMap,
+          this.flashes,
+          this.prices,
           data,
         );
-        this.liveFlashes = directions;
-        this.liveFlashTick = tick;
-        this.livePricesMap = { ...data };
-        this.liveTick += 1;
-        this.isLive = Object.keys(data).length > 0;
+        Object.assign(this.flashes, directions);
+        Object.assign(this.flashTick, tick);
+        Object.assign(this.prices, data);
+        this.renderTick++;
+        this.isLive = true;
       });
     },
     mergeLive(coin) {
-      void this.liveTick;
+      void this.renderTick;
       const id = String(coin.coingeckoId || coin.id);
-      const live = getLiveQuote(this.livePricesMap, coin);
+      const live = getLiveQuote(this.prices, coin);
       if (live?.usd == null) return coin;
       return {
         ...coin,
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
-        _flash: this.liveFlashes[id],
-        _flashTick: !!this.liveFlashTick[id],
+        _flash: this.flashes[id],
+        _flashTick: !!this.flashTick[id],
       };
     },
   },
@@ -139,11 +140,12 @@ export default {
             </thead>
             <tbody>
               <tr
-                v-for="(coin, idx) in watchlistCoins"
-                :key="coin.id"
-                class="table-crypto-row"
-                :class="[coin.change24h >= 0 ? 'is-gainer' : 'is-loser', { 'row-disabled': coin._hasBinanceChart === false }]"
-              >
+                  v-for="(coin, idx) in watchlistCoins"
+                  :key="coin.id"
+                  v-memo="[coin.price, coin.change24h, coin._flash, coin._flashTick]"
+                  class="table-crypto-row"
+                  :class="[coin.change24h >= 0 ? 'is-gainer' : 'is-loser']"
+                >
                 <td class="cell-rank text-secondary">
                   {{ idx + 1 }}
                 </td>
@@ -152,7 +154,6 @@ export default {
                   <RouterLink
                     :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                     class="coin-link"
-                    :class="{ 'text-muted opacity-50': coin._hasBinanceChart === false }"
                   >
                     <img
                       v-if="coin.image"
@@ -221,7 +222,6 @@ export default {
                     <RouterLink
                       :to="{ name: 'CoinDetail', params: { id: coin.id } }"
                       class="btn btn-xs btn-primary"
-                      :class="{ disabled: coin._hasBinanceChart === false }"
                     >
                       View
                     </RouterLink>

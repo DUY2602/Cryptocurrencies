@@ -66,7 +66,9 @@ function handleResize() {
 const navItems = [
   { to: { name: "AdminDashboard" }, icon: "LayoutDashboard", label: "Dashboard" },
   { to: { name: "AdminNews" }, icon: "Newspaper", label: "News CMS" },
+  { to: { name: "AdminRag" }, icon: "Library", label: "Knowledge Base" },
   { to: { name: "AdminUsers" }, icon: "Users", label: "Users" },
+  { to: { name: "AdminSettings" }, icon: "Settings", label: "Settings" },
 ];
 
 const isActive = (name) =>
@@ -88,6 +90,7 @@ const pageTitle = computed(() => {
     AdminNews: "News CMS",
     AdminNewsEdit: "News editor",
     AdminUsers: "Users",
+    AdminRag: "Knowledge Base",
     AdminSettings: "Settings",
   };
   return titles[route.name] || "Admin";

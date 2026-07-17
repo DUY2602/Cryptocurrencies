@@ -1,11 +1,11 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { shallowRef, triggerRef, onMounted, onUnmounted } from 'vue'
 import { livePrices, applyLiveFlashes, getLiveQuote } from '../services/livePrices.js'
 
 export function useLivePrices(getCoinIds) {
-  const liveData = ref({})
-  const liveFlashes = ref({})
-  const liveFlashTick = ref({})
-  const isLive = ref(false)
+  const liveData = shallowRef({})
+  const liveFlashes = shallowRef({})
+  const liveFlashTick = shallowRef({})
+  const isLive = shallowRef(false)
 
   let unsubscribe = null
 
@@ -23,10 +23,11 @@ export function useLivePrices(getCoinIds) {
         liveData.value,
         data,
       )
-      liveFlashes.value = directions
-      liveFlashTick.value = tick
-      liveData.value = data
+      Object.assign(liveFlashes.value, directions)
+      Object.assign(liveFlashTick.value, tick)
+      Object.assign(liveData.value, data)
       isLive.value = true
+      triggerRef(liveData)
     })
   })
 

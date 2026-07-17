@@ -9,11 +9,10 @@ let trackedCoinsMeta = [];
 const hideArrowOnUnchanged = true;
 
 function notify(prices) {
-  latestPrices = { ...latestPrices, ...prices };
-  const snapshot = { ...latestPrices };
+  Object.assign(latestPrices, prices);
   subscribers.forEach((cb) => {
     try {
-      cb(snapshot);
+      cb(prices);
     } catch (e) {
       console.error("[livePrices] subscriber error:", e);
     }

@@ -6,6 +6,7 @@ import {
   getLiveQuote,
 } from "../../services/livePrices.js";
 import { useWatchlist } from "../../composables/useWatchlist.js";
+import { shallowRef, ref } from "vue";
 import SearchBar from "../../components/ui/SearchBar.vue";
 import SortSelect from "../../components/ui/SortSelect.vue";
 import BinanceSparkline from "../../components/coins/BinanceSparkline.vue";
@@ -33,7 +34,16 @@ export default {
     PageHero,
   },
   setup() {
-    return useWatchlist();
+    const prices = shallowRef({})
+    const flashes = shallowRef({})
+    const flashTick = shallowRef({})
+    const renderTick = ref(0)
+    const isLive = ref(false)
+    return {
+      ...useWatchlist(),
+      prices, flashes, flashTick,
+      renderTick, isLive,
+    }
   },
   data() {
     return {
@@ -44,11 +54,6 @@ export default {
       itemsPerPage: ITEMS_PER_PAGE,
       loading: true,
       error: null,
-      livePricesMap: {},
-      liveFlashes: {},
-      liveFlashTick: {},
-      liveTick: 0,
-      isLive: false,
       lastCoinPrice: {},
       _mergeCache: null,
     };
@@ -125,7 +130,7 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        this.allCoins = await api.getTopCoins(100);
+        this.allCoins = await api.getTopCoins();
       } catch (e) {
         this.error = e.message;
       } finally {
@@ -137,21 +142,21 @@ export default {
       livePrices.start(this.allCoins);
       this._unsub = livePrices.subscribe((data) => {
         const { directions, tick } = applyLiveFlashes(
-          this.liveFlashes,
-          this.livePricesMap,
+          this.flashes,
+          this.prices,
           data,
         );
-        this.liveFlashes = directions;
-        this.liveFlashTick = tick;
-        this.livePricesMap = { ...data };
-        this.liveTick += 1;
-        this.isLive = Object.keys(data).length > 0;
+        Object.assign(this.flashes, directions);
+        Object.assign(this.flashTick, tick);
+        Object.assign(this.prices, data);
+        this.renderTick++;
+        this.isLive = true;
       });
     },
     mergeLive(coin) {
-      void this.liveTick;
+      void this.renderTick;
       const id = String(coin.coingeckoId || coin.id);
-      const live = getLiveQuote(this.livePricesMap, coin);
+      const live = getLiveQuote(this.prices, coin);
       if (live?.usd == null) return coin;
 
       const cached = this._mergeCache?.get(id);
@@ -160,8 +165,8 @@ export default {
           cached.price !== live.usd ||
           cached.change24h !== (live.usd_24h_change ?? coin.change24h ?? 0) ||
           cached.volume24h !== (live.usd_24h_volume ?? coin.volume24h ?? 0) ||
-          cached._flash !== this.liveFlashes[id] ||
-          cached._flashTick !== !!this.liveFlashTick[id];
+          cached._flash !== this.flashes[id] ||
+          cached._flashTick !== !!this.flashTick[id];
         if (!changed) return cached;
       }
 
@@ -172,8 +177,8 @@ export default {
         price: live.usd,
         change24h: live.usd_24h_change ?? coin.change24h ?? 0,
         volume24h: live.usd_24h_volume ?? coin.volume24h ?? 0,
-        _flash: this.liveFlashes[id],
-        _flashTick: !!this.liveFlashTick[id],
+        _flash: this.flashes[id],
+        _flashTick: !!this.flashTick[id],
         _priceUp: live.usd > prev,
         _priceDown: live.usd < prev,
       };
@@ -256,6 +261,7 @@ export default {
                 <tr
                   v-for="(coin, idx) in paginatedCoins"
                   :key="coin.id"
+                  v-memo="[coin.price, coin.change24h, coin._flash, coin._flashTick]"
                   class="table-crypto-row"
                   :class="[coin.change24h >= 0 ? 'is-gainer' : 'is-loser']"
                 >
@@ -279,7 +285,6 @@ export default {
                       <span class="coin-name-cell"
                         >{{ coin.name }} <small>{{ coin.symbol }}</small></span
                       >
-                      <span v-if="coin._hasBinanceChart === false" class="badge-gecko-table">CoinGecko</span>
                     </RouterLink>
                   </td>
 

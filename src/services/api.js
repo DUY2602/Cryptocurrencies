@@ -21,13 +21,12 @@ function mapCoin(c) {
   }
 }
 
-async function fetchCoinGeckoMarkets(perPage = 100) {
+async function fetchCoinGeckoMarkets(perPage = 250) {
   const fetchSize = Math.max(perPage, 100)
   const url = `${COINGECKO_MARKETS}?vs_currency=usd&order=volume_desc&per_page=${fetchSize}&page=1&sparkline=false&price_change_percentage=24h`
   const json = await rateLimiter.get(url, {}, 120_000)
   if (!Array.isArray(json)) throw new Error('Invalid response')
-  const data = json.map(mapCoin)
-  return data.slice(0, perPage)
+  return json.map(mapCoin)
 }
 
 async function fetchCoinGeckoById(id) {
@@ -52,32 +51,32 @@ async function fetchCoinGeckoById(id) {
   }
 }
 
-async function checkBinanceChart(coins) {
-  if (!coins?.length) return
-
-  try {
-    const tickers = await fetchUsdtTickers()
-    for (const coin of coins) {
-      coin._hasBinanceChart = !!findUsdtTicker(tickers, coin.symbol)
-    }
-  } catch {
-    for (const coin of coins) {
-      coin._hasBinanceChart = false
-    }
-  }
-}
-
 export const api = {
-  async getTopCoins(perPage = 50) {
-    const coins = await fetchCoinGeckoMarkets(perPage)
-    await checkBinanceChart(coins)
+  async getTopCoins() {
+    const [tickers, coins] = await Promise.all([
+      fetchUsdtTickers(),
+      fetchCoinGeckoMarkets(250),
+    ])
+
+    const binanceSymbols = new Set(tickers.map(t => t.symbol))
+
     return coins
+      .filter(c => binanceSymbols.has(c.symbol))
+      .map(c => {
+        const t = findUsdtTicker(tickers, c.symbol)
+        if (t) {
+          c.price = t.price
+          c.change24h = t.change24h
+          c.volume24h = t.volume24h
+        }
+        c._hasBinanceChart = true
+        return c
+      })
   },
 
   async getTrendingCoins() {
-    const coins = await fetchCoinGeckoMarkets(6)
-    await checkBinanceChart(coins)
-    return coins.sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
+    const coins = await this.getTopCoins()
+    return coins.sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 12)
   },
 
   async getCoinById(id) {

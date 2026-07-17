@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { supabase } from '../../../supabase/supabase.js'
 import { livePrices } from '../../services/livePrices.js'
 import { useAdmin } from '../../composables/useAdmin.js'
+import { user } from '../../composables/useAuth.js'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { X, MessageCircle } from '@lucide/vue'
@@ -74,6 +75,12 @@ function quickPrompt(prompt) {
 <template>
   <div>
     <div v-if="open" class="ai-panel">
+      <div v-if="!user" class="d-flex flex-column align-items-center justify-content-center p-4 text-center" style="min-height: 240px">
+        <p class="text-secondary mb-3">Please login or register to use the AI Assistant.</p>
+        <RouterLink to="/login" class="btn btn-accent btn-sm mb-2 w-100">Login</RouterLink>
+        <RouterLink to="/register" class="btn btn-outline-accent btn-sm w-100">Register</RouterLink>
+      </div>
+      <template v-else>
       <div class="p-3 border-bottom" style="border-color: var(--border-color)">
         <strong class="text-emphasis">Crypto Assistant</strong>
         <p class="small text-secondary mb-0">Powered by Groq + live prices</p>
@@ -114,6 +121,7 @@ function quickPrompt(prompt) {
         <input v-model="input" type="text" class="form-control form-control-sm" placeholder="Ask about crypto..." :disabled="loading" />
         <button type="submit" class="btn btn-sm btn-accent" :disabled="loading">Send</button>
       </form>
+      </template>
     </div>
     <button type="button" class="ai-fab" aria-label="Open assistant" @click="toggle">
       <X :size="20" v-if="open" />
