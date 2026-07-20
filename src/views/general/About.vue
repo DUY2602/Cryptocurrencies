@@ -11,11 +11,7 @@ export default {
       firstName: '',
       lastName: '',
       preferredCoin: 'btc',
-      icons: {
-        gemini: 'M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81',
-        groq: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z',
-        rag: 'M12 1.5A1.5 1.5 0 0 1 13.5 3v1.5H17a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h3.5V3A1.5 1.5 0 0 1 12 1.5zM8 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm8 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-7 5a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H9z',
-      },
+      icons: {},
       techCategories: [
         {
           label: 'Framework',
@@ -44,9 +40,9 @@ export default {
         {
           label: 'AI & ML',
           items: [
-            { name: 'Gemini', color: '#4285f4', icon: 'inline:gemini' },
-            { name: 'Groq', color: '#f97316', icon: 'inline:groq' },
-            { name: 'RAG', color: '#a855f7', icon: 'inline:rag' },
+            { name: 'Gemini', color: '#4285f4', icon: 'gemini' },
+            { name: 'Groq', color: '#f97316', icon: 'groq' },
+            { name: 'RAG', color: '#a855f7', icon: 'rag' },
           ],
         },
         {
@@ -109,7 +105,7 @@ export default {
         ? {
             symbol: 'BTC',
             name: 'Bitcoin',
-            heroEmoji: 'â‚¿',
+            heroEmoji: '\u20BF',
             color: '#f7931a',
             image: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=600&h=400&fit=crop',
             description: 'The original cryptocurrency. Digital gold, store of value, and the backbone of the crypto market.',
@@ -117,7 +113,7 @@ export default {
         : {
             symbol: 'ETH',
             name: 'Ethereum',
-            heroEmoji: 'Îž',
+            heroEmoji: '\u039E',
             color: '#627eea',
             image: 'https://images.unsplash.com/photo-1622630998477-20aa696fab60?w=600&h=400&fit=crop',
             description: 'The world computer. Smart contracts, DeFi, NFTs, and the foundation of Web3 applications.',
@@ -236,7 +232,7 @@ export default {
                         }"
                       >
                         <input type="radio" id="coinBtc" v-model="preferredCoin" value="btc" class="visually-hidden" />
-                        <span class="coin-emoji anim-float">â‚¿</span>
+                        <span class="coin-emoji anim-float">₿</span>
                         <span class="coin-name">Bitcoin</span>
                         <span class="coin-symbol">BTC</span>
                       </label>
@@ -249,7 +245,7 @@ export default {
                         }"
                       >
                         <input type="radio" id="coinEth" v-model="preferredCoin" value="eth" class="visually-hidden" />
-                        <span class="coin-emoji anim-float" style="animation-delay: 0.4s">Îž</span>
+                        <span class="coin-emoji anim-float" style="animation-delay: 0.4s">Ξ</span>
                         <span class="coin-name">Ethereum</span>
                         <span class="coin-symbol">ETH</span>
                       </label>
@@ -386,16 +382,16 @@ export default {
 .tech-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.6rem;
 }
 
 .tech-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   color: var(--badge-color);
   background: color-mix(in srgb, var(--badge-color) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--badge-color) 28%, transparent);
@@ -409,8 +405,8 @@ export default {
 }
 
 .tech-icon {
-  width: 18px;
-  height: 18px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   display: block;
 }

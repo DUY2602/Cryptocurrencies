@@ -863,21 +863,5 @@ export default {
   color: var(--text-emphasis);
 }
 
-@keyframes flashPulseGreen {
-  0%   { background-color: color-mix(in srgb, var(--positive) 35%, transparent); }
-  100% { background-color: transparent; }
-}
 
-@keyframes flashPulseRed {
-  0%   { background-color: color-mix(in srgb, var(--negative) 35%, transparent); }
-  100% { background-color: transparent; }
-}
-
-.flash-bg-up {
-  animation: flashPulseGreen 1.4s ease-out;
-}
-
-.flash-bg-down {
-  animation: flashPulseRed 1.4s ease-out;
-}
 </style>

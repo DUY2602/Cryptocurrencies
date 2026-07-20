@@ -581,25 +581,8 @@ export default {
 }
 
 /* ── Flash highlights ────────────── */
-.flash-up {
-  animation: flashGreen 0.6s ease;
-  color: var(--positive) !important;
-}
-
-.flash-down {
-  animation: flashRed 0.6s ease;
-  color: var(--negative) !important;
-}
-
-@keyframes flashGreen {
-  0% { background-color: var(--positive-bg); }
-  100% { background-color: transparent; }
-}
-
-@keyframes flashRed {
-  0% { background-color: var(--negative-bg); }
-  100% { background-color: transparent; }
-}
+.flash-up { color: var(--positive) !important; }
+.flash-down { color: var(--negative) !important; }
 
 /* ── Pagination ──────────────────── */
 .pagination-crypto {

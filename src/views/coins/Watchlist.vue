@@ -6,6 +6,7 @@ import {
   getLiveQuote,
 } from "../../services/livePrices.js";
 import { shallowRef, ref } from "vue";
+import { user } from "../../composables/useAuth.js";
 import { useWatchlist } from "../../composables/useWatchlist.js";
 import { formatPrice, formatMarketCap, formatChange, changeClass } from "../../utils/format.js";
 import LoadingSpinner from "../../components/ui/LoadingSpinner.vue";
@@ -20,7 +21,7 @@ export default {
     const flashTick = shallowRef({})
     const renderTick = ref(0)
     const isLive = ref(false)
-    return { ...useWatchlist(), prices, flashes, flashTick, renderTick, isLive }
+    return { ...useWatchlist(), prices, flashes, flashTick, renderTick, isLive, user }
   },
   data() {
     return {
@@ -97,7 +98,7 @@ export default {
   <section class="page-section watchlist-page">
     <PageHero title="Watchlist" subtitle="Coins you track — live prices via WebSocket." />
 
-    <div class="container pt-4">
+    <div v-if="user" class="container pt-4">
       <LoadingSpinner v-if="loading" />
 
       <EmptyState
@@ -233,6 +234,11 @@ export default {
         </div>
       </template>
     </div>
+    <div v-else class="d-flex flex-column align-items-center justify-content-center p-4 text-center" style="min-height: 240px">
+      <p class="text-secondary mb-3">Please login or register to use the Watchlist.</p>
+      <RouterLink to="/login" class="btn btn-accent btn-sm mb-2 w-100" style="max-width: 240px">Login</RouterLink>
+      <RouterLink to="/register" class="btn btn-outline-accent btn-sm w-100" style="max-width: 240px">Register</RouterLink>
+    </div>
   </section>
 </template>
 
@@ -328,16 +334,8 @@ export default {
 }
 .btn-primary:hover { background: var(--accent-hover); color: var(--accent-text); }
 .btn-xs { padding: 0.3rem 0.65rem; font-size: 0.75rem; }
-.flash-up { animation: flashGreen 0.55s ease; color: var(--positive); }
-.flash-down { animation: flashRed 0.55s ease; color: var(--negative); }
-@keyframes flashGreen {
-  0% { background-color: var(--positive-bg); }
-  100% { background-color: transparent; }
-}
-@keyframes flashRed {
-  0% { background-color: var(--negative-bg); }
-  100% { background-color: transparent; }
-}
+.flash-up { color: var(--positive); }
+.flash-down { color: var(--negative); }
 .row-disabled { opacity: 0.45; pointer-events: none; }
 
 @media (max-width: 991px) {
