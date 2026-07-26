@@ -54,7 +54,7 @@ async function send() {
       },
     })
 
-    const reply = error ? `Error: ${error.message}` : data?.answer || 'No response'
+    const reply = error ? `Error: ${error.message}` : (data?.answer || 'No response').replace(/\s*\[\d+\]/g, '')
     messages.value.push({
       role: 'assistant',
       text: reply,

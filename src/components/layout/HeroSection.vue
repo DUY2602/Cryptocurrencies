@@ -25,10 +25,6 @@ defineProps({
     <div class="hero-overlay"></div>
     <div class="container">
       <div class="hero-content text-center">
-        <div class="hero-eyebrow anim-fade-slide">
-          <span class="hero-live-dot"></span>
-          <span>Live Market Data</span>
-        </div>
         <h1 class="hero-title anim-fade-slide-d1">{{ title }}</h1>
         <p class="hero-subtitle anim-fade-slide-d1">{{ subtitle }}</p>
 
@@ -64,12 +60,12 @@ defineProps({
 
 <style scoped>
 .hero-section {
-  padding: 5rem 0 4.5rem;
+  padding: 3.5rem 0 3rem;
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
   position: relative;
   width: 100%;
-  min-height: 440px;
+  min-height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -270,7 +266,7 @@ defineProps({
 @media (max-width: 767.98px) {
   .hero-section {
     min-height: auto;
-    padding: 4rem 0 3.5rem;
+    padding: 2.5rem 0 2rem;
   }
   .hero-hud-stats {
     flex-direction: column;

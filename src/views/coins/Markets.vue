@@ -115,8 +115,17 @@ export default {
     sortBy() {
       this.currentPage = 1;
     },
+    '$route.query.sort'(val) {
+      if (['gainers', 'losers', 'price'].includes(val)) {
+        this.sortBy = val;
+      }
+    },
   },
   async mounted() {
+    const sortParam = this.$route?.query?.sort;
+    if (['gainers', 'losers', 'price'].includes(sortParam)) {
+      this.sortBy = sortParam;
+    }
     await this.loadCoins();
     if (this.allCoins.length) this.startLive();
   },

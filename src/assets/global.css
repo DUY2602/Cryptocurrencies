@@ -241,7 +241,7 @@ a:hover { color: var(--accent-hover); }
 .card-crypto .card-body { color: var(--text-primary); }
 
 .stat-card { padding: 1.25rem; }
-.stat-card-label { font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; font-weight: 600; }
+.stat-card-label { font-size: 0.78rem; color: var(--text-primary); opacity: 0.8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; font-weight: 600; }
 .stat-card-value { font-size: 1.45rem; font-weight: 800; color: var(--text-emphasis); font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
 
 /* Digital Money Buttons */
@@ -446,7 +446,7 @@ a:hover { color: var(--accent-hover); }
 .ai-fab:hover { box-shadow: 0 8px 24px rgba(245, 158, 11, 0.45); }
 .ai-panel {
   position: fixed; bottom: 5.5rem; right: 1.5rem; z-index: 1049;
-  width: min(360px, calc(100vw - 2rem)); max-height: 440px;
+  width: min(480px, calc(100vw - 2rem)); max-height: 600px;
   background: var(--panel-bg); border: 1px solid var(--border-color);
   border-radius: var(--radius-lg); box-shadow: var(--shadow);
   display: flex; flex-direction: column;

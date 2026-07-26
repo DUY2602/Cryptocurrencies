@@ -173,33 +173,6 @@ export default {
           </div>
         </div>
 
-        <div class="row g-3 mb-4">
-          <div class="col-6 col-md-3">
-            <StatCard
-              label="Market cap"
-              :value="formatMarketCap(displayCoin.marketCap)"
-            />
-          </div>
-          <div class="col-6 col-md-3">
-            <StatCard
-              label="24h volume"
-              :value="formatVolume(displayCoin.volume24h)"
-            />
-          </div>
-          <div class="col-6 col-md-3">
-            <StatCard
-              label="24h high"
-              :value="formatPrice(displayCoin.high24h)"
-            />
-          </div>
-          <div class="col-6 col-md-3">
-            <StatCard
-              label="24h low"
-              :value="formatPrice(displayCoin.low24h)"
-            />
-          </div>
-        </div>
-
         <div v-if="displayCoin.description" class="card card-crypto p-4">
           <h2 class="h5 text-emphasis mb-2">About {{ displayCoin.name }}</h2>
           <p class="text-secondary small mb-0">{{ displayCoin.description }}</p>

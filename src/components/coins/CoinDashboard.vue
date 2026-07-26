@@ -368,27 +368,27 @@ export default {
           return
         }
 
-        const data       = param.seriesData.get(this.candlestickSeries)
-        const volumeData = param.seriesData.get(this.volumeSeries)
-        if (!data) { tooltip.style.display = 'none'; return }
+        const time = typeof param.time === 'number' ? param.time : null
+        if (!time) { tooltip.style.display = 'none'; return }
 
-        const { open, high, low, close } = data
-        const volume = volumeData ? volumeData.value : 0
-        const time   = param.time
+        const candle = this.candles.reduce((prev, curr) =>
+          Math.abs(curr.time - time) < Math.abs(prev.time - time) ? curr : prev
+        )
+        if (!candle) { tooltip.style.display = 'none'; return }
+
+        const vol = this.volumes.find(v => v.time === candle.time)
+        const { open, high, low, close } = candle
+        const volume = vol ? vol.value : 0
 
         let formattedTime = ''
-        if (typeof time === 'number') {
-          const vn = (opts) =>
-            new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false, ...opts }).format(new Date(time * 1000))
-          if (['1d', '1w', '1M'].includes(this.timeframe)) {
-            formattedTime = vn({ year: 'numeric', month: '2-digit', day: '2-digit' })
-          } else if (this.timeframe === '1s') {
-            formattedTime = vn({ hour: '2-digit', minute: '2-digit', second: '2-digit' })
-          } else {
-            formattedTime = vn({ year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-          }
+        const vn = (opts) =>
+          new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false, ...opts }).format(new Date(candle.time * 1000))
+        if (['1d', '1w', '1M'].includes(this.timeframe)) {
+          formattedTime = vn({ year: 'numeric', month: '2-digit', day: '2-digit' })
+        } else if (this.timeframe === '1s') {
+          formattedTime = vn({ hour: '2-digit', minute: '2-digit', second: '2-digit' })
         } else {
-          formattedTime = String(time)
+          formattedTime = vn({ year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
         }
 
         tooltip.innerHTML = `
@@ -613,8 +613,8 @@ export default {
             <div class="card stat-card border-0 h-100 p-2">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <div class="text-muted small">Market Cap</div>
-                  <div class="fw-bold mt-1">{{ formatMarketCap(coin.marketCap) }}</div>
+                  <div class="stat-label small">Market Cap</div>
+                  <div class="fw-bold text-emphasis mt-1">{{ formatMarketCap(coin.marketCap) }}</div>
                 </div>
                 <div class="sparkline-placeholder"><svg width="40" height="20"><path d="M0 20 Q10 5, 20 15 T40 0" fill="none" stroke="var(--accent)" stroke-width="2"/></svg></div>
               </div>
@@ -624,8 +624,8 @@ export default {
             <div class="card stat-card border-0 h-100 p-2">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <div class="text-muted small">24h Volume</div>
-                  <div class="fw-bold mt-1">{{ formatVolume(coin.volume24h) }}</div>
+                  <div class="stat-label small">24h Volume</div>
+                  <div class="fw-bold text-emphasis mt-1">{{ formatVolume(coin.volume24h) }}</div>
                 </div>
                 <div class="sparkline-placeholder"><svg width="40" height="20"><path d="M0 10 Q10 20, 20 10 T40 5" fill="none" stroke="#7d2ae8" stroke-width="2"/></svg></div>
               </div>
@@ -635,7 +635,7 @@ export default {
             <div class="card stat-card border-0 h-100 p-2">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <div class="text-muted small">24h High</div>
+                  <div class="stat-label small">24h High</div>
                   <div class="fw-bold text-positive mt-1">{{ formatPrice(coin.high24h) }}</div>
                 </div>
                 <div class="sparkline-placeholder"><svg width="40" height="20"><path d="M0 20 L40 0" fill="none" stroke="#0ecb81" stroke-width="2"/></svg></div>
@@ -646,7 +646,7 @@ export default {
             <div class="card stat-card border-0 h-100 p-2">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <div class="text-muted small">24h Low</div>
+                  <div class="stat-label small">24h Low</div>
                   <div class="fw-bold text-negative mt-1">{{ formatPrice(coin.low24h) }}</div>
                 </div>
                 <div class="sparkline-placeholder"><svg width="40" height="20"><path d="M0 0 L40 20" fill="none" stroke="#f6465d" stroke-width="2"/></svg></div>
@@ -767,7 +767,7 @@ export default {
   position: absolute;
   display: none;
   padding: 12px;
-  background: var(--bg-card);
+  background: var(--panel-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   font-size: 12px;
@@ -776,6 +776,7 @@ export default {
   pointer-events: none;
   box-shadow: var(--shadow);
   min-width: 180px;
+  backdrop-filter: none;
 }
 
 :deep(.tooltip-header) {
@@ -820,6 +821,14 @@ export default {
 
 .stat-card:hover {
   background: var(--bg-card-hover) !important;
+}
+
+.stat-label {
+  color: var(--text-primary) !important;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
 }
 
 .sparkline-placeholder {
