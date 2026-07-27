@@ -135,7 +135,7 @@ function onDocClick(e) {
                 active-class="active"
                 title="Admin area"
               >
-                <span class="admin-badge"><Star :size="12" class="me-1" /></span> Admin
+                <span class="admin-badge"><Star :size="12" /> Admin</span>
               </RouterLink>
             </li>
             <li class="nav-item dropdown">
@@ -240,9 +240,8 @@ function onDocClick(e) {
 .crypto-navbar .admin-badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
+  gap: 4px;
+  padding: 2px 6px;
   border-radius: 4px;
   background: var(--accent);
   color: var(--accent-text);

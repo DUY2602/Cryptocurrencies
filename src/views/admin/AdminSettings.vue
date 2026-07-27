@@ -116,8 +116,8 @@ function clearCache() {
             <div class="bin-stat">
               <span class="bin-stat-lbl">Role</span>
               <span class="bin-stat-val">
-                <span v-if="profile?.role === 'admin'" class="badge bg-warning-subtle text-warning-emphasis">
-                  <Star :size="12" class="me-1" />Admin
+                <span v-if="profile?.role === 'admin'" class="badge bg-warning-subtle text-warning-emphasis d-inline-flex align-items-center gap-1">
+                  <Star :size="12" />Admin
                 </span>
                 <span v-else class="badge bg-secondary-subtle text-secondary">User</span>
               </span>

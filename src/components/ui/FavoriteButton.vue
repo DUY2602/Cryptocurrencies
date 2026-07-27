@@ -25,11 +25,7 @@ async function onClick(e) {
   }
   if (busy.value) return
   busy.value = true
-  try {
-    await toggleFavorite(props.coinId)
-  } finally {
-    busy.value = false
-  }
+  toggleFavorite(props.coinId).finally(() => { busy.value = false })
 }
 </script>
 

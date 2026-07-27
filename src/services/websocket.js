@@ -167,7 +167,13 @@ class LivePriceWebSocket {
         if (!Array.isArray(rows)) continue
 
         for (const row of rows) {
-          const localId = this.symbolToLocalId.get(row.symbol)
+          let localId = this.symbolToLocalId.get(row.symbol)
+
+          if (!localId) {
+            const base = row.symbol.replace(/USD[CT]?|BUSD|DAI|EUR.*$/, '').toLowerCase()
+            if (base && base.length >= 2) localId = base
+          }
+
           if (!localId) continue
           const price = parseFloat(row.lastPrice)
           const change = parseFloat(row.priceChangePercent)
@@ -224,7 +230,13 @@ class LivePriceWebSocket {
     let matched = 0
 
     for (const t of tickers) {
-      const localId = this.symbolToLocalId.get(t.s)
+      let localId = this.symbolToLocalId.get(t.s)
+
+      if (!localId) {
+        const base = t.s.replace(/USD[CT]?|BUSD|DAI|EUR.*$/, '').toLowerCase()
+        if (base && base.length >= 2) localId = base
+      }
+
       if (!localId) continue
 
       const parsed = t.P != null ? this.parseFullTicker(t) : this.parseMiniTicker(t)
@@ -241,6 +253,11 @@ class LivePriceWebSocket {
     }
 
     if (matched) this.scheduleNotify()
+  }
+
+  getPriceBySymbol(symbol) {
+    const key = String(symbol).toLowerCase()
+    return this.prices[key] || null
   }
 
   /** Throttle — flush latest prices at most every NOTIFY_ms */

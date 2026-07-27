@@ -61,29 +61,28 @@ export function useWatchlist() {
     const id = String(coinId);
 
     if (user.value?.id) {
-      if (isFavorite(id)) {
-        const { error } = await supabase
-          .from("watchlist")
-          .delete()
-          .eq("user_id", user.value.id)
-          .eq("coin_id", id);
+      const wasFav = isFavorite(id);
 
-        if (error) {
-          console.warn("[watchlist] delete failed:", error.message);
-          return;
-        }
+      // Optimistic update — UI changes instantly
+      if (wasFav) {
         ids.value = ids.value.filter((x) => x !== id);
       } else {
-        const { error } = await supabase.from("watchlist").insert({
-          user_id: user.value.id,
-          coin_id: id,
-        });
-
-        if (error) {
-          console.warn("[watchlist] insert failed:", error.message);
-          return;
-        }
         ids.value = [...ids.value, id];
+      }
+
+      // Background sync to Supabase
+      const { error } = wasFav
+        ? await supabase.from("watchlist").delete().eq("user_id", user.value.id).eq("coin_id", id)
+        : await supabase.from("watchlist").insert({ user_id: user.value.id, coin_id: id });
+
+      if (error) {
+        console.warn("[watchlist] sync failed:", error.message);
+        // Rollback optimistic update
+        if (wasFav) {
+          ids.value = [...ids.value, id];
+        } else {
+          ids.value = ids.value.filter((x) => x !== id);
+        }
       }
       return;
     }

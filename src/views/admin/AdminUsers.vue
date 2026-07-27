@@ -518,6 +518,10 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 }
 
 /* ── Badges ───────────────────────────────────────────────────── */
+.role-badge svg {
+  vertical-align: middle;
+}
+
 .role-badge {
   display: inline-flex;
   align-items: center;
