@@ -8,7 +8,7 @@
  *  - Delete: remove profile with confirmation
  */
 
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { supabase } from "../../../supabase/supabase.js";
 import { useAdmin } from "../../composables/useAdmin.js";
 import { user } from "../../composables/useAuth.js";
@@ -23,6 +23,9 @@ const errorMsg = ref(null);
 const successMsg = ref(null);
 const search = ref("");
 const busyId = ref(null);
+
+const USERS_PER_PAGE = 10;
+const userPage = ref(1);
 
 // ── Modal state ────────────────────────────────────────────────
 const confirmDelete = ref(null);
@@ -79,6 +82,41 @@ const stats = computed(() => ({
   admins: profiles.value.filter((p) => p.role === "admin").length,
   users: profiles.value.filter((p) => p.role !== "admin").length,
 }));
+
+// ── Pagination ────────────────────────────────────────────────
+const userTotalPages = computed(() =>
+  Math.max(1, Math.ceil(filtered.value.length / USERS_PER_PAGE)),
+);
+
+const paginatedUsers = computed(() => {
+  const start = (userPage.value - 1) * USERS_PER_PAGE;
+  return filtered.value.slice(start, start + USERS_PER_PAGE);
+});
+
+const visibleUserPages = computed(() => {
+  const total = userTotalPages.value;
+  const cur = userPage.value;
+  const pages = [];
+  const push = (p) => {
+    if (p >= 1 && p <= total && !pages.includes(p)) pages.push(p);
+  };
+  push(1);
+  if (cur - 1 > 2) pages.push("...");
+  for (let p = cur - 1; p <= cur + 1; p++) push(p);
+  if (cur + 1 < total - 1) pages.push("...");
+  push(total);
+  return pages;
+});
+
+function goUserPage(p) {
+  if (p < 1 || p > userTotalPages.value || typeof p !== "number") return;
+  userPage.value = p;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+watch(search, () => {
+  userPage.value = 1;
+});
 
 // ── Create ──────────────────────────────────────────────────────
 function openCreate() {
@@ -303,11 +341,11 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
               <th class="d-none d-md-table-cell">Email</th>
               <th class="d-none d-sm-table-cell">Joined</th>
               <th>Role</th>
-              <th class="text-end">Actions</th>
+              <th class="text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="p in filtered" :key="p.id">
+            <tr v-for="p in paginatedUsers" :key="p.id">
               <!-- User -->
               <td>
                 <div class="d-flex gap-3 align-items-center">
@@ -341,8 +379,8 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
                 <span v-else class="role-badge role-user">User</span>
               </td>
               <!-- Actions -->
-              <td class="text-end">
-                <div class="d-flex gap-1 justify-content-end">
+              <td class="text-center">
+                <div class="d-flex gap-1 justify-content-center">
                   <button
                     type="button"
                     class="btn btn-xs btn-outline-accent"
@@ -367,8 +405,42 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
           </tbody>
         </table>
       </div>
-      <div class="table-footer small text-secondary">
-        Showing {{ filtered.length }} of {{ profiles.length }} users
+
+      <!-- Pagination -->
+      <div v-if="userTotalPages > 1" class="pagination-bar">
+        <div class="pagination-info">
+          {{ (userPage - 1) * USERS_PER_PAGE + 1 }}–{{ Math.min(userPage * USERS_PER_PAGE, filtered.length) }}
+          of {{ filtered.length }} users
+        </div>
+        <nav aria-label="Users pagination">
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" :class="{ disabled: userPage <= 1 || loading }">
+              <button type="button" class="page-link" @click="goUserPage(userPage - 1)" :disabled="userPage <= 1 || loading">
+                <ChevronLeft :size="16" />
+              </button>
+            </li>
+            <li
+              v-for="(p, i) in visibleUserPages"
+              :key="i"
+              class="page-item"
+              :class="{ active: p === userPage, disabled: p === '...' }"
+            >
+              <button
+                type="button"
+                class="page-link"
+                :disabled="p === '...' || loading"
+                @click="goUserPage(p)"
+              >
+                {{ p }}
+              </button>
+            </li>
+            <li class="page-item" :class="{ disabled: userPage >= userTotalPages || loading }">
+              <button type="button" class="page-link" @click="goUserPage(userPage + 1)" :disabled="userPage >= userTotalPages || loading">
+                <ChevronRight :size="16" />
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
 
@@ -668,12 +740,6 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   background: var(--bg-card-hover);
 }
 
-.table-footer {
-  padding: 0.6rem 1rem;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-card);
-}
-
 /* ── Buttons ──────────────────────────────────────────────────── */
 .btn-xs {
   padding: 0.25rem 0.5rem;
@@ -760,6 +826,67 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 10px;
+}
+
+/* ── Pagination bar ── */
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+.pagination-info {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pagination {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+}
+.pagination .page-item {
+  margin: 0;
+}
+.pagination .page-link {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 0.5rem;
+  border-radius: 9px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.pagination .page-item.active .page-link {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(240, 185, 11, 0.3);
+}
+.pagination .page-link:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+.pagination .page-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.pagination .page-item.disabled .page-link {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* ── Misc ─────────────────────────────────────────────────────── */

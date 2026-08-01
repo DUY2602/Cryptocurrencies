@@ -2,7 +2,9 @@
 /**
  * AdminNews — list view (Stage 3)
  *
- *  - Loads all news from Supabase (or local fallback via services/news.js)
+ *  - Paginated list from Supabase (server-side range query)
+ *  - Search across title / summary / author / category
+ *  - Sortable columns (title, category, author, published, date)
  *  - Provides Create / Edit / Delete actions
  *  - Subscribes to realtime INSERT/UPDATE/DELETE so the list stays
  *    in sync when other admins are editing
@@ -10,13 +12,12 @@
  *    just a friendly wrapper.
  */
 
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRouter } from "vue-router";
 import {
-  fetchNews,
+  fetchNewsAdmin,
   deleteNews,
   subscribeNews,
-  normalizeArticle,
 } from "../../services/news.js";
 import { useAdmin } from "../../composables/useAdmin.js";
 import { user } from "../../composables/useAuth.js";
@@ -25,6 +26,8 @@ import EmptyState from "../../components/ui/EmptyState.vue";
 
 const router = useRouter();
 const { isAdmin, loading: roleLoading } = useAdmin();
+
+const PAGE_SIZE = 10;
 
 const articles = ref([]);
 const loading = ref(true);
@@ -36,7 +39,39 @@ const busy = ref(false);
 const fetchingNews = ref(false);
 const fetchResult = ref(null); // { ok, count }
 
+// Pagination + sorting
+const page = ref(1);
+const totalCount = ref(0);
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalCount.value / PAGE_SIZE)),
+);
+const sortField = ref("published_at");
+const sortAsc = ref(false);
+
 let unsubscribe = null;
+let searchTimer = null;
+
+async function load() {
+  loading.value = true;
+  errorMsg.value = null;
+  try {
+    const { articles: rows, total } = await fetchNewsAdmin({
+      page: page.value,
+      pageSize: PAGE_SIZE,
+      search: search.value,
+      category: categoryFilter.value,
+      sortField: sortField.value,
+      sortAsc: sortAsc.value,
+    });
+    articles.value = rows;
+    totalCount.value = total;
+    if (page.value > totalPages.value) page.value = totalPages.value;
+  } catch (e) {
+    errorMsg.value = e.message;
+  } finally {
+    loading.value = false;
+  }
+}
 
 async function fetchFromCoinDesk() {
   if (fetchingNews.value) return;
@@ -71,17 +106,23 @@ async function fetchFromCoinDesk() {
   }
 }
 
-async function load() {
-  loading.value = true;
-  errorMsg.value = null;
-  try {
-    articles.value = await fetchNews();
-  } catch (e) {
-    errorMsg.value = e.message;
-  } finally {
-    loading.value = false;
-  }
+function onSearchInput() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    page.value = 1;
+    load();
+  }, 350);
 }
+
+watch(categoryFilter, () => {
+  page.value = 1;
+  load();
+});
+
+watch([sortField, sortAsc], () => {
+  page.value = 1;
+  load();
+});
 
 onMounted(() => {
   load();
@@ -92,6 +133,40 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (unsubscribe) unsubscribe();
+  clearTimeout(searchTimer);
+});
+
+function toggleSort(field) {
+  if (sortField.value === field) {
+    sortAsc.value = !sortAsc.value;
+  } else {
+    sortField.value = field;
+    sortAsc.value = false;
+  }
+}
+
+function goTo(p) {
+  if (p < 1 || p > totalPages.value || p === page.value || loading.value) return;
+  page.value = p;
+  load();
+}
+
+const visiblePages = computed(() => {
+  const pages = [];
+  const total = totalPages.value;
+  const current = page.value;
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (current > 3) pages.push("...");
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (current < total - 2) pages.push("...");
+    pages.push(total);
+  }
+  return pages;
 });
 
 const categories = computed(() => {
@@ -99,24 +174,7 @@ const categories = computed(() => {
   return ["all", ...Array.from(set).sort()];
 });
 
-const filtered = computed(() => {
-  const q = search.value.trim().toLowerCase();
-  return articles.value
-    .filter((a) => categoryFilter.value === "all" || a.category === categoryFilter.value)
-    .filter((a) => {
-      if (!q) return true;
-      const hay = [
-        a.title,
-        a.summary,
-        a.author_name,
-        (a.tags || []).join(" "),
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
-    });
-});
+const filtered = computed(() => articles.value);
 
 function goCreate() {
   router.push({ name: "AdminNewsEdit", params: { id: "new" } });
@@ -206,20 +264,21 @@ function formatDate(iso) {
         <strong>Read-only mode.</strong> You are signed in as
         <em>{{ user?.email }}</em> but your account is not flagged as
         <code>admin</code> in the <code>profiles</code> table. Run the SQL at the
-        bottom of <code>supabase/news_table.sql</code> to promote yourself.
+        bottom of <code>supabase/complete_schema.sql</code> to promote yourself.
       </div>
 
       <!-- Filters -->
       <div class="row g-2 mb-3">
         <div class="col-12 col-md-7">
-          <input
-            v-model="search"
-            type="text"
-            class="form-control"
-            placeholder="Search title, summary, author, tags..."
-          />
-          <div class="input-icon-left" style="position: relative;">
-            <Search :size="14" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); pointer-events: none;" />
+          <div class="search-wrap">
+            <Search :size="14" class="search-icon" />
+            <input
+              v-model="search"
+              type="text"
+              class="form-control search-input"
+              placeholder="Search title, summary, author, category..."
+              @input="onSearchInput"
+            />
           </div>
         </div>
         <div class="col-12 col-md-5">
@@ -266,12 +325,39 @@ function formatDate(iso) {
           <table class="table table-dark-custom align-middle mb-0">
             <thead>
               <tr>
-                <th style="width: 60%">Article</th>
-                <th>Category</th>
-                <th>Author</th>
-                <th>Published</th>
-                <th>Flags</th>
-                <th class="text-end">Actions</th>
+                <th style="width: 38%">
+                  <button type="button" class="th-sort" :class="{ active: sortField === 'title' }" @click="toggleSort('title')">
+                    Article
+                    <ArrowUp v-if="sortField === 'title' && sortAsc" :size="12" />
+                    <ArrowDown v-else-if="sortField === 'title' && !sortAsc" :size="12" />
+                    <span v-else class="th-sort-idle"><ArrowUp :size="12" /></span>
+                  </button>
+                </th>
+                <th>
+                  <button type="button" class="th-sort" :class="{ active: sortField === 'category' }" @click="toggleSort('category')">
+                    Category
+                    <ArrowUp v-if="sortField === 'category' && sortAsc" :size="12" />
+                    <ArrowDown v-else-if="sortField === 'category' && !sortAsc" :size="12" />
+                    <span v-else class="th-sort-idle"><ArrowUp :size="12" /></span>
+                  </button>
+                </th>
+                <th>
+                  <button type="button" class="th-sort" :class="{ active: sortField === 'author_name' }" @click="toggleSort('author_name')">
+                    Author
+                    <ArrowUp v-if="sortField === 'author_name' && sortAsc" :size="12" />
+                    <ArrowDown v-else-if="sortField === 'author_name' && !sortAsc" :size="12" />
+                    <span v-else class="th-sort-idle"><ArrowUp :size="12" /></span>
+                  </button>
+                </th>
+                <th>
+                  <button type="button" class="th-sort" :class="{ active: sortField === 'published_at' }" @click="toggleSort('published_at')">
+                    Published
+                    <ArrowUp v-if="sortField === 'published_at' && sortAsc" :size="12" />
+                    <ArrowDown v-else-if="sortField === 'published_at' && !sortAsc" :size="12" />
+                    <span v-else class="th-sort-idle"><ArrowUp :size="12" /></span>
+                  </button>
+                </th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -299,14 +385,8 @@ function formatDate(iso) {
                 </td>
                 <td class="small">{{ a.author_name || "—" }}</td>
                 <td class="small text-secondary">{{ formatDate(a.date) }}</td>
-                <td>
-                  <span v-if="a.featured" class="badge bg-warning text-dark me-1" title="Featured"
-                    >Featured</span
-                  >
-                  <span v-if="a.trending" class="badge bg-info" title="Trending">Trending</span>
-                </td>
-                <td class="text-end">
-                  <div class="d-flex gap-1 justify-content-end">
+                <td class="text-center">
+                  <div class="d-flex gap-1 justify-content-center">
                     <button
                       type="button"
                       class="btn btn-icon btn-ghost"
@@ -338,6 +418,42 @@ function formatDate(iso) {
               </tr>
             </tbody>
           </table>
+
+          <div v-if="!loading && totalCount > 0" class="pagination-bar">
+            <div class="pagination-info">
+              {{ (page - 1) * PAGE_SIZE + 1 }}–{{ Math.min(page * PAGE_SIZE, totalCount) }}
+              of {{ totalCount }} articles
+            </div>
+            <nav aria-label="News pagination">
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" :class="{ disabled: page <= 1 || loading }">
+                  <button type="button" class="page-link" @click="goTo(page - 1)" :disabled="page <= 1 || loading">
+                    <ChevronLeft :size="16" />
+                  </button>
+                </li>
+                <li
+                  v-for="(p, i) in visiblePages"
+                  :key="i"
+                  class="page-item"
+                  :class="{ active: p === page, disabled: p === '...' }"
+                >
+                  <button
+                    type="button"
+                    class="page-link"
+                    :disabled="p === '...' || loading"
+                    @click="goTo(p)"
+                  >
+                    {{ p }}
+                  </button>
+                </li>
+                <li class="page-item" :class="{ disabled: page >= totalPages || loading }">
+                  <button type="button" class="page-link" @click="goTo(page + 1)" :disabled="page >= totalPages || loading">
+                    <ChevronRight :size="16" />
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
       </div>
     </div>
@@ -479,5 +595,112 @@ function formatDate(iso) {
   background: rgba(246, 70, 93, 0.1);
   color: var(--negative) !important;
   border-color: rgba(246, 70, 93, 0.2);
+}
+
+.th-sort {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+
+.th-sort:hover {
+  color: var(--text-primary);
+}
+
+.th-sort.active {
+  color: var(--accent);
+}
+
+.th-sort-idle {
+  display: inline-flex;
+  opacity: 0.25;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 34px;
+}
+
+/* ── Pagination bar ── */
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+.pagination-info {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pagination {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+}
+.pagination .page-item {
+  margin: 0;
+}
+.pagination .page-link {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 0.5rem;
+  border-radius: 9px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.pagination .page-item.active .page-link {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(240, 185, 11, 0.3);
+}
+.pagination .page-link:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+.pagination .page-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.pagination .page-item.disabled .page-link {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 </style>

@@ -13,11 +13,12 @@ import {
   fetchReactionCounts,
   loadUserReactions,
 } from "../../composables/useReactions.js";
+import { useToast } from "../../composables/useToast.js";
 
 export default {
   components: { NewsReactions, LoadingSpinner, EmptyState },
   setup() {
-    return { user };
+    return { user, toast: useToast() };
   },
   data() {
     return {
@@ -86,7 +87,7 @@ export default {
             this.comments = [...this.comments, comment];
             this.commentCount++;
           } else {
-            alert("Failed to post comment. Check console for details.");
+            this.toast.error("Failed to post comment. Please try again.");
           }
         },
       );

@@ -24,6 +24,7 @@ import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import { useToast } from "../../composables/useToast.js";
 
 const props = defineProps({
   modelValue: { type: String, default: "" },
@@ -32,6 +33,8 @@ const props = defineProps({
   maxLength: { type: Number, default: 0 }, // 0 = unlimited
 });
 const emit = defineEmits(["update:modelValue"]);
+
+const toast = useToast();
 
 const linkUrl = ref("");
 const showLinkInput = ref(false);
@@ -175,7 +178,7 @@ function onFilePicked(e) {
 function insertImageFile(file) {
   if (!editor.value) return;
   if (file.size > 2 * 1024 * 1024) {
-    alert("Image too large. Max 2MB.");
+    toast.error("Image too large. Max 2MB.");
     return;
   }
   const reader = new FileReader();

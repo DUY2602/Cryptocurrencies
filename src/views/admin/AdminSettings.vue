@@ -3,9 +3,11 @@ import { ref, onMounted } from "vue";
 import { supabase } from "../../../supabase/supabase.js";
 import { useTheme } from "../../composables/useTheme.js";
 import { useAdmin } from "../../composables/useAdmin.js";
+import { useToast } from "../../composables/useToast.js";
 
 const { isDark, toggle } = useTheme();
 const { profile, refresh, loading } = useAdmin();
+const toast = useToast();
 
 const dbStatus = ref("checking");
 const newsCount = ref(null);
@@ -38,10 +40,10 @@ function clearCache() {
   try {
     localStorage.clear();
     sessionStorage.clear();
-    alert("Local cache cleared. The page will reload.");
-    window.location.reload();
+    toast.success("Local cache cleared. The page will reload.");
+    setTimeout(() => window.location.reload(), 900);
   } catch (e) {
-    alert("Could not clear cache: " + e.message);
+    toast.error("Could not clear cache: " + e.message);
   }
 }
 </script>

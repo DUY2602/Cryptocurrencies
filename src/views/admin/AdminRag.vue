@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { supabase } from "../../../supabase/supabase.js";
 import { useAdmin } from "../../composables/useAdmin.js";
 
@@ -11,6 +11,9 @@ const errorMsg = ref(null);
 const successMsg = ref(null);
 const search = ref("");
 
+const DOCS_PER_PAGE = 10;
+const docPage = ref(1);
+
 const showEditModal = ref(false);
 const editingDoc = ref(null);
 const createModal = ref(false);
@@ -19,6 +22,67 @@ const deleteConfirm = ref(null);
 const form = reactive({ title: "", content: "", source: "manual", source_id: "" });
 const formLoading = ref(false);
 const formError = ref(null);
+
+// ── Sync guides ────────────────────────────────────────────────
+const syncing = ref(false);
+const syncResult = ref(null);
+
+async function runSync() {
+  if (syncing.value) return;
+  syncing.value = true;
+  syncResult.value = null;
+  try {
+    const url = import.meta.env.VITE_SUPABASE_URL;
+    const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (!url || !key) throw new Error("Supabase not configured");
+    const res = await fetch(url.replace(/\/$/, "") + "/functions/v1/sync-guides", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    syncResult.value = { ok: true, message: `Synced ${data.guides} guides · ${data.changed} changed · ${data.indexed} re-indexed.` };
+    await loadDocs();
+  } catch (e) {
+    syncResult.value = { ok: false, message: e.message };
+  } finally {
+    syncing.value = false;
+  }
+}
+
+// ── Test query (debug RAG retrieval + answer) ─────────────────
+const testQuery = ref("");
+const testing = ref(false);
+const testResult = ref(null);
+const testError = ref(null);
+
+async function runTest() {
+  const q = testQuery.value.trim();
+  if (!q || testing.value) return;
+  testing.value = true;
+  testResult.value = null;
+  testError.value = null;
+  try {
+    const { data, error } = await supabase.functions.invoke("chat", {
+      body: { query: q, history: [], livePrices: {}, role: "admin", currentView: "AdminRag" },
+    });
+    if (error) throw error;
+    testResult.value = data;
+  } catch (e) {
+    testError.value = e.message;
+  } finally {
+    testing.value = false;
+  }
+}
+
+function formatSimilarity(s) {
+  if (s == null) return "—";
+  return (s * 100).toFixed(1) + "%";
+}
+
+function cleanAnswer(answer) {
+  return (answer || "").replace(/\s*\[\d+\]/g, "");
+}
 
 async function loadDocs() {
   loading.value = true;
@@ -57,6 +121,40 @@ const filteredDocs = computed(() => {
       (d.source || "").toLowerCase().includes(q) ||
       (d.source_id || "").toLowerCase().includes(q),
   );
+});
+
+const docTotalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredDocs.value.length / DOCS_PER_PAGE)),
+);
+
+const paginatedDocs = computed(() => {
+  const start = (docPage.value - 1) * DOCS_PER_PAGE;
+  return filteredDocs.value.slice(start, start + DOCS_PER_PAGE);
+});
+
+const visibleDocPages = computed(() => {
+  const total = docTotalPages.value;
+  const cur = docPage.value;
+  const pages = [];
+  const push = (p) => {
+    if (p >= 1 && p <= total && !pages.includes(p)) pages.push(p);
+  };
+  push(1);
+  if (cur - 1 > 2) pages.push("...");
+  for (let p = cur - 1; p <= cur + 1; p++) push(p);
+  if (cur + 1 < total - 1) pages.push("...");
+  push(total);
+  return pages;
+});
+
+function goDocPage(p) {
+  if (p < 1 || p > docTotalPages.value || typeof p !== "number") return;
+  docPage.value = p;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+watch(search, () => {
+  docPage.value = 1;
 });
 
 function openCreate() {
@@ -194,7 +292,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
       <div>
         <h1 class="page-title mb-1 d-flex align-items-center gap-2">
           <Library :size="22" />
-          Knowledge Base
+          RAG Context
         </h1>
         <p class="page-subtitle mb-0">
           Manage documents used by the AI assistant for RAG-powered answers.
@@ -206,6 +304,16 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
           <RefreshCw :size="14" />
           Refresh
         </button>
+        <button
+          class="btn btn-outline-accent btn-sm"
+          @click="runSync"
+          :disabled="syncing"
+          title="Upsert guides into documents and re-embed changed content"
+        >
+          <span v-if="syncing" class="spinner-border spinner-border-sm me-1" />
+          <RefreshCw v-else :size="14" />
+          {{ syncing ? "Syncing…" : "Sync guides" }}
+        </button>
         <button v-if="isAdmin" class="btn btn-accent btn-sm" @click="openCreate">
           <Plus :size="14" />
           Add Document
@@ -216,6 +324,12 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
     <!-- Alerts -->
     <div v-if="successMsg" class="alert-banner alert-success-banner mb-3">
       <Check :size="15" /> {{ successMsg }}
+    </div>
+    <div v-if="syncResult" class="alert-banner mb-3" :class="syncResult.ok ? 'alert-success-banner' : 'alert-danger-banner'">
+      <Check v-if="syncResult.ok" :size="15" />
+      <AlertTriangle v-else :size="15" />
+      <span class="flex-grow-1">{{ syncResult.message }}</span>
+      <button class="close-btn" @click="syncResult = null"><X :size="14" /></button>
     </div>
     <div v-if="errorMsg && !loading" class="alert-banner alert-danger-banner mb-3">
       <AlertTriangle :size="15" />
@@ -256,6 +370,60 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
       />
     </div>
 
+    <!-- Test query -->
+    <div class="card-crypto test-panel p-3 mb-4">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <BrainCircuit :size="16" class="accent" />
+        <strong class="test-panel-title">Test retrieval</strong>
+        <span class="text-secondary small ms-auto">Ask the AI a question and inspect the RAG pipeline.</span>
+      </div>
+      <form class="d-flex gap-2" @submit.prevent="runTest">
+        <input
+          v-model="testQuery"
+          type="text"
+          class="form-control"
+          placeholder="e.g. What does the AI Assistant welcome message say?"
+          :disabled="testing"
+        />
+        <button type="submit" class="btn btn-accent btn-sm px-3 flex-shrink-0" :disabled="testing || !testQuery.trim()">
+          <span v-if="testing" class="spinner-border spinner-border-sm me-1" />
+          {{ testing ? "Asking…" : "Run test" }}
+        </button>
+      </form>
+
+      <div v-if="testError" class="alert-banner alert-danger-banner mt-3 small">
+        <AlertTriangle :size="13" /> {{ testError }}
+      </div>
+
+      <template v-if="testResult">
+        <div v-if="testResult.answer" class="test-answer mt-3">
+          <div class="test-answer-lbl">Answer</div>
+          <div class="test-answer-body">{{ cleanAnswer(testResult.answer) }}</div>
+        </div>
+        <div class="mt-3">
+          <div class="test-answer-lbl mb-1">
+            Retrieved ({{ testResult.sources?.length || 0 }})
+          </div>
+          <div v-if="testResult.sources?.length" class="d-flex flex-column gap-1">
+            <div
+              v-for="(s, i) in testResult.sources"
+              :key="i"
+              class="test-source d-flex align-items-center gap-2"
+              :class="{ 'test-source-cited': s.cited }"
+            >
+              <span class="test-source-idx">{{ i + 1 }}</span>
+              <span class="test-source-title text-truncate" :title="s.title">{{ s.title }}</span>
+              <span class="test-source-meta text-secondary small ms-auto flex-shrink-0">
+                <span v-if="s.cited" class="badge bg-success-subtle text-success-emphasis me-1">cited</span>
+                {{ s.source }} · {{ formatSimilarity(s.similarity) }}
+              </span>
+            </div>
+          </div>
+          <div v-else class="text-secondary small">No documents retrieved — answer relies on general knowledge.</div>
+        </div>
+      </template>
+    </div>
+
     <!-- Loading / empty -->
     <div v-if="loading && !docs.length" class="text-secondary small py-4 text-center">
       <span class="spinner-border spinner-border-sm me-1" /> Loading documents...
@@ -266,7 +434,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
     <!-- Document list -->
     <div v-else class="d-flex flex-column gap-2">
-      <div v-for="d in filteredDocs" :key="d.id" class="doc-row">
+      <div v-for="d in paginatedDocs" :key="d.id" class="doc-row">
         <div class="doc-info">
           <div class="d-flex align-items-center gap-2 mb-1">
             <span class="doc-title">{{ d.title }}</span>
@@ -289,6 +457,43 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
             <Trash2 :size="13" />
           </button>
         </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="docTotalPages > 1" class="pagination-bar">
+        <div class="pagination-info">
+          {{ (docPage - 1) * DOCS_PER_PAGE + 1 }}–{{ Math.min(docPage * DOCS_PER_PAGE, filteredDocs.length) }}
+          of {{ filteredDocs.length }} documents
+        </div>
+        <nav aria-label="RAG pagination">
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" :class="{ disabled: docPage <= 1 || loading }">
+              <button type="button" class="page-link" @click="goDocPage(docPage - 1)" :disabled="docPage <= 1 || loading">
+                <ChevronLeft :size="16" />
+              </button>
+            </li>
+            <li
+              v-for="(p, i) in visibleDocPages"
+              :key="i"
+              class="page-item"
+              :class="{ active: p === docPage, disabled: p === '...' }"
+            >
+              <button
+                type="button"
+                class="page-link"
+                :disabled="p === '...' || loading"
+                @click="goDocPage(p)"
+              >
+                {{ p }}
+              </button>
+            </li>
+            <li class="page-item" :class="{ disabled: docPage >= docTotalPages || loading }">
+              <button type="button" class="page-link" @click="goDocPage(docPage + 1)" :disabled="docPage >= docTotalPages || loading">
+                <ChevronRight :size="16" />
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
 
@@ -330,7 +535,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
           <button type="button" class="btn btn-outline-accent btn-sm" @click="closeModals" :disabled="formLoading">Cancel</button>
           <button type="button" class="btn btn-accent btn-sm" @click="submitCreate" :disabled="formLoading">
             <span v-if="formLoading" class="spinner-border spinner-border-sm me-1" />
-            {{ formLoading ? "Adding…" : "Add to Knowledge Base" }}
+            {{ formLoading ? "Adding…" : "Add to RAG Context" }}
           </button>
         </div>
       </div>
@@ -498,6 +703,65 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   padding-left: 38px !important;
 }
 
+/* ── Test query panel ────────────────────────────────────────── */
+.test-panel {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+.test-panel-title {
+  color: var(--text-emphasis);
+  font-size: 0.9rem;
+}
+.test-answer {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-card);
+  padding: 0.75rem 1rem;
+}
+.test-answer-lbl {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+.test-answer-body {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  margin-top: 0.25rem;
+}
+.test-source {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-card);
+  font-size: 0.82rem;
+  min-width: 0;
+}
+.test-source-cited {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.test-source-idx {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.test-source-title {
+  color: var(--text-primary);
+  min-width: 0;
+}
+
 /* ── Alert banners ────────────────────────────────────────────── */
 .alert-banner {
   display: flex;
@@ -592,4 +856,66 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 .text-success-emphasis { color: var(--positive); }
 .bg-warning-subtle { background: rgba(245, 158, 11, 0.1); }
 .text-warning-emphasis { color: var(--accent); }
+
+/* ── Pagination bar ── */
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  margin-top: 1rem;
+}
+.pagination-info {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pagination {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+}
+.pagination .page-item {
+  margin: 0;
+}
+.pagination .page-link {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 0.5rem;
+  border-radius: 9px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.pagination .page-item.active .page-link {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(240, 185, 11, 0.3);
+}
+.pagination .page-link:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+.pagination .page-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.pagination .page-item.disabled .page-link {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 </style>

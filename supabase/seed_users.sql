@@ -3,7 +3,8 @@
 -- Run in Supabase Studio > SQL Editor
 -- Password for all test accounts: Test1234!
 -- Hardcoded coin IDs (no external API calls)
--- Created_at varied across past 365 days (skewed recent)
+-- Created_at: bursty daily signups across past ~6 months so the dashboard
+-- "registrations per day" chart shows realistic up/down fluctuations.
 -- =============================================================================
 create extension if not exists pgcrypto;
 do $$
@@ -13,6 +14,8 @@ v_email text;
 v_name text;
 v_role text;
 v_date timestamptz;
+v_burst_day timestamptz;
+v_burst_left int := 0;
 v_coin_ids text [];
 v_comment_texts text [] := array [
     'Great article, very informative! Thanks for sharing.',
@@ -75,8 +78,17 @@ v_role := case
   when v_i <= 2 then 'admin'
   else 'user'
 end;
--- spread across past 365 days, skewed more toward recent (^0.6)
-v_date := now() - ((random() ^ 0.6) * interval '365 days');
+-- spread across past ~6 months with bursty daily clusters:
+-- some days get several signups, some get none → chart fluctuates
+if v_burst_left > 0 then
+  v_date := v_burst_day;
+  v_burst_left := v_burst_left - 1;
+else
+  v_burst_day := now() - ((floor(random() * 180)::int) * interval '1 day');
+  v_date := v_burst_day;
+  -- 0-5 extra signups on the same day
+  v_burst_left := floor(random() * 6)::int;
+end if;
 continue
 when exists (
   select 1

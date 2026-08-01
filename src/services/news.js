@@ -135,6 +135,16 @@ export async function fetchNewsCount() {
   return count;
 }
 
+export async function fetchNewsCountSince(isoSince) {
+  const { count, error } = await supabase
+    .from("news")
+    .select("*", { count: "exact", head: true })
+    .gte("published_at", isoSince);
+
+  if (error) return null;
+  return count;
+}
+
 export async function fetchCategoryCounts() {
   const { data, error } = await supabase
     .from("news")
@@ -149,7 +159,52 @@ export async function fetchCategoryCounts() {
   });
   return Object.entries(counts)
     .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => a.category.localeCompare(b.category));
+    .sort((a, b) => b.count - a.count);
+}
+
+export async function fetchNewsAdmin({ page = 1, pageSize = 10, search = "", category = "", sortField = "published_at", sortAsc = false } = {}) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const safeSort = new Set([
+    "published_at",
+    "title",
+    "category",
+    "author_name",
+    "created_at",
+    "id",
+  ]);
+  const orderBy = safeSort.has(sortField) ? sortField : "published_at";
+
+  let query = supabase
+    .from("news")
+    .select("*", { count: "exact", head: false });
+
+  const q = String(search || "").trim();
+  if (q) {
+    const esc = q.replace(/%/g, "").replace(/['"]/g, " ");
+    query = query.or(
+      `title.ilike.%${esc}%,summary.ilike.%${esc}%,author_name.ilike.%${esc}%,category.ilike.%${esc}%`
+    );
+  }
+  if (category && category !== "all") {
+    query = query.eq("category", category);
+  }
+
+  const { data, error, count } = await query
+    .order(orderBy, { ascending: !!sortAsc })
+    .range(from, to);
+
+  if (error) throw error;
+
+  const articles = (data || []).map(normalizeArticle);
+  for (const article of articles) {
+    if (isShortContent(article)) {
+      expandArticleContent(article.id);
+    }
+  }
+
+  return { articles, total: count ?? 0 };
 }
 
 export async function fetchNewsById(id) {

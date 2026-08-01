@@ -34,7 +34,18 @@ serve(async () => {
     const { data: guides } = await supabase.from("guides").select("*");
     if (!guides?.length) throw new Error("No guides found in guides table");
 
+    const { data: existingDocs } = await supabase
+      .from("documents")
+      .select("id, source_id, content, embedding")
+      .eq("source", "guide");
+
+    const existingMap = new Map((existingDocs || []).map((d) => [d.source_id, d]));
+    const guideIds = new Set(guides.map((g) => g.id));
+
+    let changed = 0;
     for (const g of guides) {
+      const prev = existingMap.get(g.id);
+      const contentChanged = !prev || prev.content !== g.content;
       await supabase.from("documents").upsert({
         source: "guide",
         source_id: g.id,
@@ -42,6 +53,19 @@ serve(async () => {
         content: g.content,
         metadata: { category: g.category },
       }, { onConflict: "source,source_id" });
+      if (contentChanged) {
+        await supabase
+          .from("documents")
+          .update({ embedding: null })
+          .eq("source", "guide")
+          .eq("source_id", g.id);
+        changed++;
+      }
+    }
+
+    const staleDocs = (existingDocs || []).filter((d) => !guideIds.has(d.source_id));
+    for (const stale of staleDocs) {
+      await supabase.from("documents").delete().eq("id", stale.id);
     }
 
     const { data: docs } = await supabase
@@ -57,7 +81,7 @@ serve(async () => {
       indexed++;
     }
 
-    return new Response(JSON.stringify({ guides: guides.length, indexed }), {
+    return new Response(JSON.stringify({ guides: guides.length, changed, indexed }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (e) {

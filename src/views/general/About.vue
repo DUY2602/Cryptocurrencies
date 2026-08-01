@@ -11,6 +11,8 @@ export default {
       firstName: '',
       lastName: '',
       preferredCoin: 'btc',
+      errors: { firstName: '', lastName: '' },
+      submitted: false,
       icons: {},
       techCategories: [
         {
@@ -89,6 +91,22 @@ export default {
       if (!name || name.startsWith('inline:') || name.startsWith('data:') || name.startsWith('http')) return name
       const key = Object.keys(iconFiles).find(k => k.includes(name))
       return key ? iconFiles[key] : null
+    },
+    validateName(value) {
+      const trimmed = value.trim()
+      if (!trimmed) return 'This field is required.'
+      if (/\d/.test(trimmed)) return 'Numbers are not allowed.'
+      if (/[^a-zA-ZÀ-ỹ\s'-]/.test(trimmed)) return 'Only letters are allowed.'
+      return ''
+    },
+    validateForm() {
+      this.submitted = true
+      this.errors.firstName = this.validateName(this.firstName)
+      this.errors.lastName = this.validateName(this.lastName)
+      return !this.errors.firstName && !this.errors.lastName
+    },
+    clearError(field) {
+      if (this.submitted) this.errors[field] = this.validateName(this[field])
     }
   },
   computed: {
@@ -193,7 +211,7 @@ export default {
               <h2 class="block-title">Say hello</h2>
               <p class="about-p mb-3">Enter your name and pick your favourite crypto.</p>
 
-              <form class="row g-3 mb-4" @submit.prevent="() => {}" autocomplete="off">
+              <form class="row g-3 mb-4" @submit.prevent="validateForm" autocomplete="off" novalidate>
                 <div class="col-12 col-md-6">
                   <label for="aboutFirstName" class="form-label">First name</label>
                   <input
@@ -201,10 +219,16 @@ export default {
                     v-model="firstName"
                     type="text"
                     class="form-control"
+                    :class="{ 'is-invalid': errors.firstName }"
                     placeholder="e.g. John"
                     aria-label="First name"
+                    aria-describedby="aboutFirstNameError"
                     autocomplete="off"
+                    @input="clearError('firstName')"
                   />
+                  <div v-if="errors.firstName" id="aboutFirstNameError" class="invalid-feedback d-block">
+                    {{ errors.firstName }}
+                  </div>
                 </div>
                 <div class="col-12 col-md-6">
                   <label for="aboutLastName" class="form-label">Last name</label>
@@ -213,10 +237,25 @@ export default {
                     v-model="lastName"
                     type="text"
                     class="form-control"
+                    :class="{ 'is-invalid': errors.lastName }"
                     placeholder="e.g. Smith"
                     aria-label="Last name"
+                    aria-describedby="aboutLastNameError"
                     autocomplete="off"
+                    @input="clearError('lastName')"
                   />
+                  <div v-if="errors.lastName" id="aboutLastNameError" class="invalid-feedback d-block">
+                    {{ errors.lastName }}
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div class="d-flex align-items-center gap-3">
+                    <button type="submit" class="btn btn-accent px-4">Say hello</button>
+                    <span v-if="submitted && !errors.firstName && !errors.lastName" class="text-success small">
+                      Looks good — welcome!
+                    </span>
+                  </div>
                 </div>
 
                 <div class="col-12">

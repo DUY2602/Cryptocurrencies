@@ -11,7 +11,6 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 import { useAdmin } from "../../composables/useAdmin.js";
 import { user, useAuth } from "../../composables/useAuth.js";
-import { supabase } from "../../../supabase/supabase.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -20,8 +19,6 @@ const { logout } = useAuth();
 
 const sidebarOpen = ref(true);
 const isMobile = ref(false);
-const realtimeStatus = ref("disconnected");
-let channel = null;
 
 onMounted(async () => {
   isMobile.value = window.innerWidth < 992;
@@ -29,33 +26,11 @@ onMounted(async () => {
   // make sure role is fresh
   await refresh();
 
-  // tiny realtime health indicator
-  channel = supabase
-    .channel("admin-health")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "news" },
-      () => {
-        realtimeStatus.value = "live";
-      },
-    )
-    .subscribe((status) => {
-      realtimeStatus.value =
-        status === "SUBSCRIBED"
-          ? "live"
-          : status === "CONNECTING"
-            ? "connecting"
-            : "disconnected";
-    });
-
   window.addEventListener("resize", handleResize);
 });
 
 onBeforeUnmount(() => {
-  if (channel) {
-    supabase.removeChannel(channel);
-    channel = null;
-  }
+  window.removeEventListener("resize", handleResize);
 });
 
 function handleResize() {
@@ -66,9 +41,8 @@ function handleResize() {
 const navItems = [
   { to: { name: "AdminDashboard" }, icon: "LayoutDashboard", label: "Dashboard" },
   { to: { name: "AdminNews" }, icon: "Newspaper", label: "News CMS" },
-  { to: { name: "AdminRag" }, icon: "Library", label: "Knowledge Base" },
+  { to: { name: "AdminRag" }, icon: "Library", label: "RAG Context" },
   { to: { name: "AdminUsers" }, icon: "Users", label: "Users" },
-  { to: { name: "AdminSettings" }, icon: "Settings", label: "Settings" },
 ];
 
 const isActive = (name) =>
@@ -90,8 +64,7 @@ const pageTitle = computed(() => {
     AdminNews: "News CMS",
     AdminNewsEdit: "News editor",
     AdminUsers: "Users",
-    AdminRag: "Knowledge Base",
-    AdminSettings: "Settings",
+    AdminRag: "RAG Context",
   };
   return titles[route.name] || "Admin";
 });
@@ -127,7 +100,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
       </p>
       <p class="text-secondary small mb-3">
         Run the SQL snippet at the bottom of
-        <code>supabase/news_table.sql</code> to promote your account, then
+        <code>supabase/complete_schema.sql</code> to promote your account, then
         <button class="btn btn-link p-0 align-baseline" @click="refresh">
           click here to refresh</button
         >.
@@ -211,7 +184,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 
     <!-- Main -->
     <main class="admin-main">
-      <header class="admin-topbar">
+      <header class="admin-topbar topbar-hidden-lg">
         <button
           class="btn btn-sm btn-outline-accent d-lg-none"
           @click="sidebarOpen = !sidebarOpen"
@@ -219,16 +192,8 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
         >
           <Menu :size="20" />
         </button>
-        <h1 class="topbar-title">{{ pageTitle }}</h1>
+        <h1 v-if="route.name !== 'AdminDashboard'" class="topbar-title">{{ pageTitle }}</h1>
         <div class="topbar-right d-flex align-items-center gap-2">
-          <span
-            class="realtime-pill"
-            :class="`rt-${realtimeStatus}`"
-            :title="`Realtime: ${realtimeStatus}`"
-          >
-            <span class="rt-dot" />
-            {{ realtimeStatus === "live" ? "Realtime live" : realtimeStatus }}
-          </span>
           <RouterLink
             v-if="showNewArticleBtn"
             :to="{ name: 'AdminNewsEdit', params: { id: 'new' } }"
@@ -417,6 +382,12 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
   backdrop-filter: blur(12px);
 }
 
+@media (min-width: 992px) {
+  .topbar-hidden-lg {
+    display: none;
+  }
+}
+
 .topbar-title {
   font-size: 1rem;
   font-weight: 600;
@@ -428,52 +399,6 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 
 .topbar-right {
   white-space: nowrap;
-}
-
-.realtime-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--bg-card);
-  text-transform: capitalize;
-}
-
-.rt-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--text-tertiary);
-}
-
-.rt-live .rt-dot {
-  background: var(--positive);
-  box-shadow: 0 0 0 0 rgba(2, 192, 118, 0.5);
-  animation: rtPulse 1.6s infinite;
-}
-
-.rt-connecting .rt-dot {
-  background: var(--accent);
-}
-.rt-disconnected .rt-dot {
-  background: var(--negative);
-}
-
-@keyframes rtPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(2, 192, 118, 0.5);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(2, 192, 118, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(2, 192, 118, 0);
-  }
 }
 
 .admin-content {

@@ -6,6 +6,7 @@
     </main>
     <Footer />
     <AiAssistant />
+    <ToastContainer />
   </div>
 </template>
 
@@ -13,6 +14,7 @@
 import Navbar from './components/layout/Navbar.vue'
 import Footer from './components/layout/Footer.vue'
 import AiAssistant from './components/ai/AiAssistant.vue'
+import ToastContainer from './components/ui/ToastContainer.vue'
 </script>
 
 <style></style>

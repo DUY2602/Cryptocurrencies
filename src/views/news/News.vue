@@ -63,8 +63,16 @@ export default {
       if (!q) return articles;
 
       return articles.filter((article) => {
-        const title = article.title.toLowerCase();
-        return title.includes(q);
+        const title = (article.title || '').toLowerCase();
+        const summary = (article.summary || article.content || '').toLowerCase();
+        const category = (article.category || '').toLowerCase();
+        const date = (article.date || article.published_at || '').toLowerCase();
+        return (
+          title.includes(q) ||
+          summary.includes(q) ||
+          category.includes(q) ||
+          date.includes(q)
+        );
       });
     },
     visiblePages() {
