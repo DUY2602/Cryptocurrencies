@@ -1,9 +1,8 @@
 -- =============================================================================
--- Seed 300 demo user accounts + profiles + watchlist + comments
--- Run in Supabase Studio > SQL Editor
+-- Seed 300 demo user accounts + profiles + watchlist + comments.
+-- Run in Supabase Studio > SQL Editor.
 -- Password for all test accounts: Test1234!
--- Hardcoded coin IDs (no external API calls)
--- Created_at: bursty daily signups across past ~6 months so the dashboard
+-- Created_at: bursty daily signups across the past ~6 months so the
 -- "registrations per day" chart shows realistic up/down fluctuations.
 -- =============================================================================
 create extension if not exists pgcrypto;
@@ -78,7 +77,7 @@ v_role := case
   when v_i <= 2 then 'admin'
   else 'user'
 end;
--- spread across past ~6 months with bursty daily clusters:
+-- spread across the past ~6 months with bursty daily clusters:
 -- some days get several signups, some get none → chart fluctuates
 if v_burst_left > 0 then
   v_date := v_burst_day;

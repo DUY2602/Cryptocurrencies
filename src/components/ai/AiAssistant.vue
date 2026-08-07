@@ -54,11 +54,18 @@ async function send() {
       },
     })
 
-    const reply = error ? `Error: ${error.message}` : (data?.answer || 'No response').replace(/\s*\[\d+\]/g, '')
-    messages.value.push({
-      role: 'assistant',
-      text: reply,
-    })
+    let reply
+    if (error) {
+      const status = error.context?.status
+      reply = status === 429
+        ? 'AI is busy (rate limited). Please wait a few seconds and try again.'
+        : `Error: ${error.message}`
+    } else if (data?.busy || data?.answer == null) {
+      reply = 'AI is busy (rate limited). Please wait a few seconds and try again.'
+    } else {
+      reply = (data?.answer || 'No response').replace(/\s*\[\d+\]/g, '')
+    }
+    messages.value.push({ role: 'assistant', text: reply })
   } catch (e) {
     messages.value.push({ role: 'assistant', text: `Error: ${e.message}` })
   } finally {

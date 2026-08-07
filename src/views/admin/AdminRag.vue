@@ -23,7 +23,7 @@ const form = reactive({ title: "", content: "", source: "manual", source_id: "" 
 const formLoading = ref(false);
 const formError = ref(null);
 
-// ── Sync guides ────────────────────────────────────────────────
+// Sync guides into documents and re-embed changed content.
 const syncing = ref(false);
 const syncResult = ref(null);
 
@@ -50,7 +50,7 @@ async function runSync() {
   }
 }
 
-// ── Test query (debug RAG retrieval + answer) ─────────────────
+// Debug RAG retrieval + answer.
 const testQuery = ref("");
 const testing = ref(false);
 const testResult = ref(null);
@@ -287,7 +287,6 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 <template>
   <div class="admin-rag">
-    <!-- ═══════════ Header ═══════════ -->
     <header class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
       <div>
         <h1 class="page-title mb-1 d-flex align-items-center gap-2">
@@ -497,7 +496,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
       </div>
     </div>
 
-    <!-- ═══════════ Create Modal ═══════════ -->
+    <!-- Create Modal -->
     <div v-if="createModal" class="modal-backdrop-custom" @click.self="closeModals">
       <div class="modal-card card-crypto p-4">
         <div class="modal-header-row mb-3">
@@ -541,7 +540,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
       </div>
     </div>
 
-    <!-- ═══════════ Edit Modal ═══════════ -->
+    <!-- Edit Modal -->
     <div v-if="showEditModal" class="modal-backdrop-custom" @click.self="closeModals">
       <div class="modal-card card-crypto p-4">
         <div class="modal-header-row mb-3">
@@ -584,7 +583,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
       </div>
     </div>
 
-    <!-- ═══════════ Delete Confirm ═══════════ -->
+    <!-- Delete Confirm -->
     <div v-if="deleteConfirm" class="modal-backdrop-custom" @click.self="deleteConfirm = null">
       <div class="modal-card card-crypto p-4">
         <div class="modal-header-row mb-3">

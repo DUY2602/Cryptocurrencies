@@ -54,6 +54,7 @@ const iconMap = {
   Save: icons.Save,
   Library: icons.Library,
   BrainCircuit: icons.BrainCircuit,
+  Copy: icons.Copy,
 }
 
 export function registerIcons(app) {

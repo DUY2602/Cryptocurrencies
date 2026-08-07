@@ -1,21 +1,5 @@
-<script setup>
-/**
- * RichTextEditor — TipTap v3 wrapper for Vue 3.
- *
- * Features:
- *   - bold, italic, underline, strike, inline code
- *   - H1..H4 + paragraph
- *   - bullet / ordered list, blockquote, code block, horizontal rule
- *   - inline links
- *   - embedded images (by URL, file picker, or paste)
- *   - text underline
- *   - undo / redo
- *   - live word/char counter
- *   - v-model compatible
- *
- * Headless: this component owns the toolbar UI so it blends with the
- * dark, Binance-style theme.
- */
+﻿<script setup>
+/** RichTextEditor — TipTap v3 wrapper with a themed toolbar. */
 
 import { ref, watch, onBeforeUnmount, computed } from "vue";
 import { useEditor, EditorContent } from "@tiptap/vue-3";
@@ -65,7 +49,7 @@ const editor = useEditor({
       style: `min-height: ${props.minHeight}px;`,
     },
     handlePaste(view, event) {
-      // Convert pasted images to base64 embeds
+    // Convert pasted images to base64 embeds.
       const items = event.clipboardData?.items;
       if (!items) return false;
       for (const item of items) {
@@ -97,7 +81,7 @@ const editor = useEditor({
   },
 });
 
-// Keep editor in sync if parent resets the value
+    // Keep editor in sync if parent resets the value.
 watch(
   () => props.modelValue,
   (val) => {
@@ -111,7 +95,7 @@ onBeforeUnmount(() => {
   editor.value?.destroy();
 });
 
-/* --------------- computed stats --------------- */
+/* Computed stats. */
 
 const stats = computed(() => {
   if (!editor.value) return { words: 0, chars: 0 };
@@ -120,7 +104,7 @@ const stats = computed(() => {
   return { words, chars: plain.length };
 });
 
-/* --------------- toolbar helpers --------------- */
+/* Toolbar helpers. */
 
 function isActive(name, attrs) {
   return editor.value?.isActive(name, attrs) ?? false;

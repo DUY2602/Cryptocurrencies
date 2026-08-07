@@ -1,11 +1,5 @@
 <script setup>
-/**
- * AdminLayout — sidebar + topbar shell for /admin/* routes
- *
- *  - Collapsible sidebar (mobile-friendly)
- *  - Permission-gated (redirects non-admins)
- *  - User card + role badge in the sidebar footer
- */
+/** AdminLayout — sidebar + topbar shell for /admin/* routes, gated by role. */
 
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
@@ -23,8 +17,7 @@ const isMobile = ref(false);
 onMounted(async () => {
   isMobile.value = window.innerWidth < 992;
   sidebarOpen.value = !isMobile.value;
-  // make sure role is fresh
-  await refresh();
+  await refresh(); // ensure role is fresh
 
   window.addEventListener("resize", handleResize);
 });
@@ -81,7 +74,7 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
 </script>
 
 <template>
-  <!-- Permission gate -->
+  <!-- Permission gate. -->
   <div v-if="loading" class="admin-loading">
     <div class="spinner-crypto"></div>
     <p class="mt-3 text-secondary">Checking permissions…</p>

@@ -1,16 +1,5 @@
-<script setup>
-/**
- * AdminNews — list view (Stage 3)
- *
- *  - Paginated list from Supabase (server-side range query)
- *  - Search across title / summary / author / category
- *  - Sortable columns (title, category, author, published, date)
- *  - Provides Create / Edit / Delete actions
- *  - Subscribes to realtime INSERT/UPDATE/DELETE so the list stays
- *    in sync when other admins are editing
- *  - Server-side RLS (is_admin) is the source of truth; this UI is
- *    just a friendly wrapper.
- */
+﻿<script setup>
+/** AdminNews — paginated list with search, sort, CRUD, and realtime sync. */
 
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -39,7 +28,7 @@ const busy = ref(false);
 const fetchingNews = ref(false);
 const fetchResult = ref(null); // { ok, count }
 
-// Pagination + sorting
+// Pagination + sorting.
 const page = ref(1);
 const totalCount = ref(0);
 const totalPages = computed(() =>
@@ -126,8 +115,8 @@ watch([sortField, sortAsc], () => {
 
 onMounted(() => {
   load();
-  // Realtime — when something changes server-side, just re-fetch the list
-  // (cheap, robust, and avoids us missing any cascade)
+// Realtime: re-fetch the list when something changes server-side.
+// (cheap, robust, and avoids missing any cascade)
   unsubscribe = subscribeNews(() => load(), "admin-news");
 });
 
@@ -259,7 +248,7 @@ function formatDate(iso) {
         </div>
       </header>
 
-      <!-- Permission warnings -->
+    <!-- Permission warnings -->
       <div v-if="!roleLoading && !isAdmin" class="alert alert-warning small">
         <strong>Read-only mode.</strong> You are signed in as
         <em>{{ user?.email }}</em> but your account is not flagged as
@@ -267,7 +256,7 @@ function formatDate(iso) {
         bottom of <code>supabase/complete_schema.sql</code> to promote yourself.
       </div>
 
-      <!-- Filters -->
+    <!-- Filters -->
       <div class="row g-2 mb-3">
         <div class="col-12 col-md-7">
           <div class="search-wrap">
@@ -458,7 +447,7 @@ function formatDate(iso) {
       </div>
     </div>
 
-    <!-- Confirm delete modal (lightweight, no Bootstrap JS needed) -->
+    <!-- Confirm delete modal (no Bootstrap JS needed) -->
     <div
       v-if="confirmingDelete"
       class="modal-backdrop-custom"
@@ -643,7 +632,7 @@ function formatDate(iso) {
   padding-left: 34px;
 }
 
-/* ── Pagination bar ── */
+/* Pagination bar */
 .pagination-bar {
   display: flex;
   flex-wrap: wrap;

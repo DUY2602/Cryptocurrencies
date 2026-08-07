@@ -1,5 +1,5 @@
 -- =============================================================================
--- RAG Production Setup — run in Supabase Studio > SQL Editor
+-- RAG setup — run in Supabase Studio > SQL Editor
 -- =============================================================================
 
 -- 0) Unique constraint for upsert (idempotent)
@@ -39,12 +39,12 @@ create or replace function match_documents_fts(
   query_text text,
   match_count int default 20
 ) returns table (
-  id bigint, source text, source_id text, title text, content text, rank float
+  id bigint, source text, source_id text, title text, content text, rank float8
 ) language plpgsql as $$
 begin
   return query
   select d.id, d.source, d.source_id, d.title, d.content,
-    ts_rank(to_tsvector('english', coalesce(d.content, '')), plainto_tsquery('english', query_text)) as rank
+    ts_rank(to_tsvector('english', coalesce(d.content, '')), plainto_tsquery('english', query_text))::float8 as rank
   from documents d
   where d.embedding is not null
     and to_tsvector('english', coalesce(d.content, '')) @@ plainto_tsquery('english', query_text)

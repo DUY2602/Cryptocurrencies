@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 import { defineAsyncComponent, shallowRef, ref } from "vue";
 import { RouterLink } from "vue-router";
 import HeroSection from "../../components/layout/HeroSection.vue";
@@ -378,7 +378,7 @@ export default {
 </template>
 
 <style scoped>
-/* ── Glance Panel ── */
+/* Glance Panel */
 .glance-panel {
   background: linear-gradient(135deg, rgba(255, 200, 55, 0.08) 0%, rgba(255, 200, 55, 0.02) 100%);
   border: 1px solid rgba(255, 200, 55, 0.15);
@@ -419,7 +419,7 @@ export default {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* ── Dash Table (Trending + Volume) ── */
+/* Dash Table (Trending + Volume) */
 .dash-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -524,7 +524,7 @@ export default {
 
 .flip-list-move { transition: transform 0.2s ease; }
 
-/* ── News ── */
+/* News */
 .news-track {
   display: flex;
   gap: 20px;

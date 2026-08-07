@@ -1,11 +1,6 @@
 <script setup>
 /**
- * AdminUsers — Full CRUD user management
- *
- *  - Lists all profiles from Supabase
- *  - Create: admin adds a new profile (name, email, role)
- *  - Edit: update name and role per user
- *  - Delete: remove profile with confirmation
+ * AdminUsers — CRUD user management (list, create, edit, delete).
  */
 
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
@@ -27,22 +22,21 @@ const busyId = ref(null);
 const USERS_PER_PAGE = 10;
 const userPage = ref(1);
 
-// ── Modal state ────────────────────────────────────────────────
+// Modal state.
 const confirmDelete = ref(null);
-const editModal = ref(null);       // profile being edited
-const createModal = ref(false);    // show create modal
+const editModal = ref(null);
+const createModal = ref(false);
 
-// Create form
 const createForm = ref({ name: "", email: "", role: "user" });
 const createLoading = ref(false);
 const createError = ref(null);
+const createdUser = ref(null); // result of a successful create (temp password)
+const copied = ref(false);
 
-// Edit form
 const editForm = ref({ name: "", role: "user" });
 const editLoading = ref(false);
 const editError = ref(null);
 
-// ── Data loading ────────────────────────────────────────────────
 async function load() {
   loading.value = true;
   errorMsg.value = null;
@@ -64,7 +58,6 @@ async function load() {
 
 onMounted(load);
 
-// ── Computed ────────────────────────────────────────────────────
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase();
   if (!q) return profiles.value;
@@ -118,11 +111,38 @@ watch(search, () => {
   userPage.value = 1;
 });
 
-// ── Create ──────────────────────────────────────────────────────
+// Create
 function openCreate() {
   createForm.value = { name: "", email: "", role: "user" };
   createError.value = null;
+  createdUser.value = null;
+  copied.value = false;
   createModal.value = true;
+}
+
+/**
+ * admin-users edge function: create/delete auth users (requires service role).
+ */
+async function invokeAdminUsers(body) {
+  const { data, error } = await supabase.functions.invoke("admin-users", {
+    body,
+  });
+  if (error) {
+    let message = error.message || "Request failed";
+    if (error.context?.status) {
+      try {
+        const errJson = await error.context.json();
+        if (errJson?.error) message = errJson.error;
+      } catch {
+        /* keep default message */
+      }
+    }
+    throw new Error(message);
+  }
+  if (data && data.ok === false) {
+    throw new Error(data.error || "Operation failed");
+  }
+  return data;
 }
 
 async function submitCreate() {
@@ -133,21 +153,20 @@ async function submitCreate() {
   createLoading.value = true;
   createError.value = null;
   try {
-    const payload = {
+    const data = await invokeAdminUsers({
+      action: "create",
       email: createForm.value.email.trim(),
-      name: createForm.value.name.trim() || null,
+      name: createForm.value.name.trim(),
       role: createForm.value.role,
+    });
+    createdUser.value = data;
+    profiles.value.unshift({
+      id: data.id,
+      email: data.email,
+      name: data.name,
+      role: data.role,
       created_at: new Date().toISOString(),
-    };
-    const { data, error } = await supabase
-      .from("profiles")
-      .insert(payload)
-      .select("id, email, name, role, created_at")
-      .single();
-    if (error) throw error;
-    profiles.value.unshift(data);
-    createModal.value = false;
-    showSuccess("User created successfully.");
+    });
   } catch (e) {
     createError.value = e.message;
   } finally {
@@ -155,7 +174,24 @@ async function submitCreate() {
   }
 }
 
-// ── Edit ────────────────────────────────────────────────────────
+function closeCreate() {
+  createModal.value = false;
+  createdUser.value = null;
+  copied.value = false;
+}
+
+async function copyPassword() {
+  if (!createdUser.value?.tempPassword) return;
+  try {
+    await navigator.clipboard.writeText(createdUser.value.tempPassword);
+    copied.value = true;
+    setTimeout(() => (copied.value = false), 2000);
+  } catch {
+    /* clipboard unavailable — ignore */
+  }
+}
+
+// Edit
 function openEdit(profile) {
   editForm.value = { name: profile.name || "", role: profile.role || "user" };
   editError.value = null;
@@ -188,13 +224,13 @@ async function submitEdit() {
   }
 }
 
-// ── Delete ──────────────────────────────────────────────────────
+// Delete
 async function deleteProfile(id) {
   busyId.value = id;
   errorMsg.value = null;
   try {
-    const { error } = await supabase.from("profiles").delete().eq("id", id);
-    if (error) throw error;
+    const data = await invokeAdminUsers({ action: "delete", id });
+    if (!data?.ok) throw new Error(data?.error || "Failed to delete user");
     profiles.value = profiles.value.filter((p) => p.id !== id);
     confirmDelete.value = null;
     showSuccess("User deleted.");
@@ -205,7 +241,7 @@ async function deleteProfile(id) {
   }
 }
 
-// ── Helpers ────────────────────────────────────────────────────
+// Helpers
 function showSuccess(msg) {
   successMsg.value = msg;
   setTimeout(() => (successMsg.value = null), 3500);
@@ -225,7 +261,7 @@ function formatDate(iso) {
   });
 }
 
-// Keyboard: Escape closes any open modal
+// Escape closes any open modal.
 function onKeydown(e) {
   if (e.key === "Escape") {
     if (confirmDelete.value) confirmDelete.value = null;
@@ -239,7 +275,6 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 <template>
   <div class="admin-users">
-    <!-- Header -->
     <header class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
       <div>
         <h1 class="page-title mb-1 d-flex align-items-center gap-2">
@@ -267,8 +302,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
     </header>
 
     <!-- Stats -->
-    <div class="row g-3 mb-4">
-      <div class="col-4">
+    <div class="row g-3 mb-4">      <div class="col-4">
         <div class="kpi-mini card-crypto p-3">
           <div class="kpi-mini-lbl">Total</div>
           <div class="kpi-mini-val">{{ stats.total }}</div>
@@ -445,44 +479,74 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
     </div>
 
     <!-- ── Create Modal ───────────────────────────────────────── -->
-    <div v-if="createModal" class="modal-backdrop-custom" role="dialog" aria-modal="true" @click.self="createModal = false">
+    <div v-if="createModal" class="modal-backdrop-custom" role="dialog" aria-modal="true" @click.self="closeCreate">
       <div class="modal-card card-crypto p-4">
         <div class="modal-header-row mb-3">
           <h5 class="mb-0 d-flex align-items-center gap-2">
             <UserPlus :size="18" /> Add User
           </h5>
-          <button class="close-btn" @click="createModal = false"><X :size="16" /></button>
+          <button class="close-btn" @click="closeCreate"><X :size="16" /></button>
         </div>
-        <p class="text-secondary small mb-3">
-          Creates a profile entry. The user can log in once they register with the same email.
-        </p>
-        <div v-if="createError" class="alert-banner alert-danger-banner mb-3 small">
-          <AlertTriangle :size="13" /> {{ createError }}
-        </div>
-        <div class="mb-3">
-          <label class="modal-label">Name</label>
-          <input v-model="createForm.name" type="text" class="form-control" placeholder="Display name (optional)" :disabled="createLoading" />
-        </div>
-        <div class="mb-3">
-          <label class="modal-label">Email <span class="text-negative">*</span></label>
-          <input v-model="createForm.email" type="email" class="form-control" placeholder="user@example.com" :disabled="createLoading" />
-        </div>
-        <div class="mb-4">
-          <label class="modal-label">Role</label>
-          <select v-model="createForm.role" class="form-control" :disabled="createLoading">
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <div class="d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-outline-accent btn-sm" @click="createModal = false" :disabled="createLoading">
-            Cancel
-          </button>
-          <button type="button" class="btn btn-accent btn-sm" @click="submitCreate" :disabled="createLoading">
-            <span v-if="createLoading" class="spinner-border spinner-border-sm me-1" />
-            {{ createLoading ? "Creating…" : "Create User" }}
-          </button>
-        </div>
+
+        <template v-if="createdUser">
+          <div class="alert-banner alert-success-banner mb-3 small">
+            <Check :size="13" /> User created successfully.
+          </div>
+          <p class="text-secondary small mb-1">
+            <strong>{{ createdUser.email }}</strong> (role:
+            <strong>{{ createdUser.role }}</strong
+            >) can log in immediately with this temporary password:
+          </p>
+          <div class="temp-password-box mb-2 d-flex align-items-center justify-content-between gap-2">
+            <code>{{ createdUser.tempPassword }}</code>
+            <button type="button" class="btn btn-xs btn-outline-accent" @click="copyPassword">
+              <Check v-if="copied" :size="12" />
+              <Copy v-else :size="12" />
+              {{ copied ? "Copied" : "Copy" }}
+            </button>
+          </div>
+          <p class="text-secondary small mb-3">
+            Share this password securely — the user can change it later from their
+            profile.
+          </p>
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-accent btn-sm" @click="closeCreate">Done</button>
+          </div>
+        </template>
+
+        <template v-else>
+          <p class="text-secondary small mb-3">
+            Creates a confirmed account right away (email + generated temporary
+            password). Admins get full access to the admin panel.
+          </p>
+          <div v-if="createError" class="alert-banner alert-danger-banner mb-3 small">
+            <AlertTriangle :size="13" /> {{ createError }}
+          </div>
+          <div class="mb-3">
+            <label class="modal-label">Name</label>
+            <input v-model="createForm.name" type="text" class="form-control" placeholder="Display name (optional)" :disabled="createLoading" />
+          </div>
+          <div class="mb-3">
+            <label class="modal-label">Email <span class="text-negative">*</span></label>
+            <input v-model="createForm.email" type="email" class="form-control" placeholder="user@example.com" :disabled="createLoading" />
+          </div>
+          <div class="mb-4">
+            <label class="modal-label">Role</label>
+            <select v-model="createForm.role" class="form-control" :disabled="createLoading">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-accent btn-sm" @click="createModal = false" :disabled="createLoading">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-accent btn-sm" @click="submitCreate" :disabled="createLoading">
+              <span v-if="createLoading" class="spinner-border spinner-border-sm me-1" />
+              {{ createLoading ? "Creating…" : "Create User" }}
+            </button>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -892,4 +956,18 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 /* ── Misc ─────────────────────────────────────────────────────── */
 .min-w-0 { min-width: 0; }
 .text-negative { color: var(--negative); }
+
+.temp-password-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+.temp-password-box code {
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  user-select: all;
+}
 </style>

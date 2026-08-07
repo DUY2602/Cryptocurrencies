@@ -1,7 +1,6 @@
 -- =============================================================================
--- Guides table — source of truth for RAG guide documents
--- Run in Supabase Studio > SQL Editor
--- After inserting, trigger sync-guides Edge Function to embed into documents
+-- Guides table — source of truth for RAG guide documents.
+-- Run in Supabase Studio > SQL Editor, then trigger sync-guides to embed.
 -- =============================================================================
 
 create table if not exists public.guides (

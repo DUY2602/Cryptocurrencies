@@ -1,8 +1,8 @@
 -- =============================================================================
 -- Complete Supabase Schema — Cryptocurrencies Dashboard
 -- Profiles stores all accounts with email + bcrypt password.
--- FK to auth.users is kept so RLS auth.uid() still works.
--- Idempotent: safe to run multiple times (uses IF NOT EXISTS / OR REPLACE)
+-- Idempotent: safe to run multiple times (IF NOT EXISTS / OR REPLACE).
+-- Run in Supabase Studio > SQL Editor.
 -- =============================================================================
 -- Run this in Supabase Studio > SQL Editor
 -- =============================================================================
@@ -12,10 +12,8 @@ create extension if not exists vector;
 
 -- 1) Tables -------------------------------------------------------------------
 
--- 1a) User profiles — source of truth for all accounts
+-- 1a) User profiles — source of truth for all accounts.
 --     id = auth.users.id (FK kept for RLS compatibility).
---     email + password (bcrypt) stored directly so every account
---     is visible as a profile record.
 create table if not exists public.profiles (
   id         uuid references auth.users(id) on delete cascade primary key,
   email      text not null,
@@ -76,8 +74,7 @@ create table if not exists public.comments (
   created_at timestamptz not null default now()
 );
 
--- 1f) RAG documents (vector embeddings for Gemini RAG pipeline)
---     embedding dimension = 768, matching Google gemini-embedding-2 (outputDimensionality=768)
+-- 1f) RAG documents — embeddings match gemini-embedding-2 (768 dims).
 create table if not exists public.documents (
   id        bigint generated always as identity primary key,
   source    text not null,            -- 'coin' | 'news'
@@ -263,8 +260,7 @@ alter publication supabase_realtime add table public.news;
 -- =============================================================================
 -- 7) Make a user an admin (run AFTER registering via the site)
 --    Replace 'admin@crypto.local' with the email you registered with.
--- =============================================================================
-insert into public.profiles (id, email, password, name, role)
+-- =============================================================================insert into public.profiles (id, email, password, name, role)
 select
   id,
   email,
@@ -277,9 +273,9 @@ on conflict (id) do update set role = 'admin';
 
 -- =============================================================================
 -- 8) Schedule auto-fetch news from CoinDesk RSS (every hour)
--- Requires pg_cron extension (enable in Supabase Dashboard > Database > Extensions)
--- =============================================================================
--- Đã bật. Vào Supabase Dashboard > SQL Editor chạy lệnh sau (thay YOUR_SERVICE_ROLE_KEY):
+-- Requires pg_cron extension (enable in Supabase Dashboard > Database > Extensions).
+-- Already enabled. Run the following in Supabase Dashboard > SQL Editor
+-- (replace YOUR_SERVICE_ROLE_KEY):
 -- select cron.schedule(
 --   'fetch-news-hourly',
 --   '0 * * * *',

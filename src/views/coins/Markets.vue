@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 import { api } from "../../services/api.js";
 import {
   livePrices,
@@ -406,7 +406,7 @@ export default {
   padding-top: 0;
 }
 
-/* ── Table wrapper ─────────────────── */
+/* Table wrapper */
 .table-crypto-wrap {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
@@ -589,11 +589,11 @@ export default {
   margin-left: 0.3rem;
 }
 
-/* ── Flash highlights ────────────── */
+/* Flash highlights */
 .flash-up { color: var(--positive) !important; }
 .flash-down { color: var(--negative) !important; }
 
-/* ── Pagination ──────────────────── */
+/* Pagination */
 .pagination-crypto {
   display: flex;
   gap: 0.35rem;
@@ -635,7 +635,7 @@ export default {
   box-shadow: 0 4px 10px rgba(255, 200, 55, 0.2);
 }
 
-/* ── Responsive ──────────────────── */
+/* Responsive */
 @media (max-width: 991px) {
   .cell-volume, .cell-cap { display: none; }
   .price-value { font-size: 0.82rem; }

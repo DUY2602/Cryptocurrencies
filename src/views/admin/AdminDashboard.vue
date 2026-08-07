@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { fetchNews, fetchNewsCount, fetchNewsCountSince, fetchCategoryCounts, subscribeNews } from "../../services/news.js";
@@ -104,7 +104,7 @@ async function loadChart() {
       handleScale: false,
     };
 
-    // Cumulative line chart
+    // Cumulative line chart.
     chart = createChart(chartContainer.value, baseOpts);
     const lineSeries = chart.addSeries(LineSeries, {
       color: "#ffc837",
@@ -122,7 +122,7 @@ async function loadChart() {
       cumulative.push(running);
     }
 
-    // Prepend a day-1 zero point so the line starts from 0 (handles single-day seed)
+    // Prepend a day-1 zero point so the line starts from 0.
     const firstTs = Math.floor(new Date(sorted[0][0]).getTime() / 1000) - 86400;
     lineSeries.setData([
       { time: firstTs, value: 0 },
@@ -133,7 +133,7 @@ async function loadChart() {
     ]);
     chart.timeScale().fitContent();
 
-    // Daily new-registrations bar chart
+    // Daily new-registrations bar chart.
     chartBar = createChart(chartBarContainer.value, baseOpts);
     const barSeries = chartBar.addSeries(HistogramSeries, {
       color: "#8b5cf6",
@@ -339,7 +339,7 @@ function go(to) { router.push(to); }
 </template>
 
 <style scoped>
-/* ── KPI grid ── */
+/* KPI grid */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -406,7 +406,7 @@ function go(to) { router.push(to); }
 .green-chip { background: var(--positive-bg); color: var(--positive); }
 .blue-chip { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 
-/* ── Chart ── */
+/* Chart */
 .chart-card {
   display: flex;
   flex-direction: column;
@@ -456,7 +456,7 @@ function go(to) { router.push(to); }
 .dot-gold { background: #ffc837; }
 .dot-purple { background: rgba(139, 92, 246, 0.65); }
 
-/* ── Category bars ── */
+/* Category bars */
 .cat-card {
   display: flex;
   flex-direction: column;
@@ -482,7 +482,7 @@ function go(to) { router.push(to); }
   transition: width 0.4s ease;
 }
 
-/* ── Recent articles ── */
+/* Recent articles */
 .recent-row {
   padding: 0.65rem 0.5rem;
   border-bottom: 1px solid var(--border-color);

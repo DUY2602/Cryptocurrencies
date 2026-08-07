@@ -96,7 +96,6 @@ export default {
       maData: [],
       emaData: [],
       
-      // New reactive states for Web3 Dashboard Redesign
       activeIndicator: 'Price',
       bullishPercent: 68,
       bearishPercent: 32,
@@ -512,8 +511,8 @@ export default {
           if (volBar) this.volumeSeries.update(volBar)
         }
         
-        // Note: For simplicity we only append to EMA/MA if requested specifically for real-time.
-        // It recalculates when switching indicators or timeframes.
+// Append EMA/MA only when requested for real-time; recalculates on
+// indicator or timeframe switch.
       }
     },
 

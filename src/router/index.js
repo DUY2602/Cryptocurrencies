@@ -11,7 +11,6 @@ import Watchlist from "../views/coins/Watchlist.vue";
 import Profile from "../views/auth/Profile.vue";
 import SetPassword from "../views/auth/SetPassword.vue";
 
-// Admin
 import AdminLayout from "../views/admin/AdminLayout.vue";
 import AdminDashboard from "../views/admin/AdminDashboard.vue";
 import AdminNews from "../views/admin/AdminNews.vue";
@@ -50,7 +49,6 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
-  /* ─────────────── Admin section ─────────────── */
   {
     path: "/admin",
     component: AdminLayout,
@@ -107,9 +105,7 @@ router.beforeEach(async (to) => {
   if (to.meta.guestOnly && currentUser) {
     return { name: "Home" };
   }
-  // requiresAdmin: bail out (the layout itself renders a friendly
-  // "promote yourself" screen) and let the AdminLayout handle the
-  // permission display.
+  // requiresAdmin is rendered by AdminLayout.
 });
 
 export default router;

@@ -1,16 +1,3 @@
-/**
- * News service — Stage 4
- *
- * Strategy:
- *  - Reads: Supabase table (accumulated news persisted by Edge Function).
- *           Articles with short content (< 60 words) are auto-expanded
- *           via Gemini through the fetch-news Edge Function.
- *  - Writes (create / update / delete): only allowed for users with
- *           role='admin' (enforced by RLS policies on the server).
- *  - HTML coming from TipTap is sanitized through DOMPurify before
- *    being written, mitigating stored XSS.
- */
-
 import DOMPurify from "dompurify";
 import { supabase } from "../../supabase/supabase.js";
 
@@ -33,8 +20,6 @@ const SANITIZE_CONFIG = {
   ALLOW_DATA_ATTR: false,
 };
 
-/* ----------------------------- helpers -------------------------------- */
-
 function toSummary(text, max = 180) {
   if (!text) return "";
   const plain = String(text).replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
@@ -54,10 +39,7 @@ function toFullHtml(row) {
   return `<p>${text}</p>`;
 }
 
-/**
- * Normalize a row from Supabase OR from local JSON into the
- * shape the UI expects.
- */
+// Normalize a Supabase or local row into the shape the UI expects.
 export function normalizeArticle(row) {
   const fullContent = toFullHtml(row);
   const summary = row.summary || toSummary(fullContent);
@@ -88,8 +70,6 @@ export function normalizeArticle(row) {
   };
 }
 
-/* ----------------------------- helpers -------------------------------- */
-
 function getWordCount(html) {
   const text = String(html || "").replace(/<[^>]+>/g, " ").trim();
   return text.split(/\s+/).filter(Boolean).length;
@@ -100,8 +80,7 @@ function isShortContent(article) {
   return wc > 0 && wc < 60;
 }
 
-/* ----------------------------- reads ---------------------------------- */
-
+// Fetch a paginated, sorted list of articles.
 export async function fetchNews({ page = 1, pageSize = 12 } = {}) {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -241,12 +220,7 @@ export async function expandArticleContent(id) {
   } catch { /* fire-and-forget */ }
 }
 
-/* ----------------------------- writes (admin) ------------------------- */
-
-/**
- * Build a Supabase row from the editor payload.
- * Sanitizes the TipTap HTML before sending.
- */
+// Admin: build a Supabase row from the editor payload, sanitizing HTML.
 function buildRow(payload, currentUserId) {
   return {
     title: String(payload.title || "").trim(),
@@ -296,10 +270,7 @@ export async function deleteNews(id) {
   return true;
 }
 
-/**
- * Subscribe to realtime INSERT/UPDATE/DELETE on the news table.
- * Returns an unsubscribe function.
- */
+// Subscribe to realtime changes on the news table.
 let channelCounter = 0;
 export function subscribeNews(callback, suffix = "") {
   const id = ++channelCounter;

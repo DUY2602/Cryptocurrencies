@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 import { api } from "../../services/api.js";
 import {
   livePrices,
@@ -262,7 +262,7 @@ export default {
 .text-accent { color: var(--accent); }
 .star-active { color: var(--accent); }
 
-/* ── Table (same as Markets) ───── */
+/* Table (same as Markets) */
 .table-crypto-wrap {
   background: var(--table-bg);
   border: 1px solid var(--table-border);

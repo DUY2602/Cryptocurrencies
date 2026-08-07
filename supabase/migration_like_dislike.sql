@@ -1,4 +1,4 @@
--- Migration: add like/dislie type to news_likes
+-- Migration: add like/dislike type to news_likes
 alter table public.news_likes
   add column type text not null default 'like'
   check (type in ('like', 'dislike'));

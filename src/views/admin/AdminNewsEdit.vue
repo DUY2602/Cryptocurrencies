@@ -1,13 +1,5 @@
-<script setup>
-/**
- * AdminNewsEdit — create / edit form
- *
- *  - Renders the TipTap RichTextEditor for the body
- *  - Live preview pane (toggleable)
- *  - Validates required fields, sends a sanitized payload to Supabase
- *  - Route param "id" === "new" => create; otherwise update
- *  - All write access is also enforced server-side via RLS + is_admin()
- */
+﻿<script setup>
+/** AdminNewsEdit — create/edit form with TipTap editor + preview. */
 
 import {
   ref,
@@ -295,7 +287,7 @@ function autoSummary() {
 
 <template>
   <section class="admin-news-edit">
-    <!-- ═══════════ Top bar (GDocs-style) ═══════════ -->
+    <!-- Top bar (GDocs-style) -->
     <header class="editor-topbar">
       <div class="topbar-left">
         <button type="button" class="btn btn-sm btn-ghost" @click="cancel">
@@ -353,7 +345,7 @@ function autoSummary() {
       </div>
     </header>
 
-    <!-- ═══════════ Permission + alerts ═══════════ -->
+    <!-- Permission + alerts -->
     <div v-if="!roleLoading && !isAdmin" class="alert alert-warning small mx-3 mt-3">
       <strong>Read-only.</strong> Signed in as <em>{{ user?.email }}</em> but not admin.
     </div>
@@ -367,11 +359,11 @@ function autoSummary() {
       <button class="btn-close btn-close-white btn-sm ms-auto" @click="successMsg = null" />
     </div>
 
-    <!-- ═══════════ Editor body ═══════════ -->
+    <!-- Editor body -->
     <LoadingSpinner v-if="loadingData" message="Loading article..." />
 
     <div v-else class="editor-body">
-      <!-- ═══ Editor (full, hidden when preview is active) ═══ -->
+      <!-- Editor (full, hidden when preview is active) -->
       <div v-show="!showPreview" class="editor-main">
         <div class="editor-content">
           <div class="doc-paper">
@@ -431,7 +423,7 @@ function autoSummary() {
         </div>
       </div>
 
-      <!-- ═══ Preview (full, shown instead of editor) ═══ -->
+      <!-- Preview (full, shown instead of editor) -->
       <div v-show="showPreview" class="preview-panel">
         <div class="preview-body">
           <div v-if="form.image_url" class="preview-cover">
@@ -448,7 +440,7 @@ function autoSummary() {
         </div>
       </div>
 
-      <!-- ═══════════ Right metadata panel ═══════════ -->
+      <!-- Right metadata panel -->
       <div v-if="showMeta" class="meta-panel" :style="{ width: metaWidth + 'px' }">
         <div class="meta-resize-handle" @mousedown.prevent="startResize" />
         <div class="meta-panel-inner">
@@ -540,7 +532,7 @@ function autoSummary() {
 </template>
 
 <style scoped>
-/* ─── Layout ─── */
+/* Layout */
 .admin-news-edit {
   display: flex;
   flex-direction: column;
@@ -548,7 +540,7 @@ function autoSummary() {
   background: var(--bg-primary);
 }
 
-/* ─── Top bar (GDocs-style) ─── */
+/* Top bar (GDocs-style) */
 .editor-topbar {
   display: flex;
   align-items: center;
@@ -630,7 +622,7 @@ function autoSummary() {
   border-color: rgba(240, 185, 11, 0.3);
 }
 
-/* ─── Editor body ─── */
+/* Editor body */
 .editor-body {
   display: flex;
   flex: 1;
@@ -651,7 +643,7 @@ function autoSummary() {
   width: 100%;
 }
 
-/* ─── Document paper ─── */
+/* Document paper */
 .doc-paper {
   background: var(--bg-card);
   border-radius: 4px;
@@ -681,7 +673,7 @@ function autoSummary() {
   color: var(--negative);
 }
 
-/* ─── Summary ─── */
+/* Summary */
 .summary-wrap {
   margin-bottom: 1.5rem;
   position: relative;
@@ -715,7 +707,7 @@ function autoSummary() {
   padding: 0.1rem 0.4rem;
 }
 
-/* ─── Body ─── */
+/* Body */
 .doc-body {
   border-top: 1px solid var(--border-color);
   padding-top: 1.5rem;
@@ -728,7 +720,7 @@ function autoSummary() {
   margin-bottom: 0.75rem;
 }
 
-/* ─── Preview panel ─── */
+/* Preview panel */
 .preview-panel {
   flex: 1;
   min-width: 0;
@@ -787,7 +779,7 @@ function autoSummary() {
   color: var(--text-primary);
 }
 
-/* ─── Metadata panel ─── */
+/* Metadata panel */
 .meta-panel {
   background: var(--bg-secondary);
   border-left: 1px solid var(--border-color);
@@ -833,7 +825,7 @@ function autoSummary() {
   opacity: 0.3;
 }
 
-/* ─── Tags ─── */
+/* Tags */
 .tags-input {
   min-height: 34px;
   padding: 0.25rem 0.4rem;
@@ -878,7 +870,7 @@ function autoSummary() {
   color: var(--text-secondary);
 }
 
-/* ─── Image previews ─── */
+/* Image previews */
 .cover-preview-sm {
   width: 100%;
   aspect-ratio: 16/9;
@@ -909,7 +901,7 @@ function autoSummary() {
   object-fit: cover;
 }
 
-/* ─── Responsive ─── */
+/* Responsive */
 @media (max-width: 991px) {
   .editor-content {
     padding: 1rem;

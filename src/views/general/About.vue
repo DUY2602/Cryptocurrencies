@@ -68,7 +68,7 @@ export default {
         {
           icon: Compass,
           title: 'Core Purpose',
-          desc: 'Track every move in crypto â€” live prices, market caps, and 24h changes â€” all in one real-time dashboard built with modern web technologies.',
+          desc: 'Track every move in crypto — live prices, market caps, and 24h changes — all in one real-time dashboard built with modern web technologies.',
           highlights: ['Live WebSocket streaming from Binance', '100+ coins tracked simultaneously', 'Dark/light theme with premium UI'],
         },
         {
@@ -145,7 +145,7 @@ export default {
   <section class="page-section about-page">
     <PageHero
       title="About CryptoDash"
-      subtitle="A real-time cryptocurrency dashboard tracking live prices, market caps, and news â€” built with Vue 3 and Bootstrap."
+      subtitle="A real-time cryptocurrency dashboard tracking live prices, market caps, and news — built with Vue 3 and Bootstrap."
     />
 
     <div class="container pt-4 pb-5">
@@ -338,7 +338,7 @@ export default {
   box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 }
 
-/* â”€â”€ Feature Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Feature Cards */
 .card-feature {
   border-top: 2px solid var(--accent) !important;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -396,7 +396,7 @@ export default {
   flex-shrink: 0;
 }
 
-/* â”€â”€ Technical Matrix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Technical Matrix */
 .tech-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -458,7 +458,7 @@ export default {
 
 
 
-/* â”€â”€ Coin selector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Coin selector */
 .coin-selector {
   display: flex;
   gap: 0.75rem;
@@ -534,7 +534,7 @@ export default {
   opacity: 0.7;
 }
 
-/* â”€â”€ Welcome block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Welcome block */
 .welcome-block {
   padding: 1.5rem;
   border-radius: 18px;
@@ -557,7 +557,7 @@ export default {
   animation: textGlow 1.8s ease-in-out infinite alternate;
 }
 
-/* â”€â”€ Hero emoji block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Hero emoji block */
 .hero-emoji-block {
   text-align: center;
   padding: 2rem 1rem;
@@ -589,7 +589,7 @@ export default {
   margin: 0 auto;
 }
 
-/* â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Keyframes */
 @keyframes textGlow {
   from { text-shadow: 0 0 10px rgba(247,147,26,0.35); }
   to   { text-shadow: 0 0 22px rgba(247,147,26,0.75); }
@@ -611,7 +611,7 @@ export default {
   50%      { transform: translateY(-7px); }
 }
 
-/* â”€â”€ Utility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Utility */
 .anim-fade-up {
   animation: fadeUp 0.5s ease both;
 }

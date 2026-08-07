@@ -1,9 +1,5 @@
 /**
- * useAdmin — Stage 3
- *
- * Lightweight role-check helper for the admin-only sections of the app
- * (e.g. /admin/news CRUD UI). The truth lives in the `profiles.role`
- * column in Supabase; RLS policies also enforce it server-side.
+ * useAdmin — role check backed by profiles.role.
  */
 
 import { ref, computed, watch } from "vue";
@@ -40,14 +36,14 @@ async function loadProfile(uid) {
   }
 }
 
-// Load whenever the auth user changes
+// Load whenever the auth user changes.
 watch(
   () => user.value?.id,
   (uid) => loadProfile(uid),
   { immediate: true }
 );
 
-// Reset cache when auth state changes (e.g. role was just upgraded in DB)
+// Reset cache when auth state changes (e.g. role upgraded in DB).
 supabase.auth.onAuthStateChange((_event, session) => {
   const uid = session?.user?.id || null;
   if (uid !== lastLoadedFor.value) {

@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 import { useAuth } from "../../composables/useAuth.js";
 
 export default {
@@ -136,7 +136,7 @@ export default {
 </template>
 
 <style scoped>
-/* ── Auth Page Layout ─────────────────────────── */
+/* Auth Page Layout */
 .page-section {
   min-height: calc(100vh - 72px);
   display: flex;
@@ -160,7 +160,7 @@ export default {
   50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
 }
 
-/* ── Auth Card ────────────────────────────────── */
+/* Auth Card */
 .card.card-crypto {
   border-top: 2px solid var(--accent) !important;
   box-shadow: 0 0 40px rgba(255,200,55,0.07), 0 24px 64px rgba(0,0,0,0.45) !important;
@@ -174,7 +174,7 @@ export default {
   font-size: 28px;
 }
 
-/* ── Form Controls ────────────────────────────── */
+/* Form Controls */
 .form-label {
   color: var(--text-secondary);
   font-size: 13px;
@@ -211,7 +211,7 @@ export default {
 }
 .invalid-feedback { font-size: 12px; color: var(--negative); margin-top: 6px; }
 
-/* ── Alerts ───────────────────────────────────── */
+/* Alerts */
 .alert-success {
   background: var(--positive-bg);
   border: 1px solid rgba(16,185,129,0.3);
@@ -227,7 +227,7 @@ export default {
   font-size: 14px;
 }
 
-/* ── Footer link ──────────────────────────────── */
+/* Footer link */
 a {
   color: var(--accent);
   font-weight: 600;

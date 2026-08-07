@@ -1,12 +1,7 @@
 /**
- * Rate limiter + cache layer for external APIs (CoinGecko, Binance, etc.)
- *
- * Features:
- * - Token-bucket rate limiting
- * - In-memory + localStorage cache
- * - Request deduplication (same URL in-flight won't fire twice)
- * - Exponential backoff retry
- * - Queue draining on page visibility change
+ * Rate limiter + cache layer for external APIs (CoinGecko, Binance).
+ * Token-bucket throttling, localStorage cache, request deduplication,
+ * exponential backoff, and queue draining on visibility change.
  */
 
 const CACHE_PREFIX = 'cryptodash-api-'

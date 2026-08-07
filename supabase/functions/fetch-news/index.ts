@@ -1,16 +1,6 @@
 /**
- * fetch-news — Supabase Edge Function
- *
- * Fetches CoinDesk RSS every hour via Supabase Cron and inserts
- * new articles into the `news` table. Short descriptions from RSS
- * are expanded into fuller articles using Groq (Llama 3.1-8B)
- * or Gemini (fallback).
- *
- * Environment variables:
- *   SUPABASE_URL              (auto-injected)
- *   SUPABASE_SERVICE_ROLE_KEY (auto-injected)
- *   GROQ_API_KEY              (recommended, faster & cheaper)
- *   GEMINI_API_KEY            (optional fallback)
+ * fetch-news — pulls CoinDesk RSS into the news table. Short RSS
+ * descriptions are expanded via Groq (or Gemini fallback).
  */
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";

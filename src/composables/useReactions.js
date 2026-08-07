@@ -5,7 +5,7 @@ import { user } from "./useAuth.js";
 const userReactions = reactive({});
 const counts = reactive({});
 
-/* Watch auth changes to reload user reactions */
+// Reload user reactions on auth change.
 watch(user, (u) => {
   if (u?.id) {
     loadUserReactions();
@@ -14,41 +14,45 @@ watch(user, (u) => {
   }
 });
 
-/* ----------------------------- helpers -------------------------------- */
-
 function key(id) {
   return String(id);
 }
 
-/* ---------------------------- read counts ----------------------------- */
-
+// Fetch like/dislike counts for the requested articles only, recomputed
+// from scratch so repeated calls never accumulate stale totals.
 export async function fetchReactionCounts(articleIds) {
-  if (!articleIds?.length) return;
+  const ids = (Array.isArray(articleIds) ? articleIds : [articleIds])
+    .map((id) => Number(id))
+    .filter((n) => !Number.isNaN(n));
+  if (!ids.length) return;
 
   const { data, error } = await supabase
     .from("news_likes")
-    .select("article_id, type");
+    .select("article_id, type")
+    .in("article_id", ids);
 
   if (error) {
     console.warn("[reactions] fetch counts failed:", error.message);
     return;
   }
 
-  for (const id of articleIds) {
-    const k = key(id);
-    if (!counts[k]) counts[k] = { likes: 0, dislikes: 0 };
+  // Recompute from scratch so like -> unlike doesn't inflate totals.
+  const next = {};
+  for (const id of ids) {
+    next[key(id)] = { likes: 0, dislikes: 0 };
   }
 
   for (const row of data || []) {
     const k = key(row.article_id);
-    if (!counts[k]) counts[k] = { likes: 0, dislikes: 0 };
-    if (row.type === "dislike") counts[k].dislikes++;
-    else counts[k].likes++;
+    if (!next[k]) next[k] = { likes: 0, dislikes: 0 };
+    if (row.type === "dislike") next[k].dislikes++;
+    else next[k].likes++;
   }
+
+  for (const [k, v] of Object.entries(next)) counts[k] = v;
 }
 
-/* --------------------------- user reaction ---------------------------- */
-
+// Load the current user's reactions.
 export async function loadUserReactions() {
   if (!user.value?.id) {
     for (const k of Object.keys(userReactions)) delete userReactions[k];
@@ -70,8 +74,7 @@ export async function loadUserReactions() {
   }
 }
 
-/* ----------------------------- mutate --------------------------------- */
-
+// Toggle a reaction: clicking the active type removes it, otherwise upsert.
 export async function react(articleId, type) {
   if (!user.value?.id) return false;
   if (type !== "like" && type !== "dislike") return false;
@@ -114,6 +117,7 @@ export async function react(articleId, type) {
   return true;
 }
 
+// Remove the current user's reaction.
 export async function removeReaction(articleId) {
   if (!user.value?.id) return false;
 
@@ -142,8 +146,6 @@ export async function removeReaction(articleId) {
 
   return true;
 }
-
-/* ----------------------------- getters -------------------------------- */
 
 export function getUserReaction(articleId) {
   return userReactions[key(articleId)] || null;
