@@ -3,6 +3,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type",
+};
+
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -29,7 +35,10 @@ async function embed(text: string, retries = 5): Promise<number[]> {
   throw new Error("embedding exhausted retries");
 }
 
-serve(async () => {
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
   try {
     const { data: guides } = await supabase.from("guides").select("*");
     if (!guides?.length) throw new Error("No guides found in guides table");
@@ -82,13 +91,13 @@ serve(async () => {
     }
 
     return new Response(JSON.stringify({ guides: guides.length, changed, indexed }), {
-      headers: { "Content-Type": "application/json" },
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("[sync-guides]", e);
     return new Response(JSON.stringify({ error: (e as Error).message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 });

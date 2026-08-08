@@ -7,7 +7,7 @@ import { useAuth } from "../../composables/useAuth.js";
 import { useAdmin } from "../../composables/useAdmin.js";
 import { supabase } from "../../../supabase/supabase.js";
 import { Collapse } from "bootstrap";
-import { Star, ChevronDown, User, LogOut } from "@lucide/vue";
+import { Star, ChevronDown, LogOut } from "@lucide/vue";
 
 const { isDark } = useTheme();
 const { isLoggedIn, logout, user } = useAuth();
@@ -152,13 +152,6 @@ function onDocClick(e) {
                 <span class="dropdown-caret"><ChevronDown :size="14" /></span>
               </button>
               <div v-if="showAdminMenu" class="user-menu">
-                <RouterLink
-                  to="/profile"
-                  class="user-menu-item"
-                  @click="showAdminMenu = false"
-                >
-                  <User :size="14" /> Profile
-                </RouterLink>
                 <RouterLink
                   v-if="isAdmin"
                   to="/admin"

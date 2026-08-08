@@ -6,6 +6,7 @@ import EmptyState from "../../components/ui/EmptyState.vue";
 import {
   getComments,
   postComment,
+  updateComment,
   removeComment,
 } from "../../composables/useComments.js";
 import { user } from "../../composables/useAuth.js";
@@ -30,6 +31,9 @@ export default {
       submitting: false,
       comments: [],
       commentCount: 0,
+      editingCommentId: null,
+      editingText: "",
+      editingComment: false,
     };
   },
   computed: {
@@ -100,6 +104,33 @@ export default {
           }
         });
       },
+    startEditComment(comment) {
+      this.editingCommentId = comment.id;
+      this.editingText = comment.text;
+    },
+    cancelEditComment() {
+      this.editingCommentId = null;
+      this.editingText = "";
+      this.editingComment = false;
+    },
+    saveEditComment(comment) {
+      const text = this.editingText.trim();
+      if (!text) {
+        this.toast.error("Comment cannot be empty.");
+        return;
+      }
+      this.editingComment = true;
+      updateComment(comment.id, text, this.user).then((result) => {
+        this.editingComment = false;
+        if (result) {
+          comment.text = result.text;
+          this.toast.success("Comment updated.");
+        } else {
+          this.toast.error("Failed to update comment. Please try again.");
+        }
+        this.cancelEditComment();
+      });
+    },
     formatDate(dateStr) {
       return new Date(dateStr).toLocaleDateString("en-AU", {
         year: "numeric",
@@ -263,19 +294,58 @@ export default {
                     <time :datetime="comment.createdAt">{{
                       formatDate(comment.createdAt)
                     }}</time>
+                    <span v-if="comment.updatedAt" class="ms-1">(edited)</span>
                   </span>
                 </div>
-                <button
-                  v-if="user && comment.userId === user.id"
-                  type="button"
-                  class="btn btn-sm btn-outline-accent py-0 px-2"
-                  :aria-label="`Delete comment by ${comment.userName}`"
-                  @click="removeComment(comment)"
-                >
-                  <X :size="16" />
-                </button>
+                <div v-if="user && comment.userId === user.id" class="d-flex gap-1">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-accent py-0 px-2"
+                    :aria-label="`Edit comment by ${comment.userName}`"
+                    :disabled="editingComment"
+                    @click="startEditComment(comment)"
+                  >
+                    <Pencil :size="16" />
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-accent py-0 px-2"
+                    :aria-label="`Delete comment by ${comment.userName}`"
+                    :disabled="editingComment"
+                    @click="removeComment(comment)"
+                  >
+                    <X :size="16" />
+                  </button>
+                </div>
               </div>
-              <p class="mb-0 mt-2 text-secondary">{{ comment.text }}</p>
+
+              <template v-if="editingCommentId === comment.id">
+                <textarea
+                  v-model="editingText"
+                  class="form-control my-2"
+                  rows="3"
+                  aria-label="Edit comment text"
+                ></textarea>
+                <div class="d-flex gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-accent"
+                    :disabled="editingComment || !editingText.trim()"
+                    @click="saveEditComment(comment)"
+                  >
+                    {{ editingComment ? "Saving..." : "Save" }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-accent"
+                    :disabled="editingComment"
+                    @click="cancelEditComment"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </template>
+              <p v-else class="mb-0 mt-2 text-secondary">{{ comment.text }}</p>
             </div>
           </div>
 

@@ -152,9 +152,6 @@ const userInitial = computed(() => (userName.value?.[0] || "A").toUpperCase());
           </div>
         </div>
         <div class="d-flex flex-wrap gap-2 mt-2">
-          <RouterLink to="/profile" class="btn btn-sm btn-outline-accent flex-grow-1">
-            Profile
-          </RouterLink>
           <RouterLink to="/" class="btn btn-sm btn-outline-accent flex-grow-1">
             Site
           </RouterLink>

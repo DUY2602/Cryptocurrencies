@@ -8,7 +8,6 @@ import Login from "../views/auth/Login.vue";
 import Register from "../views/auth/Register.vue";
 import CoinDetail from "../views/coins/CoinDetail.vue";
 import Watchlist from "../views/coins/Watchlist.vue";
-import Profile from "../views/auth/Profile.vue";
 import SetPassword from "../views/auth/SetPassword.vue";
 
 import AdminLayout from "../views/admin/AdminLayout.vue";
@@ -42,12 +41,6 @@ const routes = [
     meta: { guestOnly: true },
   },
   { path: "/set-password", name: "SetPassword", component: SetPassword },
-  {
-    path: "/profile",
-    name: "Profile",
-    component: Profile,
-    meta: { requiresAuth: true },
-  },
 
   {
     path: "/admin",

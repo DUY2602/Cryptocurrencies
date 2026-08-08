@@ -94,14 +94,29 @@ export function useAuth() {
 
   async function requestRegistration(email, name) {
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .ilike("email", normalizedEmail)
+        .maybeSingle();
+
+      if (existingProfile) {
+        return {
+          success: false,
+          message: "This email is already registered. Please log in instead.",
+        };
+      }
+
       const tempPassword =
         Math.random().toString(36).slice(-10) +
         Math.random().toString(36).slice(-10);
 
-      const displayName = name || email.split("@")[0] || "User";
+      const displayName = name || normalizedEmail.split("@")[0] || "User";
 
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: normalizedEmail,
         password: tempPassword,
         options: {
           data: {

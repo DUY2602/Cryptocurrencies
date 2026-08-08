@@ -51,6 +51,7 @@ export async function getComments(articleId) {
     userName: row.user_name,
     text: row.text,
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }))
 
   const key = String(articleId)
@@ -86,6 +87,7 @@ export async function postComment(articleId, text, currentUser) {
     userName: data.user_name,
     text: data.text,
     createdAt: data.created_at,
+    updatedAt: data.updated_at,
   }
 
   cache.value[key] = [...(cache.value[key] || []), comment]
@@ -113,4 +115,38 @@ export async function removeComment(commentId, currentUser) {
   }
   saveCache()
   return true
+}
+
+export async function updateComment(commentId, text, currentUser) {
+  if (!currentUser) return null
+
+  const { data, error } = await supabase
+    .from('comments')
+    .update({ text: text.trim() })
+    .eq('id', commentId)
+    .eq('user_id', currentUser.id)
+    .select()
+    .single()
+
+  if (error) {
+    console.warn('[comments] update failed:', error.message)
+    return null
+  }
+
+  for (const key of Object.keys(cache.value)) {
+    const idx = cache.value[key].findIndex((c) => c.id === commentId)
+    if (idx !== -1) {
+      cache.value[key][idx] = {
+        ...cache.value[key][idx],
+        text: data.text,
+        updatedAt: data.updated_at,
+      }
+    }
+  }
+  saveCache()
+  return {
+    id: data.id,
+    text: data.text,
+    updatedAt: data.updated_at,
+  }
 }

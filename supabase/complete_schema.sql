@@ -71,7 +71,8 @@ create table if not exists public.comments (
   user_id    uuid not null references auth.users(id) on delete cascade,
   user_name  text not null,
   text       text not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz
 );
 
 -- 1f) RAG documents — embeddings match gemini-embedding-2 (768 dims).
@@ -141,6 +142,12 @@ drop policy if exists "Users can delete own comments" on public.comments;
 create policy "Users can delete own comments"
   on public.comments for delete
   using (auth.uid() = user_id);
+
+drop policy if exists "Users can update own comments" on public.comments;
+create policy "Users can update own comments"
+  on public.comments for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 -- 4b) News RLS
 alter table public.news enable row level security;

@@ -20,11 +20,11 @@ insert into public.guides (id, title, content, category) values
 'general'),
 
 ('nav-topbar', 'Top Navigation Bar (Navbar)',
-'The top navigation bar (Navbar.vue) is sticky and always visible. Left side: "CryptoDash" brand/logo — click to go home (/). Nav links: "Home" → /, "Markets" → /markets, "News" → /news, "About" → /about, "Watchlist" → /watchlist (always visible, but content requires login). Right side: sun/moon ThemeToggle icon, then user area — if logged in: "Admin" nav link with star icon (only if admin role), then avatar initial with name → dropdown with "Profile" (/profile), "Admin dashboard" (/admin, only if admin role), "Logout". If guest: "Login" button → /login. On mobile: hamburger menu with Bootstrap collapse, auto-closes on route change.',
+'The top navigation bar (Navbar.vue) is sticky and always visible. Left side: "CryptoDash" brand/logo — click to go home (/). Nav links: "Home" → /, "Markets" → /markets, "News" → /news, "About" → /about, "Watchlist" → /watchlist (always visible, but content requires login). Right side: sun/moon ThemeToggle icon, then user area — if logged in: "Admin" nav link with star icon (only if admin role), then avatar initial with name → dropdown with "Admin dashboard" (/admin, only if admin role) and "Logout". If guest: "Login" button → /login. On mobile: hamburger menu with Bootstrap collapse, auto-closes on route change.',
 'navigation'),
 
 ('nav-routes', 'All Routes & Pages',
-'Public: / (Home), /markets (Markets), /coin/:id (CoinDetail), /news (News), /news/:id (NewsDetail), /about (About), /set-password (SetPassword), /watchlist (Watchlist — page is public but shows a login prompt for guests). Guest-only: /login, /register. Auth-required: /profile. Admin-required: /admin (Dashboard), /admin/news (CMS), /admin/news/:id (Editor), /admin/rag (Knowledge Base), /admin/users (Users), /admin/settings (Settings). Navigation guard: requiresAuth redirects to /login?redirect=, guestOnly redirects to /, requiresAdmin renders locked screen inside AdminLayout.',
+'Public: / (Home), /markets (Markets), /coin/:id (CoinDetail), /news (News), /news/:id (NewsDetail), /about (About), /set-password (SetPassword), /watchlist (Watchlist — page is public but shows a login prompt for guests). Guest-only: /login, /register. Admin-required: /admin (Dashboard), /admin/news (CMS), /admin/news/:id (Editor), /admin/rag (Knowledge Base), /admin/users (Users). Navigation guard: guestOnly redirects to /, requiresAdmin renders locked screen inside AdminLayout.',
 'navigation'),
 
 ('nav-footer', 'Footer',
@@ -52,7 +52,7 @@ insert into public.guides (id, title, content, category) values
 'pages'),
 
 ('page-newsdetail', 'News Detail Page /news/:id',
-'To read a full article: click any news card on /news to go to /news/:id (e.g. /news/1). Shows hero image, category badge, estimated read time, and article title. Author section: avatar initial, name, publish date, source. Full HTML article content below (sanitized, safe). Click any tag pill → /news?q=tag to find related articles. Like/dislike reaction row (login required). "Read original source" link to the article source. Comments section at bottom: read comments (username, date, text, oldest first). To post a comment: login required — type in textarea and submit. Delete your own comments with × button. "Related Articles" section at bottom matches by category or tags. Loading: spinner ("Loading article..."). If article not found: EmptyState titled "Article not found" with a "Back to News" button.',
+'To read a full article: click any news card on /news to go to /news/:id (e.g. /news/1). Shows hero image, category badge, estimated read time, and article title. Author section: avatar initial, name, publish date, source. Full HTML article content below (sanitized, safe). Click any tag pill → /news?q=tag to find related articles. Like/dislike reaction row (login required). "Read original source" link to the article source. Comments section at bottom: read comments (username, date, text, oldest first). To post a comment: login required — type in textarea and submit. Your own comments have Edit (pencil → inline textarea → Save/Cancel, shows "(edited)" after) and Delete (×) buttons. "Related Articles" section at bottom matches by category or tags. Loading: spinner ("Loading article..."). If article not found: EmptyState titled "Article not found" with a "Back to News" button.',
 'pages'),
 
 ('page-login', 'Login Page /login',
@@ -67,8 +67,8 @@ insert into public.guides (id, title, content, category) values
 'Reached via email verification link. Card: title "Set Password", subtitle "Your email has been verified. Set your password to complete registration." Step 1: type password in "Password" field (min 6 chars, placeholder "At least 6 characters") — 👁️ to toggle visibility. Step 2: re-enter in "Confirm password" field (placeholder "Re-enter password"). Step 3: click "Set password" button (gold btn-accent full-width). If too short: "Password must be at least 6 characters." If mismatch: "Passwords must match." On success: redirected to home after 2 seconds.',
 'auth'),
 
-('page-profile', 'Profile Page /profile',
-'Auth-required route (redirects to /login?redirect=/profile if not logged in). Profile card: avatar with initial, display name (from profiles/name or auth metadata), email, role badge (Admin gold / User gray). Info: Member since (from auth user UUID timestamp), Theme (Dark/Light value + Toggle button). Quick links: Watchlist (→ /watchlist), Admin dashboard (→ /admin, only if admin role). Logout button (btn-outline-accent, calls useAuth().logout() then redirects home). No edit/update functionality currently.',
+('page-profile', 'Profile',
+'There is no profile page. Account info (name, email, role) is shown in the top navbar user menu; admins also see their info card in the Admin sidebar. Users manage their own comments directly on the news article page (/news/:id). Logout is available from the navbar dropdown or the Admin sidebar.',
 'auth'),
 
 ('page-about', 'About Page /about',
@@ -164,7 +164,7 @@ insert into public.guides (id, title, content, category) values
 'ai'),
 
 ('workflow-auth', 'Authentication Workflow',
-'Registration (2 phases): (1) Go to /register (click "Register" in navbar or login page footer). Fill "Name (optional)" + "Email address". Click "Send verification email". Check email inbox/spam for verification link. (2) Click link → /set-password. Enter password (min 6 chars) + confirm. Click "Set password" → redirected to home. Technical: requestRegistration() generates 20-char temp password → supabase.auth.signUp({email,tempPassword, options:{emailRedirectTo:/set-password}}) → upsert profiles(id,email,name,role:"user"). setPassword() → supabase.auth.updateUser({password}) + bcrypt hash in profiles.password. LOGIN: /login → email+password → signInWithPassword → redirect ?redirect= or home. LOGOUT: navbar dropdown or /profile → signOut → home. Session: onAuthStateChange. Guest-only: /login, /register. Auth-required: /profile. /watchlist is public (guests see an in-page login prompt). No OAuth, no password reset.',
+'Registration (2 phases): (1) Go to /register (click "Register" in navbar or login page footer). Fill "Name (optional)" + "Email address". Click "Send verification email". Check email inbox/spam for verification link. (2) Click link → /set-password. Enter password (min 6 chars) + confirm. Click "Set password" → redirected to home. Technical: requestRegistration() generates 20-char temp password → supabase.auth.signUp({email,tempPassword, options:{emailRedirectTo:/set-password}}) → upsert profiles(id,email,name,role:"user"). setPassword() → supabase.auth.updateUser({password}) + bcrypt hash in profiles.password. LOGIN: /login → email+password → signInWithPassword → redirect ?redirect= or home. LOGOUT: navbar dropdown or Admin sidebar → signOut → home. Session: onAuthStateChange. Guest-only: /login, /register. /watchlist is public (guests see an in-page login prompt). No OAuth, no password reset.',
 'workflows'),
 
 ('workflow-watchlist', 'Watchlist Workflow',
@@ -176,7 +176,7 @@ insert into public.guides (id, title, content, category) values
 'workflows'),
 
 ('workflow-comments', 'Comments Workflow',
-'VIEW: all users see comments on /news/:id (username, date, text, oldest first). POST: login required → textarea → supabase.comments insert (article_id, user_id, user_name, text). DELETE: × button on own comments only (RLS auth.uid()). Cache: localStorage.',
+'VIEW: all users see comments on /news/:id (username, date, text, oldest first). POST: login required → textarea → supabase.comments insert (article_id, user_id, user_name, text). EDIT: pencil icon on own comments → inline textarea → Save/Cancel → updates text and sets updated_at (RLS auth.uid()); edited comments show "(edited)". DELETE: × button on own comments only (RLS auth.uid()). Cache: localStorage.',
 'workflows'),
 
 ('workflow-errors', 'Error Handling Patterns',
@@ -192,7 +192,7 @@ insert into public.guides (id, title, content, category) values
 'faq'),
 
 ('faq-auth', 'FAQ - Authentication',
-'Q: Create account? A: /register → email + optional name → "Send verification email" → check email → click link → /set-password → set password (min 6 chars) → done. Q: No email? A: Check spam folder. Q: Forgot password? A: Not implemented, contact admin. Q: Browse without login? A: Yes — login only for comments, likes, server-synced watchlist, profile, and the AI assistant. Q: Become admin? A: Existing admin promotes you via /admin/users, or run the promotion SQL at the bottom of supabase/complete_schema.sql (upserts profile role to admin for the chosen email; AdminLayout locked screen also points there). Q: Change name? A: Not currently.',
+'Q: Create account? A: /register → email + optional name → "Send verification email" → check email → click link → /set-password → set password (min 6 chars) → done. Q: No email? A: Check spam folder. Q: Forgot password? A: Not implemented, contact admin. Q: Browse without login? A: Yes — login only for comments, likes, server-synced watchlist, and the AI assistant. Q: Become admin? A: Existing admin promotes you via /admin/users, or run the promotion SQL at the bottom of supabase/complete_schema.sql (upserts profile role to admin for the chosen email; AdminLayout locked screen also points there). Q: Change name? A: Not currently.',
 'faq'),
 
 ('faq-data-sources', 'FAQ - Data Sources',

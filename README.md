@@ -89,7 +89,6 @@ The project was built in stages: it began as a simple three-page Vue application
 | `/login` | Login | Guests |
 | `/register` | Register (email + name) | Guests |
 | `/set-password` | Set real password after invite | All |
-| `/profile` | User profile | Authenticated |
 | `/admin` | Admin dashboard — KPIs, charts, stats | Admin |
 | `/admin/news` | News CMS list (real-time sync) | Admin |
 | `/admin/news/edit/new` | Create article | Admin |
